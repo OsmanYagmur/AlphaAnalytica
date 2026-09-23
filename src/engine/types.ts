@@ -30,7 +30,11 @@ export interface TaxReturn {
 export interface FinancialSupplement {
   /** Dönem amortisman gideri (amortisman listesinden). FAVÖK için eklenir. */
   depreciation: number
-  /** Mevcut kredilerin yıllık anapara + faiz ödemeleri (K3 için). */
+  /**
+   * Mevcut Yıllık Kredi Ödemeleri (K3 için): vadeli kredilerin önümüzdeki 12 ay
+   * içindeki anapara taksitleri. Yenilenen rotatif KV krediler dahil edilmez;
+   * faiz yükü FAVÖK'ten karşılanan finansman gideri olarak ayrıca izlenir.
+   */
   annualDebtService: number
 }
 
