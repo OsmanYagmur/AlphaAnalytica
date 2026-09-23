@@ -1,5 +1,6 @@
 import { Minus, Plus, X } from 'lucide-react'
 import { useEffect, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import type { CreditGrade } from '../engine/modelConfig'
 import { formatScore } from '../lib/format'
 import type { FirmStatus } from '../store/evaluations'
@@ -198,7 +199,7 @@ export function Modal({ open, title, onClose, children, footer, width = 'md' }: 
   }, [open, onClose])
 
   if (!open) return null
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[rgb(14_27_46/0.45)] p-4 sm:p-8">
       <div
         role="dialog"
@@ -217,7 +218,8 @@ export function Modal({ open, title, onClose, children, footer, width = 'md' }: 
         <div className="px-5 py-4">{children}</div>
         {footer && <footer className="flex justify-end gap-2 border-t border-line px-5 py-3">{footer}</footer>}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

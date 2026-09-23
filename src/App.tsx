@@ -4,6 +4,8 @@ import { Toaster, showToast } from './components/toast'
 import { navigate, useRouteSegments } from './lib/router'
 import { Login } from './pages/Login'
 import { Placeholder } from './pages/Placeholder'
+import { Evaluation } from './pages/tahsis/Evaluation'
+import { Queue } from './pages/tahsis/Queue'
 import { actions, useAppState } from './store/appStore'
 import type { Role } from './store/types'
 
@@ -48,7 +50,8 @@ function Routes() {
 
   switch (role) {
     case 'tahsis':
-      return <Placeholder role="tahsis" title="Başvuru Kuyruğu" />
+      if (segments[1] === 'firma' && segments[2]) return <Evaluation key={segments[2]} firmId={segments[2]} />
+      return <Queue />
     case 'portfoy':
       return <Placeholder role="portfoy" title="Portföy Özeti" />
     case 'model':
