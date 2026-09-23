@@ -1,0 +1,258 @@
+# GÖREV
+TEKNOFEST 2026 Finansal Teknolojiler Yarışması finalinde büyük ekranda sunulacak, tamamen çevrimdışı çalışan bir DEMO web uygulaması geliştir. Takım adı: AlphaAnalytica. Proje adı: "Dinamik Bilançolar ile Risk Analizi".
+
+Uygulama, KOBİ'ler için ticari kredi tahsis sürecini simüle eder. Geleneksel finansal analizi (mizan + kurumlar vergisi beyannamesi) sektöre özgü alternatif veri analiziyle varsayılan olarak %50–%50 birleştirir; kredi skoru, limit ve teminat önerisi üretir.
+
+Üç arayüz olacak:
+1. Tahsis Yöneticisi
+2. Portföy Yöneticisi
+3. Model Yöneticisi (Master)
+
+Tüm arayüz Türkçe olacak. Para birimi TL, sayı formatı tr-TR (1.250.000 ₺).
+
+# TEKNİK ALTYAPI
+- Vite + React + TypeScript + Tailwind CSS + Recharts + lucide-react ikonları.
+- Backend yok. Tüm firma verisi /src/data altında JSON/TS mock dosyalarında.
+- Tüm hesaplama /src/engine altında saf TypeScript fonksiyonlarında: traditionalScore.ts, alternativeScore.ts, seasonality.ts, limit.ts, collateral.ts. UI yalnızca sonuçları okur.
+- Motor hiçbir ağırlığı, eşiği veya katsayıyı sabit kod olarak içermez. Tüm parametreler tek bir tipli model konfigürasyon nesnesinden okunur (/src/engine/modelConfig.ts). Aşağıdaki formül bölümündeki değerler bu konfigürasyonun varsayılanlarıdır (Model v1.0).
+- Aktif model konfigürasyonu, model sürümleri ve tahsis kararları localStorage'da tutulur. Bir arayüzde yapılan değişiklik diğerlerine anında yansır.
+- Uygulama internet OLMADAN çalışmalı. Fontlar @fontsource ile yerel paketlenir, CDN kullanılmaz.
+- Gizli "Demo'yu sıfırla" kısayolu: Ctrl+Shift+R. Tüm kararları ve model konfigürasyonunu başlangıç durumuna (v1.0) döndürür. Ekranda bunun için buton olmaz.
+- Responsive tasarım: öncelik 1920x1080 sunum ekranı, ayrıca 1366x768, tablet ve mobilde düzgün görünür.
+- `npm run build` ile statik dist klasörü üretilir. README'de kurulum ve çalıştırma adımları yer alır.
+
+# FORMÜLLERİN GÖRÜNÜRLÜĞÜ
+- Tahsis Yöneticisi ve Portföy Yöneticisi arayüzlerinde hiçbir formül, ağırlık, katsayı veya eşik değeri görünmez. Bu ekranlar yalnızca skorları, harf notlarını, alt kategori çubuklarını ve niteliksel açıklamaları gösterir (ör. "Skoru en çok yükselten 3 faktör").
+- Formüller ve parametreler YALNIZCA Model Yöneticisi panelinde görünür ve düzenlenebilir.
+- Tüm formüller ayrıca proje kökündeki METODOLOJI.md dosyasında belgelenir.
+
+# FORMÜLLER (varsayılan değerler = Model v1.0)
+Normalizasyon: her gösterge, kırılım noktaları arasında parçalı doğrusal interpolasyonla 0–100 puana çevrilir. Uç değerler kırpılır.
+
+## 1) Geleneksel Skor (G, 0–100)
+Kaynak: mizan (hesap kodlarıyla) + Kurumlar Vergisi Beyannamesi (KVB).
+- Likidite %20: Cari Oran (0,8→0; 1,0→40; 1,5→80; ≥2,0→100) ve Asit-Test Oranı (0,5→0; 1,0→80; ≥1,3→100), eşit ağırlık.
+- Kaldıraç %25: Toplam Borç/Özkaynak (≤0,5→100; 1→80; 2→50; ≥4→0) ve Net Finansal Borç/FAVÖK (≤1→100; 3→50; ≥5→0), eşit ağırlık.
+- Kârlılık %20: FAVÖK Marjı (≤0→0; %10→70; ≥%20→100), Net Kâr Marjı (≤0→0; %5→70; ≥%12→100), Aktif Kârlılığı (≤0→0; %5→70; ≥%10→100), eşit ağırlık.
+- Faaliyet Etkinliği %15: Nakit Dönüşüm Süresi = Alacak Devir Günü + Stok Devir Günü − Borç Devir Günü. Sektör medyanına göre puanlanır: medyan→70; medyanın yarısı veya altı→100; medyanın 2 katı veya üstü→0.
+- Borç Ödeme Gücü %10: Faiz Karşılama = FAVÖK / Finansman Giderleri (≤1→0; 3→70; ≥5→100).
+- Beyan Tutarlılığı %10: |Mizan Net Satış − KVB Net Satış| / KVB Net Satış (≤%2→100; %10→40; ≥%20→0). KVB matrahı negatifse bu kategori en fazla 50 alabilir.
+
+G = Σ (kategori puanı × kategori ağırlığı)
+
+## 2) Alternatif Skor (A, 0–100)
+A_ham = 0,55 × SP + 0,25 × SU + 0,20 × TR
+
+- SP (Sektörel Performans): sektöre özgü 4–6 alternatif göstergenin ağırlıklı ortalaması. Her sektör için varsayılan ağırlıkları sen belirle; toplamları 1 olsun ve METODOLOJI.md'ye yazılsın.
+- Sezonsallık: her sektörün 12 aylık beklenen sezon endeksi S_m vardır (ortalaması 1,00).
+  - Beklenen_m = (Yıllık Ciro / 12) × S_m
+  - Sapma_m = Gerçekleşen_m / Beklenen_m − 1
+  - SU (Sezon Uyumu) = 100 × max(0; 1 − ortalama|Sapma_m| / 0,5)
+  - Bu sayede kırtasiyenin eylül piki veya kış turizminin yaz düşüşü risk olarak cezalandırılmaz.
+- TR (Arındırılmış Trend): SA_m = Gerçekleşen_m / S_m. Son 12 aylık SA_m serisine doğrusal regresyon uygulanır, eğim yıllık % büyümeye çevrilir (−%20→0; %0→50; +%20→100).
+- Veri Kapsama Düzeltmesi: c = mevcut alternatif gösterge sayısı / toplam gösterge sayısı.
+  A = c × A_ham + (1 − c) × 50. Veri eksikse skor nötr değere çekilir.
+
+## 3) Nihai Skor ve Not
+S = w_G × G + w_A × A (varsayılan w_G = 0,5; w_A = 0,5)
+
+Harf notu: 90+ AAA | 80–89 AA | 70–79 A | 60–69 BBB | 50–59 BB | 40–49 B | <40 C (limit verilmez)
+
+Temerrüt Olasılığı: PD = 1 / (1 + e^((S − 30) / 9))
+
+Erken uyarı override: kritik sinyal varsa (beyan tutarsızlığı >%20, karşılıksız çek kaydı, vergi/SGK borcu) not en fazla BB olabilir. UI'da uyarı rozeti olarak gösterilir.
+
+## 4) Limit
+- K1 (İşletme Sermayesi İhtiyacı) = Net Satış × max(Nakit Dönüşüm Süresi; 30) / 365 × 1,2
+- K2 (Özkaynak Kapasitesi) = Özkaynak × 1,5
+- K3 (Borç Servis Kapasitesi) = max(0; FAVÖK × 0,6 − Mevcut Yıllık Kredi Ödemeleri) × 2
+- Kapasite = min(K1; K2; K3)
+- Not çarpanı f: AAA 1,00 | AA 0,90 | A 0,80 | BBB 0,65 | BB 0,50 | B 0,30 | C 0
+- Sektör Risk Katsayısı (SRK): sektöre göre 0,85–1,05 (sektör tablosunda).
+- Önerilen Limit = Kapasite × f × SRK, 50.000 TL'ye aşağı yuvarlanır.
+
+## 5) Teminat, Vade, Fiyatlama, Ürün Kırılımı
+- Teminat oranı (limitin yüzdesi): AAA %0 (müşterek kefalet) | AA %25 | A %50 | BBB %75 | BB %100 | B %125
+- BBB ve altında ipotek zorunludur.
+  - İpotek Tutarı = Limit × Teminat Oranı
+  - Gerekli Ekspertiz Değeri = İpotek Tutarı / 0,70
+- Vade: AAA–A 24 ay rotatif | BBB 12 ay | BB–B 6 ay
+- Fiyatlama: TLREF + not bazlı spread (AAA +150 bp … B +650 bp, aradakiler doğrusal)
+- Ürün kırılımı: varsayılan %50 rotatif kredi, %30 spot kredi, %20 gayrinakdi (teminat mektubu). Sektöre göre uyarlanır: turizmde sezon öncesi spot ağırlıklı, oto galeride stok finansmanı ağırlıklı.
+
+# SEKTÖRLER (10 adet)
+Her sektörün sezon profili ve alternatif göstergeleri:
+
+1. E-ticaret: ürün yorum puanı ve trendi, yorum duygu skoru (olumsuz yorum oranı), sipariş adedi ve ortalama sepet tutarı, iade oranı, kargo teslim süresi ve zamanında teslim oranı, pazaryeri satıcı puanı. Sezon: Kasım–Aralık pik. SRK 0,95
+2. Oto Galeri: aylık yeni ilan sayısı, satılan/kaldırılan ilan sayısı, ortalama ilanda kalma süresi (stok devir), stok değeri, fiyat indirimi sıklığı. Sezon: ilkbahar-yaz yüksek, yıl sonu kampanya. SRK 0,90
+3. Kırtasiye: POS ciro ve işlem adedi, okul sezonu performansı (Ağustos sonu–Eylül ana pik, Şubat ikinci pik), stok devir hızı, tedarikçi ödeme düzeni. SRK 1,00
+4. Turizm Acentesi (iki alt profil): rezervasyon hacmi, iptal oranı, erken rezervasyon oranı, müşteri yorum puanı, TÜRSAB belge durumu. Yaz profili Haziran–Eylül pik, kış profili Aralık–Mart pik; firmanın alt profiline göre endeks seçilir. SRK 0,85
+5. Restoran/Kafe: harita ve yemek platformu puanları, online sipariş adedi, POS işlem sayısı, ortalama adisyon, SGK çalışan sayısı trendi. Sezon: hafif dalgalı, Ramazan ve yaz etkisi. SRK 0,90
+6. Yapı Malzemesi: bölgesel yapı ruhsatı verisi, e-irsaliye hacmi, çek ödeme performansı, kamu ihale kazanımları. Sezon: ilkbahar–sonbahar yüksek, kış düşük. SRK 0,90
+7. Tekstil/Hazır Giyim İhracatçısı: e-fatura/e-ihracat hacmi, ihracat beyannamesi sayısı, sipariş birikimi, müşteri yoğunlaşması, döviz pozisyonu. Sezon: koleksiyon öncesi sipariş dönemleri. SRK 0,95
+8. Tarım/Gıda Toptan: hasat dönemi hacmi, ürün borsası fiyat trendi, depo doluluk oranı, e-irsaliye hacmi. Sezon: hasat ayları. SRK 0,90
+9. Lojistik/Nakliye: filo kullanım oranı (telematik), sefer sayısı, yakıt harcaması/km, tahsilat süresi. Sezon: 4. çeyrek pik. SRK 1,00
+10. Eczane: SGK reçete hacmi, SGK ödeme gecikmesi, stok devir hızı. Sezon: kış (grip dönemi) yüksek. SRK 1,05
+
+# DEMO VERİSİ
+Her sektörden en az 1, toplam 14 hayali firma olsun. Adlar gerçekçi ama hayali olsun ("Defne Kırtasiye Ltd. Şti.", "Kuzey Oto Galeri A.Ş." gibi). Gerçek marka veya pazaryeri adı kullanma, "Pazaryeri A" gibi genel ifadeler kullan.
+
+Her firma için şunlar üretilecek:
+- Künye: VKN (hayali), il, kuruluş yılı, çalışan sayısı
+- Mizan özeti, gerçek hesap kodlarıyla: 100 Kasa, 102 Bankalar, 120 Alıcılar, 153 Ticari Mallar, 300 Banka Kredileri, 320 Satıcılar, 500 Sermaye, 600 Yurtiçi Satışlar, 621 SMM, 780 Finansman Giderleri vb.
+- KVB özeti: net satış, matrah, ödenen vergi
+- 24 aylık ciro serisi
+- Sektöre özgü alternatif gösterge serileri
+
+Veriyi, v1.0 modeliyle hesaplanan sonuçlar şu hikâyeleri anlatacak şekilde kalibre et:
+- Kırtasiye: zayıf bilanço (G≈52) ama güçlü alternatif veri (A≈78). Geleneksel yöntemle reddedilecek firma, sistemde BBB alıyor. Demonun ana mesajı bu.
+- Oto galeri: güçlü bilanço (G≈80) ama ilanda kalma süresi artıyor, satışlar düşüyor (A≈45). Erken uyarı çıkıyor, limit düşürülüyor.
+- Kış turizmi acentesi: yaz aylarındaki düşük ciro sezonsallık sayesinde cezalandırılmıyor.
+- E-ticaret: yorum puanı düşüyor, iade oranı artıyor, not bir kademe düşüyor.
+- En az 1 firma C notu alıyor (red senaryosu), en az 1 firma AAA/AA alıyor.
+- Başlangıçta 8 firma "Tahsis Bekliyor", diğerleri önceden karara bağlanmış olsun.
+
+# GİRİŞ EKRANI
+- Sade bir rol seçimi ekranı, üstte büyük AlphaAnalytica logosu.
+- Üç kart: "Tahsis Yöneticisi", "Portföy Yöneticisi" ve "Model Yöneticisi".
+- İlk ikisi şifresiz demo girişi.
+- Model Yöneticisi kartı görsel olarak ayrışır (koyu zemin, kilit ikonu) ve demo PIN'i (1946) ister.
+
+# A) TAHSİS YÖNETİCİSİ ARAYÜZÜ
+
+## 1. Başvuru Kuyruğu
+- Tablo: firma, sektör, talep tutarı, sistem notu, önerilen limit, bekleme süresi, durum.
+- Sektör ve not filtresi, arama.
+
+## 2. Firma Değerlendirme Ekranı
+- Üst şerit: firma künyesi, nihai skor göstergesi (gauge), harf notu, PD, erken uyarı rozetleri, küçük bir aktif model sürümü etiketi (ör. "Model v1.2").
+- Geleneksel Analiz sekmesi: mizan özet tablosu, KVB karşılaştırması, 6 alt kategori puan çubukları (yalnızca puan ve "Güçlü / Orta / Zayıf" etiketi).
+- Alternatif Veri sekmesi: sektöre özgü gösterge kartları ve mini grafikler. Sezonsallık grafiği: beklenen ve gerçekleşen aylık ciro, iki çizgi.
+- "Skoru etkileyen faktörler": pozitif ve negatif ilk 3, düz cümlelerle.
+- Sistem Önerisi kartı: "AlphaAnalytica sistemi tarafından X TL limit uygun görülmüştür". Altında ürün kırılımı, teminat türü ve oranı, ipotek tutarı, gerekli ekspertiz değeri, vade, fiyatlama bandı.
+
+## 3. Karar Paneli
+- Onayla: sistem önerisiyle aynen onaylar.
+- Reddet: red gerekçesi seçimi (açılır liste) ve açıklama zorunlu.
+- Revize Et: limit, teminat oranı/türü, vade, ürün kırılımı ve özel şartlar (kovenant) düzenlenebilir. Sistem önerisinden sapma yüzdesi canlı gösterilir. Sapma %20'yi aşarsa gerekçe zorunlu olur.
+- Karar sonrası kısa ve şık bir onay bildirimi.
+- Firma bazında karar geçmişi (audit log: kim, ne zaman, ne değişti).
+
+## 4. Analiz animasyonu
+Analiz tetiklendiğinde 1–1,5 saniyelik adım adım yükleme animasyonu:
+"Mizan okunuyor → Beyanname eşleştiriliyor → Alternatif veriler toplanıyor → Sezonsallık arındırılıyor → Skor hesaplanıyor"
+Formül yok, yalnızca adım isimleri.
+
+# B) PORTFÖY YÖNETİCİSİ ARAYÜZÜ
+
+## 1. Portföy Özeti
+Toplam limit, kullandırılan risk, not dağılımı grafiği, sektör dağılımı, erken uyarıdaki firmalar.
+
+## 2. Firma Listesi
+Durum rozetleri: Onaylandı / Revize Onay / Reddedildi / Beklemede.
+
+## 3. Firma Detay Ekranı
+- Mevcut skor ve not, 12 aylık skor trendi, aktif model sürümü etiketi.
+- Yan yana iki sütun: "Sistem Görüşü" ve "Tahsis Yöneticisi Kararı". Farklılıklar vurgulanır (ör. limit 2.000.000 → 1.600.000 ₺).
+- Onaylanan limit detayı: ürün bazında kırılım, teminat yapısı (ipotek yüzdesi, ipotek tutarı, gerekli ekspertiz değeri, kefalet), vade, fiyatlama, özel şartlar.
+- Tahsisçinin gerekçe notu.
+- Erken uyarı sinyalleri ve izlenmesi gereken göstergeler.
+- Karar eski bir model sürümüyle verildiyse küçük bir bilgi satırı: "Karar v1.0 modeliyle verildi, güncel model önerisi: …"
+
+# C) MODEL YÖNETİCİSİ (MASTER) ARAYÜZÜ
+Tüm formüllerin, ağırlıkların ve eşiklerin görülebildiği ve düzenlenebildiği tek ekran. Sol kenar çubuğunda kendi menüsü olur.
+
+## 1. Model Genel Bakış
+- Aktif model sürümü, son değişiklik tarihi, değiştiren kişi.
+- Portföy geneli: ortalama skor, not dağılımı, toplam önerilen limit, ortalama PD.
+- Aktif modelle v1.0 arasındaki farkların özeti.
+
+## 2. Ana Denge
+- Geleneksel / Alternatif ağırlığı tek bir kaydırıcıyla (varsayılan %50 / %50). İki değer toplamı %100 olacak şekilde birlikte hareket eder.
+- Nihai skor formülü okunabilir biçimde gösterilir: S = w_G × G + w_A × A
+
+## 3. Geleneksel Skor Parametreleri
+- 6 kategorinin ağırlıkları ve her kategorinin içindeki alt oranların ağırlıkları.
+- Her oranın normalizasyon kırılım noktaları, düzenlenebilir tablo olarak (değer → puan). Yanında kırılımlardan çizilen küçük bir eğri grafiği; tablo değişince eğri anında güncellenir.
+- Beyan tutarlılığı eşikleri ve negatif matrah tavanı.
+
+## 4. Alternatif Skor Parametreleri
+- SP / SU / TR ağırlıkları.
+- SU toleransı (varsayılan 0,5) ve TR büyüme kırılım noktaları.
+- Veri kapsama düzeltmesinin açık/kapalı anahtarı ve nötr değer (varsayılan 50).
+
+## 5. Sektör Ayarları (10 sektör, sekmeli veya açılır liste)
+Her sektör için:
+- Alternatif gösterge ağırlıkları ve her göstergenin normalizasyon kırılımları.
+- 12 aylık sezon endeksi: düzenlenebilir çubuk grafik (sürükle veya sayı gir). Ortalama otomatik olarak 1,00'e normalize edilir.
+- Turizmde yaz ve kış alt profillerinin ayrı endeksleri.
+- SRK ve sektörel nakit dönüşüm süresi medyanı.
+- Sektörel ürün kırılımı varsayılanları.
+
+## 6. Not, PD ve Limit Parametreleri
+- Harf notu eşikleri (sıralı olmalı, çakışamaz).
+- PD parametreleri (merkez 30, ölçek 9) ve yanında skor–PD eğrisi.
+- K1 çarpanı (1,2) ve minimum gün (30), K2 çarpanı (1,5), K3 FAVÖK oranı (0,6) ve çarpanı (2).
+- Not çarpanları (f) ve yuvarlama birimi (50.000 TL).
+- Erken uyarı override kuralları: hangi sinyal aktif, not tavanı ne olacak.
+
+## 7. Teminat ve Fiyatlama
+- Nota göre teminat oranları, ipotek zorunluluğunun başladığı not, ekspertiz LTV oranı (0,70).
+- Nota göre vade ve spread (bp) tablosu.
+
+## Doğrulama kuralları
+- Toplamı %100 olması gereken her ağırlık grubunun yanında canlı toplam göstergesi. %100 değilse gösterge kırmızı olur ve kaydetme kapanır. Yanında "Orantılı olarak normalize et" butonu bulunur.
+- Negatif, mantıksız veya sırası bozuk değerler satır içinde hata mesajıyla engellenir.
+- Kaydedilmemiş değişiklik varken sayfadan çıkılırsa uyarı verilir.
+
+## Etki Simülasyonu (en önemli özellik)
+- Parametreler değiştikçe, kaydetmeden önce sağda canlı bir "Etki Önizleme" paneli gösterilir.
+- Tablo: tüm firmalar için mevcut skor → yeni skor, mevcut not → yeni not, mevcut limit → yeni limit, değişim yüzdesi. Not değişen satırlar vurgulanır.
+- Özet kartları: not yükselen, düşen ve değişmeyen firma sayısı; toplam limit değişimi; ortalama PD değişimi.
+- Tek firma odak modu: seçilen firmanın skor değişimi kategori bazında şelale (waterfall) grafiğiyle gösterilir.
+- Duyarlılık analizi: seçilen bir parametre min–max arasında kaydırıldığında seçili firmanın skorunun değişimini gösteren çizgi grafik.
+
+## Sürümleme ve denetim izi
+- "Yeni sürüm olarak kaydet": sürüm numarası otomatik artar (v1.1, v1.2 …), değişiklik notu zorunludur.
+- Sürüm listesi: tarih, not ve bir önceki sürümle parametre farkları (diff görünümü: eski → yeni).
+- Herhangi bir sürümü aktif yapma ve v1.0 varsayılanlarına geri dönme. Her ikisi de onay penceresi ister.
+- Konfigürasyonu JSON olarak dışa ve içe aktarma. İçe aktarımda şema doğrulaması yapılır.
+
+## Diğer arayüzlere etkisi
+- Karara bağlanmış firmalarda karar, verildiği andaki model sürümüyle birlikte saklanır ve değişmez.
+- Beklemedeki başvurular her zaman aktif modelle yeniden hesaplanır.
+- Tahsis ve Portföy ekranlarında yalnızca aktif model sürüm numarası görünür, parametreler görünmez.
+
+# TASARIM (ÇOK ÖNEMLİ)
+Görünüm bir bankanın iç kurumsal yazılımı gibi olmalı. "Yapay zekâ yapmış" görüntüsünden kesinlikle kaçın:
+- Mor/pembe gradyan, neon renk, glassmorphism, parlama efekti, emoji ve "✨" tarzı ikon YOK.
+- Renk paleti:
+  - Zemin #F6F5F1 (sıcak kırık beyaz), kart zemini #FFFFFF
+  - Ana renk lacivert #12233D, kenar çubuğu #0E1B2E
+  - Metin #1D2433, ikincil metin #5B6475, çizgiler #E3E1DA
+  - Vurgu rengi koyu petrol yeşili #1F6F6B
+  - Durum renkleri: olumlu #1E7B4F, uyarı #B7791F, olumsuz #B42318. Doygunlukları düşük tut.
+- Tipografi: IBM Plex Sans (metin), IBM Plex Mono (tutarlar, skorlar ve sayısal girişler için tabular rakamlar). Başlıklar ölçülü boyutta; dev hero başlık yok.
+- Düzen: solda sabit koyu lacivert kenar çubuğu, sağda içerik. 8px ızgara, ince 1px çizgiler, köşe yuvarlama en fazla 6px, çok hafif gölge.
+- Grafikler: tek renk ailesi (lacivert/petrol tonları), soluk gridline'lar, gereksiz animasyon yok.
+- Model Yöneticisi paneli: yoğun ama düzenli tablolar ve form alanları, teknik bir kontrol merkezi hissi. Sayısal girişler sağa hizalı, ± adım butonlu. Değiştirilmiş ama kaydedilmemiş alanlar hafif bir vurgu rengiyle işaretlenir.
+- Logo: SVG olarak kendin tasarla. Lacivert kare içinde stilize bir "α" harfi ve sağ üste doğru ince yükselen bir çizgi (analitik büyümeyi ima eden). Yanında "AlphaAnalytica" yazısı; "Alpha" kalın, "Analytica" normal ağırlıkta.
+- Logo yerleşimi: kenar çubuğunun üstünde tam logo, giriş ekranında büyük logo.
+- Tüm sayfaların sağ alt köşesinde küçük ve soluk bir etiket: "AlphaAnalytica · TEKNOFEST 2026 Finansal Teknolojiler". Bir köşede küçük bir "Demo Verisi" etiketi.
+- Kenar çubuğunun altında "Sunum Modu" anahtarı: açılınca yazı tipi %15 büyür, yan paneller sadeleşir (projektör için).
+
+# KALİTE KONTROL
+- Tüm hesaplamalar motor fonksiyonlarından gelir; hiçbir skor veya limit UI'a elle yazılmaz.
+- Her firma için v1.0 motor çıktısını doğrulayan bir test dosyası yaz (engine.test.ts).
+- 1920x1080 ve 1366x768'de taşma veya kırık düzen olmadığını kontrol et.
+- Konsolda hata olmasın.
+
+# METODOLOJİ.md
+Bitirdiğinde proje kökünde METODOLOJI.md oluştur. İçinde şunlar olsun:
+- Tüm formüller.
+- Model konfigürasyon şeması: her parametrenin anlamı ve varsayılan değeri, tablo halinde.
+- Sektör gösterge ağırlıkları ve sezon endeksleri.
+- Demo senaryoları.
+- 5–6 dakikalık sunum akışı önerisi: hangi firmayı hangi sırayla açmalı. Son adım: Model Yöneticisi panelinde alternatif veri ağırlığını %50'den %30'a düşürüp kırtasiye firmasının notunun ve limitinin nasıl değiştiğini canlı göstermek.
+
+Önce motor ve demo verisini kur, testleri çalıştır, sonra sırasıyla Tahsis, Portföy ve Model Yöneticisi arayüzlerini yap. Her aşamadan sonra dur ve bana özet ver.

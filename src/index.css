@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+/* Tasarım belirteçleri — SPEC.md "TASARIM" bölümü */
+@theme {
+  --color-canvas: #f6f5f1;
+  --color-surface: #ffffff;
+  --color-navy: #12233d;
+  --color-sidebar: #0e1b2e;
+  --color-ink: #1d2433;
+  --color-muted: #5b6475;
+  --color-line: #e3e1da;
+  --color-accent: #1f6f6b;
+  --color-positive: #1e7b4f;
+  --color-warning: #b7791f;
+  --color-negative: #b42318;
+
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Köşe yuvarlama en fazla 6px */
+  --radius-lg: 6px;
+  --radius-xl: 6px;
+  --radius-2xl: 6px;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+}
