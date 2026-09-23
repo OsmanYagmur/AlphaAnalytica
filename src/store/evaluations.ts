@@ -46,7 +46,8 @@ function buildView(s: AppState, firm: Firm): FirmView {
 let cacheKey: [AppState['versions'], string, AppState['decisions']] | null = null
 let cache: FirmView[] = []
 
-function allViews(s: AppState): FirmView[] {
+/** Tüm firma görünümleri (bellekte önbellekli). */
+export function buildFirmViews(s: AppState): FirmView[] {
   if (cacheKey && cacheKey[0] === s.versions && cacheKey[1] === s.activeVersion && cacheKey[2] === s.decisions) {
     return cache
   }
@@ -56,7 +57,7 @@ function allViews(s: AppState): FirmView[] {
 }
 
 export function useFirmViews(): FirmView[] {
-  return useAppState(allViews)
+  return useAppState(buildFirmViews)
 }
 
 export function useFirmView(id: string): FirmView | null {

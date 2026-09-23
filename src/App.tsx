@@ -6,6 +6,8 @@ import { Login } from './pages/Login'
 import { ModelAlternative } from './pages/model/AlternativeParams'
 import { ModelBalance } from './pages/model/Balance'
 import { ModelCollateral } from './pages/model/CollateralPricing'
+import { ModelImpact } from './pages/model/ImpactSimulation'
+import { ModelVersions } from './pages/model/Versions'
 import { ModelOverview } from './pages/model/Overview'
 import { ModelRatingLimit } from './pages/model/RatingLimit'
 import { ModelSectors } from './pages/model/SectorSettings'
@@ -79,6 +81,10 @@ function Routes() {
           return <ModelRatingLimit />
         case 'teminat':
           return <ModelCollateral />
+        case 'etki':
+          return <ModelImpact />
+        case 'surumler':
+          return <ModelVersions />
         default:
           return <ModelOverview />
       }

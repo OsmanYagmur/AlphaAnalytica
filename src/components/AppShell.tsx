@@ -1,5 +1,7 @@
 import {
+  Activity,
   BarChart3,
+  History,
   Briefcase,
   Building2,
   ClipboardList,
@@ -50,6 +52,8 @@ const NAV: Record<Role, NavItem[]> = {
     { label: 'Sektör Ayarları', path: '/model/sektorler', icon: Building2 },
     { label: 'Not · PD · Limit', path: '/model/not-limit', icon: GaugeIcon },
     { label: 'Teminat ve Fiyatlama', path: '/model/teminat', icon: Shield },
+    { label: 'Etki Simülasyonu', path: '/model/etki', icon: Activity },
+    { label: 'Sürümler ve Denetim İzi', path: '/model/surumler', icon: History },
   ],
 }
 

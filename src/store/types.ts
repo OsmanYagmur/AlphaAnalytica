@@ -71,6 +71,8 @@ export interface AppState {
   lastChange: { at: string; by: string }
   /** Model Yöneticisi'nin kaydettiği, henüz sürüm olarak yayımlanmamış taslak. */
   modelDraft: ModelConfig | null
+  /** Model denetim izi: sürüm oluşturma, etkinleştirme, içe aktarma. */
+  modelLog: AuditEntry[]
   decisions: Record<string, Decision>
   audit: Record<string, AuditEntry[]>
   role: Role | null

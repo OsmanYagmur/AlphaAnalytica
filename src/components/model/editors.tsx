@@ -1,10 +1,11 @@
-import { AlertCircle, Plus, RotateCcw, Save, Scale, Trash2 } from 'lucide-react'
+import { Activity, AlertCircle, GitCommitHorizontal, Plus, RotateCcw, Save, Scale, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { Breakpoint, IndicatorUnit, RatioUnit } from '../../engine/modelConfig'
 import { formatNumber } from '../../lib/format'
 import { getIn, setIn } from '../../lib/objectPath'
-import { useModelEditor, editorActions } from '../../store/modelEditor'
+import { editorActions, setImpactPanelOpen, useImpact, useImpactPanelOpen, useModelEditor } from '../../store/modelEditor'
+import { SaveVersionModal } from './impact'
 import { showToast } from '../toast'
 import { Badge, Button, ModelVersionTag, NumberInput, cx, inputClass } from '../ui'
 import { useAppState } from '../../store/appStore'
@@ -61,10 +62,14 @@ function display(v: number, scale: number): number {
 // Araç çubuğu
 // ---------------------------------------------------------------------------
 
-export function EditorToolbar() {
+export function EditorToolbar({ impactToggle = true }: { impactToggle?: boolean }) {
   const editor = useModelEditor()
   const activeVersion = useAppState((s) => s.activeVersion)
+  const panelOpen = useImpactPanelOpen()
+  const { summary } = useImpact()
+  const [saveOpen, setSaveOpen] = useState(false)
   const errors = editor.issues.length
+  const gradeChanges = summary.upgraded + summary.downgraded
   return (
     <>
       <ModelVersionTag version={activeVersion} />
@@ -90,8 +95,25 @@ export function EditorToolbar() {
           showToast('Taslak kaydedildi', 'Parametre değişiklikleri taslak olarak saklandı; aktif model değişmedi.', 'info')
         }}
       >
-        Taslağı kaydet
+        Taslak
       </Button>
+      <Button
+        size="sm"
+        variant="accent"
+        icon={<GitCommitHorizontal size={14} />}
+        disabled={editor.pending.length === 0 || errors > 0}
+        title={editor.pending.length === 0 ? 'Aktif modelden farklı parametre yok' : undefined}
+        onClick={() => setSaveOpen(true)}
+      >
+        Yeni sürüm
+      </Button>
+      {impactToggle && (
+        <Button size="sm" variant={panelOpen ? 'primary' : 'secondary'} icon={<Activity size={14} />} onClick={() => setImpactPanelOpen(!panelOpen)} aria-pressed={panelOpen}>
+          Etki
+          {gradeChanges > 0 && <span className="num rounded bg-warning px-1 text-[0.625rem] text-white">{gradeChanges}</span>}
+        </Button>
+      )}
+      {saveOpen && <SaveVersionModal open onClose={() => setSaveOpen(false)} />}
     </>
   )
 }

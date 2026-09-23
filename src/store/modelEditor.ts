@@ -10,7 +10,9 @@ import type { ModelConfig } from '../engine/modelConfig'
 import { validateModelConfig, type ValidationIssue } from '../engine/validation'
 import { deepEqual, getIn, setIn } from '../lib/objectPath'
 import { setNavigationGuard } from '../lib/router'
-import { actions, activeConfig, editorBaseConfig, getState, onDemoReset, subscribe as subscribeApp, useAppState } from './appStore'
+import { FIRMS } from '../data'
+import { computeImpact } from '../engine/impact'
+import { USERS, actions, activeConfig, editorBaseConfig, getState, onDemoReset, subscribe as subscribeApp, useAppState } from './appStore'
 
 let working: ModelConfig | null = null
 let workingBase: ModelConfig | null = null
@@ -65,6 +67,25 @@ export const editorActions = {
     workingBase = null
     emit()
   },
+  /** Çalışma kopyasını yeni sürüm olarak kaydeder; yeni sürüm numarasını döner. */
+  saveVersion(note: string, activate: boolean): string {
+    const version = actions.saveVersion(currentWorking(), note, USERS.model.name, activate)
+    working = null
+    workingBase = null
+    emit()
+    return version
+  },
+  /** İçe aktarılan konfigürasyonu çalışma kopyasına yükler (kaydetmeden önce önizlenir). */
+  importConfig(config: ModelConfig, sourceVersion: string | null): void {
+    currentWorking()
+    working = config
+    actions.appendModelLog({
+      at: new Date().toISOString(),
+      by: USERS.model.name,
+      action: `JSON içe aktarıldı${sourceVersion ? ` (kaynak ${sourceVersion})` : ''}; çalışma kopyasına yüklendi`,
+    })
+    emit()
+  },
   /** Taslağı siler; çalışma kopyası aktif konfigürasyona döner. */
   discardDraft(): void {
     actions.discardDraft()
@@ -83,6 +104,8 @@ export interface ModelEditor {
   issues: ValidationIssue[]
   /** Kaydedilmemiş değişiklikler (taban → çalışma kopyası). */
   unsaved: ConfigChange[]
+  /** Aktif modele göre değişiklikler (aktif → çalışma kopyası). */
+  pending: ConfigChange[]
   get: (path: string) => unknown
   isEdited: (path: string) => boolean
   issueAt: (path: string) => string | null
@@ -96,6 +119,7 @@ export function useModelEditor(): ModelEditor {
   const hasDraft = useAppState((s) => s.modelDraft !== null)
   const issues = useMemo(() => validateModelConfig(w), [w])
   const unsaved = useMemo(() => (w === base ? [] : diffConfigs(base, w)), [w, base])
+  const pending = useMemo(() => (w === active ? [] : diffConfigs(active, w)), [w, active])
   return {
     working: w,
     base,
@@ -104,6 +128,7 @@ export function useModelEditor(): ModelEditor {
     dirty: unsaved.length > 0,
     issues,
     unsaved,
+    pending,
     get: (path) => getIn(w, path),
     isEdited: (path) => !deepEqual(getIn(w, path), getIn(base, path)),
     issueAt: (path) => issues.find((i) => i.path === path)?.message ?? null,
@@ -136,4 +161,44 @@ export function useUnsavedChangesGuard(dirty: boolean): void {
       window.removeEventListener('beforeunload', onBeforeUnload)
     }
   }, [dirty])
+}
+
+/** Aktif model → çalışma kopyası etki simülasyonu (tüm firmalar, güncel veri). */
+export function useImpact() {
+  const e = useModelEditor()
+  return useMemo(() => computeImpact(FIRMS, e.active, e.working), [e.active, e.working])
+}
+
+// Etki Önizleme paneli açık/kapalı (görüntüleyene özel tercih)
+const PANEL_KEY = 'alphaanalytica:impactPanel'
+let panelOpen: boolean = (() => {
+  try {
+    const v = window.localStorage.getItem(PANEL_KEY)
+    if (v !== null) return v === '1'
+  } catch {
+    // depolama kapalı
+  }
+  return typeof window !== 'undefined' && window.innerWidth >= 1536
+})()
+const panelListeners = new Set<() => void>()
+
+export function setImpactPanelOpen(open: boolean): void {
+  panelOpen = open
+  try {
+    window.localStorage.setItem(PANEL_KEY, open ? '1' : '0')
+  } catch {
+    // depolama kapalı
+  }
+  panelListeners.forEach((l) => l())
+}
+
+export function useImpactPanelOpen(): boolean {
+  return useSyncExternalStore(
+    (l) => {
+      panelListeners.add(l)
+      return () => panelListeners.delete(l)
+    },
+    () => panelOpen,
+    () => false,
+  )
 }

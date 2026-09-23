@@ -139,13 +139,22 @@ const BASE_VERSION_META = {
   note: 'İlk sürüm: varsayılan parametreler (%50 geleneksel / %50 alternatif).',
 }
 
-function initialModel(): Pick<AppState, 'versions' | 'activeVersion' | 'lastChange'> {
+type ModelSlice = Pick<AppState, 'versions' | 'activeVersion' | 'lastChange' | 'modelLog'>
+
+function initialModel(): ModelSlice {
   const base: ModelVersion = { version: BASE_MODEL_VERSION, ...BASE_VERSION_META, config: createDefaultModelConfig() }
   return {
     versions: [base],
     activeVersion: BASE_MODEL_VERSION,
     lastChange: { at: BASE_VERSION_META.createdAt, by: BASE_VERSION_META.author },
+    modelLog: [{ at: BASE_VERSION_META.createdAt, by: BASE_VERSION_META.author, action: `${BASE_MODEL_VERSION} oluşturuldu ve aktif yapıldı` }],
   }
+}
+
+/** Sonraki sürüm numarası: v1.0 → v1.1 → v1.2 … */
+export function nextVersionNumber(versions: readonly ModelVersion[]): string {
+  const minors = versions.map((v) => Number(/^v1\.(\d+)$/.exec(v.version)?.[1] ?? 0))
+  return `v1.${Math.max(0, ...minors) + 1}`
 }
 
 function initialDecisions(config: ModelConfig): Record<string, Decision> {
@@ -192,7 +201,7 @@ function write(key: string, value: unknown): void {
   }
 }
 
-function isValidModel(m: unknown): m is Pick<AppState, 'versions' | 'activeVersion' | 'lastChange'> {
+function isValidModel(m: unknown): m is ModelSlice {
   if (!m || typeof m !== 'object') return false
   const model = m as AppState
   return (
@@ -206,13 +215,14 @@ function isValidModel(m: unknown): m is Pick<AppState, 'versions' | 'activeVersi
 function loadState(): AppState {
   const initial = createInitialState()
   if (typeof window === 'undefined') return initial
-  const model = read<Pick<AppState, 'versions' | 'activeVersion' | 'lastChange'>>(KEYS.model)
+  const model = read<ModelSlice>(KEYS.model)
   const decisions = read<AppState['decisions']>(KEYS.decisions)
   const audit = read<AppState['audit']>(KEYS.audit)
   const ui = read<Pick<AppState, 'role' | 'presentation'>>(KEYS.ui)
   const draft = read<ModelConfig>(KEYS.draft)
+  const modelSlice = isValidModel(model) ? { ...model, modelLog: Array.isArray(model.modelLog) ? model.modelLog : initialModel().modelLog } : initialModel()
   return {
-    ...(isValidModel(model) ? model : initialModel()),
+    ...modelSlice,
     decisions: decisions && typeof decisions === 'object' ? decisions : initial.decisions,
     audit: audit && typeof audit === 'object' ? audit : initial.audit,
     modelDraft: draft?.schemaVersion === MODEL_SCHEMA_VERSION ? draft : null,
@@ -222,7 +232,7 @@ function loadState(): AppState {
 }
 
 function persist(state: AppState): void {
-  write(KEYS.model, { versions: state.versions, activeVersion: state.activeVersion, lastChange: state.lastChange })
+  write(KEYS.model, { versions: state.versions, activeVersion: state.activeVersion, lastChange: state.lastChange, modelLog: state.modelLog })
   write(KEYS.decisions, state.decisions)
   write(KEYS.audit, state.audit)
   write(KEYS.ui, { role: state.role, presentation: state.presentation })
@@ -329,6 +339,38 @@ export const actions = {
   },
   discardDraft(): void {
     setState((s) => ({ ...s, modelDraft: null }))
+  },
+  /**
+   * Konfigürasyonu yeni sürüm olarak kaydeder (numara otomatik artar), taslağı
+   * temizler; `activate` ise yeni sürüm aktif model olur. Yeni sürüm numarasını döner.
+   */
+  saveVersion(config: ModelConfig, note: string, author: string, activate: boolean, at = new Date().toISOString()): string {
+    let created = ''
+    setState((s) => {
+      created = nextVersionNumber(s.versions)
+      const version: ModelVersion = { version: created, createdAt: at, author, note: note.trim(), config: structuredClone(config) }
+      const log = [...s.modelLog, { at, by: author, action: `${created} oluşturuldu${activate ? ' ve aktif yapıldı' : ''}: ${note.trim()}` }]
+      return {
+        ...s,
+        versions: [...s.versions, version],
+        activeVersion: activate ? created : s.activeVersion,
+        lastChange: { at, by: author },
+        modelDraft: null,
+        modelLog: log,
+      }
+    })
+    return created
+  },
+  /** Mevcut bir sürümü aktif model yapar (v1.0'a dönüş dahil). */
+  activateVersion(version: string, author: string, at = new Date().toISOString()): void {
+    setState((s) => {
+      if (!s.versions.some((v) => v.version === version) || s.activeVersion === version) return s
+      const action = version === BASE_MODEL_VERSION ? `${BASE_MODEL_VERSION} varsayılanlarına dönüldü` : `${version} aktif yapıldı`
+      return { ...s, activeVersion: version, lastChange: { at, by: author }, modelLog: [...s.modelLog, { at, by: author, action }] }
+    })
+  },
+  appendModelLog(entry: AuditEntry): void {
+    setState((s) => ({ ...s, modelLog: [...s.modelLog, entry] }))
   },
   /** Gizli sıfırlama: kararlar ve model konfigürasyonu v1.0 başlangıç durumuna döner. */
   resetDemo(): void {
