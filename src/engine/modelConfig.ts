@@ -215,8 +215,11 @@ export type IndicatorUnit =
  * - `ratio`: birinci serinin ikinciye aylık oranı (ör. stok değeri / ciro)
  *
  * Seri anahtarları firma verisindeki alternatif gösterge serilerine karşılık
- * gelir. `revenue` anahtarı firmanın aylık ciro serisini ifade eder.
+ * gelir. `REVENUE_SERIES` ('revenue') firmanın aylık ciro serisini ifade eder.
  */
+/** Firmanın aylık ciro serisine karşılık gelen seri anahtarı. */
+export const REVENUE_SERIES = 'revenue'
+
 export type IndicatorSource =
   | { series: string }
   | { product: [string, string] }
@@ -370,8 +373,6 @@ export interface EarlyWarningConfig {
 // ---------------------------------------------------------------------------
 
 export interface LimitConfig {
-  /** Yıllık gün sayısı (K1'de kullanılır). */
-  daysInYear: number
   /** K1 = Net Satış × max(NDS; minDays) / daysInYear × multiplier */
   k1: { multiplier: number; minDays: number }
   /** K2 = Özkaynak × equityMultiplier */
@@ -439,6 +440,8 @@ export const BASE_MODEL_VERSION = 'v1.0'
 export interface ModelConfig {
   /** JSON içe aktarımında şema doğrulaması için. */
   schemaVersion: typeof MODEL_SCHEMA_VERSION
+  /** Yıllık gün sayısı (devir günleri ve K1'de kullanılır). */
+  daysInYear: number
   final: {
     /** S = traditional × G + alternative × A; toplam 1. */
     weights: { traditional: number; alternative: number }
@@ -471,6 +474,7 @@ const TURNOVER_DESC = 'Yıllıklandırılmış satılan malın maliyeti / ortala
 
 const DEFAULTS: ModelConfig = {
   schemaVersion: MODEL_SCHEMA_VERSION,
+  daysInYear: 365,
 
   final: {
     weights: { traditional: 0.5, alternative: 0.5 },
@@ -628,7 +632,6 @@ const DEFAULTS: ModelConfig = {
 
   // 4) Limit
   limit: {
-    daysInYear: 365,
     k1: { multiplier: 1.2, minDays: 30 },
     k2: { equityMultiplier: 1.5 },
     k3: { ebitdaRatio: 0.6, multiplier: 2 },
