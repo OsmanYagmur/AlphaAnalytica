@@ -19,12 +19,15 @@ export interface FirmView {
   modelVersion: string
   config: ModelConfig
   evaluation: FirmEvaluation
+  /** Aktif model ve güncel veriyle değerlendirme (portföy izleme). */
+  current: FirmEvaluation
 }
 
 function buildView(s: AppState, firm: Firm): FirmView {
   const decision = s.decisions[firm.id] ?? null
   if (decision) {
     const config = versionConfig(s, decision.modelVersion)
+    const active = activeConfig(s)
     return {
       firm,
       status: decision.status,
@@ -32,10 +35,12 @@ function buildView(s: AppState, firm: Firm): FirmView {
       modelVersion: decision.modelVersion,
       config,
       evaluation: evaluateFirmAsOf(firm, decision.dataAsOf, config),
+      current: evaluateFirm(firm, active),
     }
   }
   const config = activeConfig(s)
-  return { firm, status: 'pending', decision: null, modelVersion: s.activeVersion, config, evaluation: evaluateFirm(firm, config) }
+  const evaluation = evaluateFirm(firm, config)
+  return { firm, status: 'pending', decision: null, modelVersion: s.activeVersion, config, evaluation, current: evaluation }
 }
 
 let cacheKey: [AppState['versions'], string, AppState['decisions']] | null = null

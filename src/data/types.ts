@@ -53,5 +53,7 @@ export interface SeedDecision {
   rejectionReason?: string
   /** Tahsisçinin gerekçe notu. */
   note: string
+  /** Onaylı limitin bugün kullandırılan oranı (0–1); red kararında yok. */
+  utilizationRate?: number
   auditLog: AuditEntry[]
 }

@@ -42,6 +42,7 @@ export const SEED_DECISIONS: SeedDecision[] = [
     decidedAt: '2026-03-06T10:42:00+03:00',
     dataAsOf: '2026-02',
     note: 'Pazaryeri performansı ve sipariş hacmi güçlü; sistem önerisi aynen onaylandı.',
+    utilizationRate: 0.74,
     auditLog: [
       { at: '2026-03-04T09:15:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
       { at: '2026-03-06T10:42:00+03:00', by: 'Elif Karaca', action: 'Sistem önerisiyle onaylandı' },
@@ -55,6 +56,7 @@ export const SEED_DECISIONS: SeedDecision[] = [
     decidedAt: '2026-04-24T14:05:00+03:00',
     dataAsOf: '2026-03',
     note: 'Filo kullanımı ve tahsilat performansı sektörün üzerinde; müşterek kefaletle onaylandı.',
+    utilizationRate: 0.61,
     auditLog: [
       { at: '2026-04-21T11:20:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
       { at: '2026-04-24T14:05:00+03:00', by: 'Murat Aksoy', action: 'Sistem önerisiyle onaylandı' },
@@ -76,6 +78,7 @@ export const SEED_DECISIONS: SeedDecision[] = [
       covenants: ['SGK reçete alacaklarının bankaya temliki', 'Aylık SGK ödeme listesinin paylaşılması'],
     },
     note: 'Limit, firmanın talep ettiği tutarla sınırlandırıldı; SGK alacak temliki şartı eklendi.',
+    utilizationRate: 0.83,
     auditLog: [
       { at: '2026-06-03T10:00:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
       { at: '2026-06-05T16:30:00+03:00', by: 'Elif Karaca', action: 'Revize onay: limit 2.250.000 → 2.000.000 ₺, kovenant eklendi' },
@@ -98,6 +101,7 @@ export const SEED_DECISIONS: SeedDecision[] = [
     },
     note:
       'Hasat dönemi verisi başvuru anında eksikti ve emtia fiyatlarında oynaklık yüksek; limit düşürülüp teminat oranı %100’e çıkarıldı.',
+    utilizationRate: 0.92,
     auditLog: [
       { at: '2026-05-12T09:40:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
       {
@@ -115,6 +119,7 @@ export const SEED_DECISIONS: SeedDecision[] = [
     decidedAt: '2026-04-10T15:25:00+03:00',
     dataAsOf: '2026-03',
     note: 'Sezon öncesi finansman ihtiyacı; sistem önerisi ipotek teminatıyla onaylandı.',
+    utilizationRate: 0.48,
     auditLog: [
       { at: '2026-04-08T10:30:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
       { at: '2026-04-10T15:25:00+03:00', by: 'Zeynep Tunç', action: 'Sistem önerisiyle onaylandı' },

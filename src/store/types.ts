@@ -55,6 +55,8 @@ export interface Decision {
   final: FinalTerms | null
   rejectionReason?: RejectionReasonId
   note: string
+  /** Onaylı limitin kullandırılan oranı (0–1). Yeni kararlarda 0. */
+  utilization: number
 }
 
 export interface AuditEntry {
@@ -67,6 +69,8 @@ export interface AppState {
   versions: ModelVersion[]
   activeVersion: string
   lastChange: { at: string; by: string }
+  /** Model Yöneticisi'nin kaydettiği, henüz sürüm olarak yayımlanmamış taslak. */
+  modelDraft: ModelConfig | null
   decisions: Record<string, Decision>
   audit: Record<string, AuditEntry[]>
   role: Role | null

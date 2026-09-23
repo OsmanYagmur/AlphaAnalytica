@@ -15,8 +15,8 @@ function subscribe(onChange: () => void): () => void {
   return () => window.removeEventListener('hashchange', onChange)
 }
 
-/** Guard: gezinmeden önce çağrılır; false dönerse gezinme iptal edilir. */
-type NavigationGuard = () => boolean
+/** Guard: gezinmeden önce hedef yolla çağrılır; false dönerse gezinme iptal edilir. */
+type NavigationGuard = (target: string) => boolean
 let guard: NavigationGuard | null = null
 
 export function setNavigationGuard(next: NavigationGuard | null): void {
@@ -31,9 +31,14 @@ export function useRouteSegments(): string[] {
   return usePath().split('/').filter(Boolean)
 }
 
+/** Hedefe gidilebilir mi (kaydedilmemiş değişiklik uyarısı dahil). */
+export function canNavigate(path: string): boolean {
+  return !guard || guard(path)
+}
+
 export function navigate(path: string): void {
-  if (guard && !guard()) return
   if (currentPath() === path) return
+  if (!canNavigate(path)) return
   window.location.hash = path
   window.scrollTo(0, 0)
 }

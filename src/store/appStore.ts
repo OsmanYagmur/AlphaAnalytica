@@ -21,6 +21,7 @@ const KEYS = {
   decisions: 'alphaanalytica:decisions',
   audit: 'alphaanalytica:audit',
   ui: 'alphaanalytica:ui',
+  draft: 'alphaanalytica:draft',
 } as const
 
 export const USERS: Record<Role, { name: string; title: string }> = {
@@ -124,6 +125,7 @@ function seedDecision(seed: SeedDecision, config: ModelConfig): Decision {
     final,
     rejectionReason: seed.rejectionReason as Decision['rejectionReason'],
     note: seed.note,
+    utilization: seed.utilizationRate ?? 0,
   }
 }
 
@@ -167,6 +169,7 @@ export function createInitialState(): AppState {
     ...model,
     decisions: initialDecisions(model.versions[0].config),
     audit: initialAudit(),
+    modelDraft: null,
     role: null,
     presentation: false,
   }
@@ -207,10 +210,12 @@ function loadState(): AppState {
   const decisions = read<AppState['decisions']>(KEYS.decisions)
   const audit = read<AppState['audit']>(KEYS.audit)
   const ui = read<Pick<AppState, 'role' | 'presentation'>>(KEYS.ui)
+  const draft = read<ModelConfig>(KEYS.draft)
   return {
     ...(isValidModel(model) ? model : initialModel()),
     decisions: decisions && typeof decisions === 'object' ? decisions : initial.decisions,
     audit: audit && typeof audit === 'object' ? audit : initial.audit,
+    modelDraft: draft?.schemaVersion === MODEL_SCHEMA_VERSION ? draft : null,
     role: ui?.role ?? null,
     presentation: ui?.presentation ?? false,
   }
@@ -221,6 +226,7 @@ function persist(state: AppState): void {
   write(KEYS.decisions, state.decisions)
   write(KEYS.audit, state.audit)
   write(KEYS.ui, { role: state.role, presentation: state.presentation })
+  write(KEYS.draft, state.modelDraft)
 }
 
 // ---------------------------------------------------------------------------
@@ -238,6 +244,14 @@ function setState(update: (s: AppState) => AppState): void {
   state = update(state)
   persist(state)
   emit()
+}
+
+const resetListeners = new Set<() => void>()
+
+/** Demo sıfırlandığında çağrılır (ör. Model Yöneticisi çalışma kopyasını atmak için). */
+export function onDemoReset(listener: () => void): () => void {
+  resetListeners.add(listener)
+  return () => resetListeners.delete(listener)
 }
 
 export function getState(): AppState {
@@ -268,6 +282,11 @@ export function versionConfig(s: AppState, version: string): ModelConfig {
 
 export function activeConfig(s: AppState): ModelConfig {
   return versionConfig(s, s.activeVersion)
+}
+
+/** Taslak varsa taslak, yoksa aktif konfigürasyon: düzenlemelerin karşılaştırıldığı taban. */
+export function editorBaseConfig(s: AppState): ModelConfig {
+  return s.modelDraft ?? activeConfig(s)
 }
 
 export function isPending(s: AppState, firmId: string): boolean {
@@ -304,8 +323,16 @@ export const actions = {
   appendAudit(firmId: string, entry: AuditEntry): void {
     setState((s) => ({ ...s, audit: { ...s.audit, [firmId]: [...(s.audit[firmId] ?? []), entry] } }))
   },
+  /** Model Yöneticisi taslağını kaydeder (aktif modeli değiştirmez). */
+  saveDraft(config: ModelConfig): void {
+    setState((s) => ({ ...s, modelDraft: structuredClone(config) }))
+  },
+  discardDraft(): void {
+    setState((s) => ({ ...s, modelDraft: null }))
+  },
   /** Gizli sıfırlama: kararlar ve model konfigürasyonu v1.0 başlangıç durumuna döner. */
   resetDemo(): void {
     setState((s) => ({ ...createInitialState(), role: s.role, presentation: s.presentation }))
+    resetListeners.forEach((l) => l())
   },
 }

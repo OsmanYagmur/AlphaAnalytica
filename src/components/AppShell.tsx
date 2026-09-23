@@ -1,19 +1,22 @@
 import {
   BarChart3,
   Briefcase,
+  Building2,
   ClipboardList,
-  History,
+  Gauge as GaugeIcon,
+  Landmark,
+  LayoutList,
   LogOut,
   Menu,
   Monitor,
+  Radar,
   Scale,
-  Settings2,
-  SlidersHorizontal,
+  Shield,
   X,
   type LucideIcon,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { navigate, usePath } from '../lib/router'
+import { canNavigate, navigate, usePath } from '../lib/router'
 import { USERS, actions, useAppState } from '../store/appStore'
 import type { Role } from '../store/types'
 import { Logo } from './Logo'
@@ -23,6 +26,8 @@ interface NavItem {
   label: string
   path: string
   icon: LucideIcon
+  /** Bu öğeyi etkin gösteren ek yol önekleri. */
+  match?: string[]
 }
 
 export const ROLE_HOME: Record<Role, string> = {
@@ -32,14 +37,19 @@ export const ROLE_HOME: Record<Role, string> = {
 }
 
 const NAV: Record<Role, NavItem[]> = {
-  tahsis: [{ label: 'Başvuru Kuyruğu', path: '/tahsis', icon: ClipboardList }],
-  portfoy: [{ label: 'Portföy Özeti', path: '/portfoy', icon: Briefcase }],
+  tahsis: [{ label: 'Başvuru Kuyruğu', path: '/tahsis', icon: ClipboardList, match: ['/tahsis/firma/'] }],
+  portfoy: [
+    { label: 'Portföy Özeti', path: '/portfoy', icon: Briefcase },
+    { label: 'Firma Listesi', path: '/portfoy/firmalar', icon: LayoutList, match: ['/portfoy/firma/'] },
+  ],
   model: [
-    { label: 'Model Genel Bakış', path: '/model', icon: BarChart3 },
+    { label: 'Genel Bakış', path: '/model', icon: BarChart3 },
     { label: 'Ana Denge', path: '/model/denge', icon: Scale },
-    { label: 'Parametreler', path: '/model/parametreler', icon: SlidersHorizontal },
-    { label: 'Sektör Ayarları', path: '/model/sektorler', icon: Settings2 },
-    { label: 'Sürümler', path: '/model/surumler', icon: History },
+    { label: 'Geleneksel Skor', path: '/model/geleneksel', icon: Landmark },
+    { label: 'Alternatif Skor', path: '/model/alternatif', icon: Radar },
+    { label: 'Sektör Ayarları', path: '/model/sektorler', icon: Building2 },
+    { label: 'Not · PD · Limit', path: '/model/not-limit', icon: GaugeIcon },
+    { label: 'Teminat ve Fiyatlama', path: '/model/teminat', icon: Shield },
   ],
 }
 
@@ -69,8 +79,7 @@ function Sidebar({ role, onNavigate }: { role: Role; onNavigate?: () => void }) 
   const presentation = useAppState((s) => s.presentation)
   const user = USERS[role]
   const items = NAV[role]
-  const isActive = (item: NavItem) =>
-    item.path === ROLE_HOME[role] ? path === item.path || (path.startsWith(`${item.path}/`) && !items.some((i) => i !== item && path.startsWith(i.path))) : path.startsWith(item.path)
+  const isActive = (item: NavItem) => path === item.path || (item.match ?? []).some((m) => path.startsWith(m))
 
   return (
     <div className="flex h-full flex-col bg-sidebar">
@@ -115,6 +124,7 @@ function Sidebar({ role, onNavigate }: { role: Role; onNavigate?: () => void }) 
         <button
           type="button"
           onClick={() => {
+            if (!canNavigate('/')) return
             actions.logout()
             navigate('/')
           }}
@@ -182,7 +192,7 @@ export function AppShell({ role, title, breadcrumb, actions: headerActions, chil
               {breadcrumb && <div className="mb-0.5 text-xs text-muted">{breadcrumb}</div>}
               <h1 className="truncate text-lg font-semibold text-navy">{title}</h1>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {headerActions}
               <DemoDataTag />
             </div>

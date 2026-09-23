@@ -118,3 +118,27 @@ export function alternativeInputAsOf(input: AlternativeInput, yearMonth: string)
 export function evaluateFirmAsOf(firm: FirmInput, yearMonth: string, config: ModelConfig): FirmEvaluation {
   return evaluateFirm({ ...firm, alternative: alternativeInputAsOf(firm.alternative, yearMonth) }, config)
 }
+
+export interface TrendPoint {
+  month: string
+  score: number
+  grade: CreditGrade
+}
+
+/**
+ * Son `count` ayın her biri için o aya kadarki veriyle skor ve not. Son nokta
+ * güncel değerlendirmedir. Geçmiş noktalarda, veri penceresi o ay için henüz
+ * dolmamış göstergeler firmada "eksik veri" sayılmaz: bu noktalarda kapsama
+ * düzeltmesi uygulanmaz, SP mevcut göstergeler üzerinden hesaplanır.
+ */
+export function scoreTrend(firm: FirmInput, config: ModelConfig, count: number): TrendPoint[] {
+  const months = firm.alternative.months.slice(-count)
+  const historical: ModelConfig = {
+    ...config,
+    alternative: { ...config.alternative, coverage: { ...config.alternative.coverage, enabled: false } },
+  }
+  return months.map((month, i) => {
+    const e = evaluateFirmAsOf(firm, month, i === months.length - 1 ? config : historical)
+    return { month, score: e.score, grade: e.grade }
+  })
+}

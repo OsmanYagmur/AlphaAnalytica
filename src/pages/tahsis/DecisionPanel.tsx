@@ -27,7 +27,7 @@ const COVENANT_SUGGESTIONS = [
   'Ortakların şahsi kefaleti',
 ]
 
-function baseDecision(view: FirmView): Pick<Decision, 'firmId' | 'modelVersion' | 'decidedBy' | 'decidedAt' | 'dataAsOf' | 'system'> {
+function baseDecision(view: FirmView): Pick<Decision, 'firmId' | 'modelVersion' | 'decidedBy' | 'decidedAt' | 'dataAsOf' | 'system' | 'utilization'> {
   const months = view.firm.alternative.months
   return {
     firmId: view.firm.id,
@@ -36,6 +36,7 @@ function baseDecision(view: FirmView): Pick<Decision, 'firmId' | 'modelVersion' 
     decidedAt: new Date().toISOString(),
     dataAsOf: months[months.length - 1],
     system: buildSystemView(view.evaluation),
+    utilization: 0,
   }
 }
 

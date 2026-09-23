@@ -3,7 +3,16 @@ import { ROLE_HOME } from './components/AppShell'
 import { Toaster, showToast } from './components/toast'
 import { navigate, useRouteSegments } from './lib/router'
 import { Login } from './pages/Login'
-import { Placeholder } from './pages/Placeholder'
+import { ModelAlternative } from './pages/model/AlternativeParams'
+import { ModelBalance } from './pages/model/Balance'
+import { ModelCollateral } from './pages/model/CollateralPricing'
+import { ModelOverview } from './pages/model/Overview'
+import { ModelRatingLimit } from './pages/model/RatingLimit'
+import { ModelSectors } from './pages/model/SectorSettings'
+import { ModelTraditional } from './pages/model/TraditionalParams'
+import { PortfolioFirmDetail } from './pages/portfoy/FirmDetail'
+import { PortfolioFirmList } from './pages/portfoy/FirmList'
+import { PortfolioSummary } from './pages/portfoy/Summary'
 import { Evaluation } from './pages/tahsis/Evaluation'
 import { Queue } from './pages/tahsis/Queue'
 import { actions, useAppState } from './store/appStore'
@@ -53,9 +62,26 @@ function Routes() {
       if (segments[1] === 'firma' && segments[2]) return <Evaluation key={segments[2]} firmId={segments[2]} />
       return <Queue />
     case 'portfoy':
-      return <Placeholder role="portfoy" title="Portföy Özeti" />
+      if (segments[1] === 'firma' && segments[2]) return <PortfolioFirmDetail key={segments[2]} firmId={segments[2]} />
+      if (segments[1] === 'firmalar') return <PortfolioFirmList />
+      return <PortfolioSummary />
     case 'model':
-      return <Placeholder role="model" title="Model Genel Bakış" />
+      switch (segments[1]) {
+        case 'denge':
+          return <ModelBalance />
+        case 'geleneksel':
+          return <ModelTraditional />
+        case 'alternatif':
+          return <ModelAlternative />
+        case 'sektorler':
+          return <ModelSectors />
+        case 'not-limit':
+          return <ModelRatingLimit />
+        case 'teminat':
+          return <ModelCollateral />
+        default:
+          return <ModelOverview />
+      }
   }
 }
 
