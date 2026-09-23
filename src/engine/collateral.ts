@@ -17,6 +17,7 @@ import {
   type LendableGrade,
   type ModelConfig,
   type ProductId,
+  type ProductMix,
   type SectorId,
   type TenorTerm,
 } from './modelConfig'
@@ -77,15 +78,43 @@ export interface ProductAllocation {
   amount: number
 }
 
-/** Limitin sektörel ürün kırılımına dağılımı (payı sıfır olan ürünler dahil edilmez). */
-export function computeProductBreakdown(limit: number, sectorId: SectorId, config: ModelConfig): ProductAllocation[] {
-  const mix = config.sectors[sectorId].productMix
+/** Limitin verilen ürün kırılımına dağılımı (payı sıfır olan ürünler dahil edilmez). */
+export function allocateProducts(limit: number, mix: ProductMix): ProductAllocation[] {
   return PRODUCT_IDS.filter((p) => mix[p] > 0).map((product) => ({
     product,
     label: PRODUCT_LABELS[product],
     share: mix[product],
     amount: Math.round(limit * mix[product]),
   }))
+}
+
+/** Limitin sektörel ürün kırılımına dağılımı. */
+export function computeProductBreakdown(limit: number, sectorId: SectorId, config: ModelConfig): ProductAllocation[] {
+  return allocateProducts(limit, config.sectors[sectorId].productMix)
+}
+
+/**
+ * Tahsis yöneticisinin revize ettiği teminat için tutarlar: teminat türü ipotek
+ * ise İpotek = Limit × Oran ve Ekspertiz = İpotek / LTV.
+ */
+export function revisedCollateral(
+  limit: number,
+  ratio: number,
+  type: CollateralTypeId,
+  config: ModelConfig,
+): CollateralTerms {
+  const amount = limit * ratio
+  const mortgageRequired = type === 'mortgage'
+  const mortgageAmount = mortgageRequired ? amount : 0
+  return {
+    ratio,
+    type,
+    typeLabel: COLLATERAL_TYPE_LABELS[type],
+    amount,
+    mortgageRequired,
+    mortgageAmount,
+    requiredAppraisalValue: positiveBaseRatio(mortgageAmount, config.terms.appraisalLtv),
+  }
 }
 
 export interface CreditTerms {

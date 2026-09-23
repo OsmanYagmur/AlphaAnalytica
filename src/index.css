@@ -1,32 +1,92 @@
 @import 'tailwindcss';
 
-/* Tasarım belirteçleri — SPEC.md "TASARIM" bölümü */
+/* Tasarım belirteçleri — SPEC.md "TASARIM" */
 @theme {
   --color-canvas: #f6f5f1;
   --color-surface: #ffffff;
   --color-navy: #12233d;
+  --color-navy-soft: #243a5c;
   --color-sidebar: #0e1b2e;
+  --color-sidebar-line: #1d2d45;
   --color-ink: #1d2433;
   --color-muted: #5b6475;
+  --color-faint: #8a91a0;
   --color-line: #e3e1da;
+  --color-subtle: #f1efe9;
   --color-accent: #1f6f6b;
+  --color-accent-soft: #e6f0ef;
   --color-positive: #1e7b4f;
+  --color-positive-soft: #e7f2ec;
   --color-warning: #b7791f;
+  --color-warning-soft: #f7efe1;
   --color-negative: #b42318;
+  --color-negative-soft: #f8e8e6;
+  --color-edited: #fdf6e3;
 
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
   /* Köşe yuvarlama en fazla 6px */
+  --radius-md: 4px;
   --radius-lg: 6px;
   --radius-xl: 6px;
   --radius-2xl: 6px;
+
+  --shadow-card: 0 1px 2px rgb(18 35 61 / 0.04);
+  --shadow-pop: 0 4px 16px rgb(18 35 61 / 0.1);
 }
 
 @layer base {
+  html {
+    font-size: 100%;
+  }
+  /* Sunum modu: yazı tipi %15 büyür (rem tabanlı tüm ölçüler birlikte) */
+  html.presentation {
+    font-size: 115%;
+  }
   body {
     background-color: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  /* Tutarlar, skorlar ve sayısal girişler: IBM Plex Mono, tabular rakamlar */
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .label-caps {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 180ms ease-out both;
 }
