@@ -2,7 +2,7 @@
 
 TEKNOFEST 2026 Finansal Teknolojiler Yarışması finali için hazırlanmış, tamamen çevrimdışı çalışan demo uygulaması. KOBİ'ler için ticari kredi tahsis sürecini simüle eder: geleneksel finansal analizi (mizan + Kurumlar Vergisi Beyannamesi) sektöre özgü alternatif veri analiziyle varsayılan olarak %50–%50 birleştirir; kredi skoru, harf notu, temerrüt olasılığı, limit ve teminat önerisi üretir.
 
-Üç arayüz vardır: **Tahsis Yöneticisi**, **Portföy Yöneticisi** ve **Model Yöneticisi** (Master). Tüm formüller ve parametreler [METODOLOJI.md](METODOLOJI.md) dosyasında belgelenmiştir.
+Üç arayüz vardır: **Tahsis Yöneticisi**, **Portföy Yöneticisi** ve **Model Yöneticisi** (Master). Tüm formüller ve parametreler [METODOLOJI.md](METODOLOJI.md) dosyasında belgelenmiştir; aynı belgenin baskıya hazır PDF sürümü [docs/METODOLOJI.pdf](docs/METODOLOJI.pdf) dosyasındadır (`python3 scripts/metodoloji_pdf.py METODOLOJI.md docs/METODOLOJI.pdf` ile yeniden üretilir, reportlab gerekir).
 
 ## Gereksinimler
 
@@ -92,7 +92,9 @@ src/
   components/        Kabuk, logo, arayüz bileşenleri, grafikler, Model Yöneticisi düzenleyicileri
   pages/             tahsis/, portfoy/, model/ ve giriş ekranı
 docs/mizanlar/       16 firmanın 2025 mizanı (PDF)
+docs/METODOLOJI.pdf  METODOLOJI.md'nin PDF sürümü
 scripts/mizan_pdf.py Mizan PDF üreteci
+scripts/metodoloji_pdf.py  Metodoloji PDF üreteci
 METODOLOJI.md        Formüller, parametre şeması, sektör tabloları, demo senaryoları, sunum akışı
 SPEC.md              Şartname
 ```
