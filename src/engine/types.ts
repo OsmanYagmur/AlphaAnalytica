@@ -16,6 +16,10 @@ export interface TrialBalanceLine {
   name: string
   debit: number
   credit: number
+  /** Dönem içi borç hareket toplamı (bakiye dahil); motor kullanmaz, mizan çıktısı içindir. */
+  debitTotal?: number
+  /** Dönem içi alacak hareket toplamı (bakiye dahil). */
+  creditTotal?: number
 }
 
 /** Kurumlar Vergisi Beyannamesi özeti. */

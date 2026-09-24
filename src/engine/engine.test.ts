@@ -32,22 +32,22 @@ const evaluate = (id: string) => evaluateFirm(firm(id), cfg)
 // ---------------------------------------------------------------------------
 
 const EXPECTED: Record<string, { G: number; A: number; S: number; grade: CreditGrade; pd: number; limit: number }> = {
-  'defne-kirtasiye': { G: 50.12, A: 78.61, S: 64.37, grade: 'BBB', pd: 0.02149, limit: 1150000 },
+  'defne-kirtasiye': { G: 50.12, A: 78.62, S: 64.37, grade: 'BBB', pd: 0.02149, limit: 1150000 },
   'kuzey-oto': { G: 82.42, A: 45.7, S: 64.06, grade: 'BBB', pd: 0.02222, limit: 1550000 },
-  'palandoken-turizm': { G: 76.86, A: 77.69, S: 77.28, grade: 'A', pd: 0.0052, limit: 650000 },
-  'mavi-sepet': { G: 65.52, A: 66.11, S: 65.81, grade: 'BBB', pd: 0.01836, limit: 1700000 },
-  'cinaralti-restoran': { G: 73.72, A: 78.14, S: 75.93, grade: 'A', pd: 0.00604, limit: 850000 },
-  'anadolu-yapi': { G: 54.13, A: 56.04, S: 55.08, grade: 'BB', pd: 0.05803, limit: 750000 },
-  'toros-yapi': { G: 11.62, A: 25.71, S: 18.66, grade: 'C', pd: 0.77894, limit: 0 },
-  'denizli-dokuma': { G: 74.14, A: 77.89, S: 76.01, grade: 'A', pd: 0.00599, limit: 4350000 },
-  'cukurova-tarim': { G: 60.98, A: 74.01, S: 67.49, grade: 'BBB', pd: 0.01528, limit: 1700000 },
+  'palandoken-turizm': { G: 76.86, A: 77.72, S: 77.29, grade: 'A', pd: 0.0052, limit: 650000 },
+  'mavi-sepet': { G: 65.53, A: 66.12, S: 65.82, grade: 'BBB', pd: 0.01833, limit: 1700000 },
+  'cinaralti-restoran': { G: 73.73, A: 78.15, S: 75.94, grade: 'A', pd: 0.00603, limit: 850000 },
+  'anadolu-yapi': { G: 54.14, A: 56.04, S: 55.09, grade: 'BB', pd: 0.05799, limit: 750000 },
+  'toros-yapi': { G: 11.62, A: 25.7, S: 18.66, grade: 'C', pd: 0.77895, limit: 0 },
+  'denizli-dokuma': { G: 74.12, A: 77.89, S: 76, grade: 'A', pd: 0.00599, limit: 4350000 },
+  'cukurova-tarim': { G: 60.97, A: 74.01, S: 67.49, grade: 'BBB', pd: 0.01529, limit: 1700000 },
   'marmara-lojistik': { G: 93.98, A: 92.94, S: 93.46, grade: 'AAA', pd: 0.00087, limit: 6950000 },
-  'sifa-eczanesi': { G: 80.35, A: 83.67, S: 82.01, grade: 'AA', pd: 0.00308, limit: 2250000 },
-  'bodrum-mavi-tur': { G: 58.97, A: 73.92, S: 66.44, grade: 'BBB', pd: 0.01714, limit: 800000 },
-  'karadeniz-nakliyat': { G: 88.78, A: 80.8, S: 84.79, grade: 'BB', pd: 0.00227, limit: 1550000 },
-  'kapadokya-kafe': { G: 46.2, A: 47.44, S: 46.82, grade: 'B', pd: 0.13367, limit: 150000 },
-  'kuzeyhan-holding': { G: 85.51, A: 87.16, S: 86.33, grade: 'AA', pd: 0.00191, limit: 865200000 },
-  'caglayan-holding': { G: 54.39, A: 75.36, S: 64.87, grade: 'BBB', pd: 0.02034, limit: 115150000 },
+  'sifa-eczanesi': { G: 80.35, A: 83.66, S: 82, grade: 'AA', pd: 0.00308, limit: 2250000 },
+  'bodrum-mavi-tur': { G: 58.97, A: 73.91, S: 66.44, grade: 'BBB', pd: 0.01714, limit: 800000 },
+  'karadeniz-nakliyat': { G: 88.76, A: 80.8, S: 84.78, grade: 'BB', pd: 0.00227, limit: 1550000 },
+  'kapadokya-kafe': { G: 46.22, A: 47.38, S: 46.8, grade: 'B', pd: 0.13392, limit: 150000 },
+  'kuzeyhan-holding': { G: 85.51, A: 87.16, S: 86.33, grade: 'AA', pd: 0.00191, limit: 866200000 },
+  'caglayan-holding': { G: 54.42, A: 75.36, S: 64.89, grade: 'BBB', pd: 0.02031, limit: 115250000 },
 }
 
 describe('Demo verisi bütünlüğü', () => {
@@ -95,11 +95,19 @@ describe('Demo verisi bütünlüğü', () => {
     codes.forEach((c) => expect(c).toMatch(/^\d{3}$/))
 
     const s = deriveFinancialStatement(f.traditional.trialBalance, f.traditional.supplement)
-    // Bilanço denkliği (satır yuvarlamaları hariç)
-    expect(Math.abs(s.totalAssets - s.totalLiabilities - s.equity)).toBeLessThan(50)
+    // Mizan kuruşu kuruşuna denk: borç ve alacak bakiye toplamları ile hareket toplamları eşit
+    const kurus = (v: number) => Math.round(v * 100)
+    const sum = (k: 'debit' | 'credit' | 'debitTotal' | 'creditTotal') => f.traditional.trialBalance.reduce((a, l) => a + kurus(l[k] ?? 0), 0)
+    expect(sum('debit')).toBe(sum('credit'))
+    expect(sum('debitTotal')).toBe(sum('creditTotal'))
+    f.traditional.trialBalance.forEach((l) => {
+      expect(kurus(l.debit) / 100).toBe(l.debit)
+      expect(kurus(l.debitTotal!) - kurus(l.creditTotal!)).toBe(kurus(l.debit) - kurus(l.credit))
+    })
+    expect(Math.abs(s.totalAssets - s.totalLiabilities - s.equity)).toBeLessThan(0.01)
     // Mizan net satışı = 2025 aylık ciro toplamı
     const fy = f.alternative.revenue.filter((_, i) => DATA_MONTHS[i].startsWith(`${f.fiscalYear}-`))
-    expect(Math.abs(s.netSales - fy.reduce((a, b) => a + b, 0))).toBeLessThan(10)
+    expect(Math.abs(s.netSales - fy.reduce((a, b) => a + b, 0))).toBeLessThan(0.02)
     expect(f.traditional.taxReturn.netSales).toBeGreaterThan(0)
   })
 })

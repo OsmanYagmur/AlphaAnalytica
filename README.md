@@ -57,6 +57,20 @@ Aktif model konfigürasyonu, model sürümleri, taslak ve tahsis kararları tara
 
 Önerilen 5–6 dakikalık sunum akışı için [METODOLOJI.md → Sunum akışı](METODOLOJI.md#12-sunum-akışı-56-dakika) bölümüne bakın.
 
+## Demo firmalarının mizanları (PDF)
+
+`docs/mizanlar/` klasöründe 16 firmanın 2025 mali yılı mizanı, bir muhasebe programı çıktısı biçiminde PDF olarak bulunur (`00_tum_firmalar_mizan_2025.pdf` hepsini bir arada içerir). Tutarlar kuruş hassasiyetindedir; borç/alacak hareket toplamları ve bakiyeleri kuruşu kuruşuna denktir; bankalar, krediler ve ihracatçılarda alıcı/satıcı hesapları muavin kırılımıyla gösterilir. Yeniden üretmek için:
+
+```bash
+MIZAN_EXPORT=mizan.json npx vitest run src/data/mizanExport.test.ts
+```
+
+```bash
+python3 scripts/mizan_pdf.py mizan.json docs/mizanlar
+```
+
+(Python tarafı `reportlab` ve `pypdf` paketlerini gerektirir.)
+
 ## Proje yapısı
 
 ```
@@ -77,6 +91,8 @@ src/
   store/             localStorage durumu, firma görünümleri, portföy, Model Yöneticisi çalışma kopyası
   components/        Kabuk, logo, arayüz bileşenleri, grafikler, Model Yöneticisi düzenleyicileri
   pages/             tahsis/, portfoy/, model/ ve giriş ekranı
+docs/mizanlar/       16 firmanın 2025 mizanı (PDF)
+scripts/mizan_pdf.py Mizan PDF üreteci
 METODOLOJI.md        Formüller, parametre şeması, sektör tabloları, demo senaryoları, sunum akışı
 SPEC.md              Şartname
 ```

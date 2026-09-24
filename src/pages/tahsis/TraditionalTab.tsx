@@ -3,7 +3,7 @@ import { strengthLabel } from '../../engine/factors'
 import type { FirmEvaluation } from '../../engine/evaluate'
 import { TRADITIONAL_CATEGORY_IDS, type ModelConfig } from '../../engine/modelConfig'
 import type { Firm } from '../../data'
-import { formatNumber, formatScore, formatSignedPercent, formatTL } from '../../lib/format'
+import { formatNumber, formatScore, formatSignedPercent, formatTLPrecise as formatTL } from '../../lib/format'
 
 const GROUPS: { title: string; from: number; to: number }[] = [
   { title: 'Dönen Varlıklar', from: 100, to: 199 },
@@ -16,20 +16,21 @@ const GROUPS: { title: string; from: number; to: number }[] = [
 ]
 
 function Amount({ value }: { value: number }) {
-  return <span className="num">{value ? formatNumber(value, 0) : ''}</span>
+  return <span className="num">{value ? formatNumber(value, 2) : ''}</span>
 }
 
 function TrialBalanceTable({ firm }: { firm: Firm }) {
   const lines = firm.traditional.trialBalance
-  const totalDebit = lines.reduce((a, l) => a + l.debit, 0)
-  const totalCredit = lines.reduce((a, l) => a + l.credit, 0)
+  const total = (k: 'debit' | 'credit' | 'debitTotal' | 'creditTotal') => lines.reduce((a, l) => a + Math.round((l[k] ?? 0) * 100), 0) / 100
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[560px] text-[0.8125rem]">
+      <table className="w-full min-w-[820px] text-[0.8125rem]">
         <thead>
           <tr className="border-b border-line text-left">
-            <th className="label-caps w-16 py-2 pr-3 font-semibold">Kod</th>
+            <th className="label-caps w-14 py-2 pr-3 font-semibold">Kod</th>
             <th className="label-caps py-2 pr-3 font-semibold">Hesap Adı</th>
+            <th className="label-caps py-2 pr-3 text-right font-semibold">Borç (₺)</th>
+            <th className="label-caps py-2 pr-3 text-right font-semibold">Alacak (₺)</th>
             <th className="label-caps py-2 pr-3 text-right font-semibold">Borç Bakiye (₺)</th>
             <th className="label-caps py-2 text-right font-semibold">Alacak Bakiye (₺)</th>
           </tr>
@@ -43,7 +44,7 @@ function TrialBalanceTable({ firm }: { firm: Firm }) {
             if (rows.length === 0) return null
             return [
               <tr key={g.title} className="bg-subtle/70">
-                <td colSpan={4} className="py-1.5 pl-2 text-xs font-semibold text-navy">
+                <td colSpan={6} className="py-1.5 pl-2 text-xs font-semibold text-navy">
                   {g.title}
                 </td>
               </tr>,
@@ -51,10 +52,16 @@ function TrialBalanceTable({ firm }: { firm: Firm }) {
                 <tr key={l.code} className="border-b border-line/70">
                   <td className="num py-1.5 pr-3 text-muted">{l.code}</td>
                   <td className="py-1.5 pr-3">{l.name}</td>
-                  <td className="py-1.5 pr-3 text-right">
+                  <td className="whitespace-nowrap py-1.5 pr-3 text-right text-muted">
+                    <Amount value={l.debitTotal ?? l.debit} />
+                  </td>
+                  <td className="whitespace-nowrap py-1.5 pr-3 text-right text-muted">
+                    <Amount value={l.creditTotal ?? l.credit} />
+                  </td>
+                  <td className="whitespace-nowrap py-1.5 pr-3 text-right">
                     <Amount value={l.debit} />
                   </td>
-                  <td className="py-1.5 text-right">
+                  <td className="whitespace-nowrap py-1.5 text-right">
                     <Amount value={l.credit} />
                   </td>
                 </tr>
@@ -64,8 +71,10 @@ function TrialBalanceTable({ firm }: { firm: Firm }) {
           <tr className="border-t-2 border-navy font-semibold">
             <td />
             <td className="py-2">Toplam</td>
-            <td className="num py-2 pr-3 text-right">{formatNumber(totalDebit, 0)}</td>
-            <td className="num py-2 text-right">{formatNumber(totalCredit, 0)}</td>
+            <td className="num whitespace-nowrap py-2 pr-3 text-right">{formatNumber(total('debitTotal'), 2)}</td>
+            <td className="num whitespace-nowrap py-2 pr-3 text-right">{formatNumber(total('creditTotal'), 2)}</td>
+            <td className="num whitespace-nowrap py-2 pr-3 text-right">{formatNumber(total('debit'), 2)}</td>
+            <td className="num whitespace-nowrap py-2 text-right">{formatNumber(total('credit'), 2)}</td>
           </tr>
         </tbody>
       </table>
@@ -81,8 +90,8 @@ export function TraditionalTab({ firm, evaluation, config }: { firm: Firm; evalu
   const consistency = strengthLabel(t.categories.consistency.score, config)
 
   return (
-    <div className="grid gap-4 2xl:grid-cols-5">
-      <div className="space-y-4 2xl:col-span-2">
+    <div className="space-y-4">
+      <div className="grid gap-4 2xl:grid-cols-3">
         <Card title="Geleneksel analiz alt kategorileri" subtitle={`Mizan ve ${firm.fiscalYear} Kurumlar Vergisi Beyannamesi`}>
           <div className="mb-4 flex items-baseline justify-between border-b border-line pb-3">
             <span className="text-sm text-muted">Geleneksel skor</span>
@@ -123,7 +132,7 @@ export function TraditionalTab({ firm, evaluation, config }: { firm: Firm; evalu
         </Card>
       </div>
 
-      <Card title="Mizan özeti" subtitle={`${firm.fiscalYear} dönem sonu bakiyeleri, Tekdüzen Hesap Planı`} className="2xl:col-span-3">
+      <Card title="Mizan" subtitle={`01.01–31.12.${firm.fiscalYear} · kapanış öncesi · Tekdüzen Hesap Planı`}>
         <TrialBalanceTable firm={firm} />
       </Card>
     </div>

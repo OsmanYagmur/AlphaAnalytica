@@ -23,6 +23,12 @@ export function formatTL(value: number): string {
   return `${nf(0).format(Math.round(value))} ₺`
 }
 
+/** Kuruşlu tutar: 1.457,43 ₺ */
+export function formatTLPrecise(value: number): string {
+  if (!Number.isFinite(value)) return '—'
+  return `${nf(2).format(value)} ₺`
+}
+
 /** Kısa tutar: 1,25 mn ₺ */
 export function formatTLShort(value: number): string {
   if (Math.abs(value) >= 1_000_000_000) return `${formatNumber(value / 1_000_000_000, 2)} mr ₺`

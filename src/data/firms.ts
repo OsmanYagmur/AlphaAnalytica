@@ -13,6 +13,7 @@ import {
   fiscalYearTotal,
   growth,
   path,
+  round,
   sectorPattern,
   series,
   type FinancialProfile,
@@ -61,8 +62,9 @@ function segmentFromEmployees(employees: number): FirmSegment {
 function defineFirm(def: FirmDefinition): Firm {
   const rand = createRng(def.seed)
   const pattern = sectorPattern(def.sectorId, def.seasonProfile)
-  const revenue = series(rand, def.revenueLevel, { noise: def.revenueNoise, pattern, digits: -3 })
-  const traditional = buildFinancials(fiscalYearTotal(revenue), def.financial)
+  const revenue = series(rand, def.revenueLevel, { noise: def.revenueNoise, pattern, digits: 2 })
+  // Mizan için ayrı tohum: alternatif veri serilerini etkilemez
+  const traditional = buildFinancials(fiscalYearTotal(revenue), def.financial, createRng(def.seed * 7919 + 17))
   return {
     id: def.id,
     name: def.name,
@@ -145,7 +147,7 @@ export const FIRMS: Firm[] = [
       kvbSalesGap: 0.03,
     },
     series: ({ rand, revenue }) => ({
-      posRevenue: revenue.map((v) => Math.round(v * (0.6 + 0.04 * rand()))),
+      posRevenue: revenue.map((v) => round(v * (0.6 + 0.04 * rand()), 2)),
       posTransactions: series(rand, growth(9_000, 0.07), { noise: 0.03, pattern: sectorPattern('stationery') }),
       inventoryTurnover: series(rand, flat(4.6), { noise: 0.05, digits: 2 }),
       supplierOnTimePaymentRate: series(rand, flat(0.935), { noise: 0.01, digits: 3 }),
@@ -191,7 +193,7 @@ export const FIRMS: Firm[] = [
         newListings: series(rand, path([0, 60], [11, 66], [23, 62]), { noise: 0.04, pattern }),
         soldListings: series(rand, path([0, 42], [11, 48], [23, 42]), { noise: 0.04, pattern }),
         daysOnMarket: series(rand, path([0, 38], [17, 42], [23, 68]), { noise: 0.02 }),
-        inventoryValue: revenue.map((v, t) => Math.round(v * path([0, 1.6], [14, 1.8], [23, 2.6])(t) / 1000) * 1000),
+        inventoryValue: revenue.map((v, t) => round(v * path([0, 1.6], [14, 1.8], [23, 2.6])(t), 2)),
         priceCutRatio: series(rand, path([0, 0.14], [14, 0.16], [23, 0.3]), { noise: 0.03, digits: 3 }),
       }
     },
@@ -275,7 +277,7 @@ export const FIRMS: Firm[] = [
       reviewRating: series(rand, path([0, 4.6], [17, 4.62], [23, 4.0]), { noise: 0.004, digits: 2 }),
       negativeReviewRatio: series(rand, path([0, 0.06], [17, 0.06], [23, 0.15]), { noise: 0.03, digits: 3 }),
       orderCount: series(rand, growth(9_500, 0.05), { noise: 0.03, pattern }),
-      averageBasket: series(rand, growth(245, 0.1), { noise: 0.02 }),
+      averageBasket: series(rand, growth(245, 0.1), { noise: 0.02, digits: 2 }),
       returnRate: series(rand, path([0, 0.04], [17, 0.04], [23, 0.1]), { noise: 0.03, digits: 3 }),
       onTimeDeliveryRate: series(rand, path([0, 0.93], [17, 0.93], [23, 0.9]), { noise: 0.005, digits: 3 }),
       sellerScore: series(rand, path([0, 9.1], [17, 9.1], [23, 8.6]), { noise: 0.005, digits: 1 }),
@@ -322,7 +324,7 @@ export const FIRMS: Firm[] = [
         deliveryPlatformRating: series(rand, flat(8.7), { noise: 0.005, digits: 1 }),
         onlineOrders: series(rand, growth(2_100, 0.1), { noise: 0.04, pattern }),
         posTransactions: pos,
-        posRevenue: pos.map((n, t) => Math.round(n * growth(95, 0.2)(t))),
+        posRevenue: pos.map((n, t) => round(n * growth(95, 0.2)(t), 2)),
         sgkHeadcount: series(rand, growth(36, 0.04), { noise: 0.02 }),
       }
     },
@@ -442,7 +444,7 @@ export const FIRMS: Firm[] = [
       debtServiceRatio: 0.03,
     },
     series: ({ rand, pattern }) => ({
-      eExportInvoiceAmount: series(rand, growth(3_500_000, 0.1), { noise: 0.04, pattern, digits: -3 }),
+      eExportInvoiceAmount: series(rand, growth(3_500_000, 0.1), { noise: 0.04, pattern, digits: 2 }),
       exportDeclarations: series(rand, growth(38, 0.05), { noise: 0.05, pattern }),
       orderBacklogMonths: series(rand, flat(2.2), { noise: 0.04, digits: 2 }),
       top3CustomerShare: series(rand, flat(0.45), { noise: 0.02, digits: 3 }),
@@ -698,7 +700,7 @@ export const FIRMS: Firm[] = [
         deliveryPlatformRating: series(rand, path([0, 8.2], [23, 7.6]), { noise: 0.005, digits: 1 }),
         onlineOrders: series(rand, growth(1_300, -0.12), { noise: 0.05, pattern }),
         posTransactions: pos,
-        posRevenue: pos.map((n, t) => Math.round(n * growth(110, 0.05)(t))),
+        posRevenue: pos.map((n, t) => round(n * growth(110, 0.05)(t), 2)),
         sgkHeadcount: series(rand, growth(17, -0.12), { noise: 0.03 }),
       }
     },
@@ -740,7 +742,7 @@ export const FIRMS: Firm[] = [
       kvbSalesGap: 0.004,
     },
     series: ({ rand, pattern }) => ({
-      eExportInvoiceAmount: series(rand, growth(340_000_000, 0.12), { noise: 0.03, pattern, digits: -3 }),
+      eExportInvoiceAmount: series(rand, growth(340_000_000, 0.12), { noise: 0.03, pattern, digits: 2 }),
       exportDeclarations: series(rand, growth(610, 0.08), { noise: 0.04, pattern }),
       orderBacklogMonths: series(rand, flat(3.2), { noise: 0.03, digits: 2 }),
       top3CustomerShare: series(rand, flat(0.28), { noise: 0.02, digits: 3 }),
