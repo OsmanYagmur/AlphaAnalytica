@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Mizan PDF'leri için veri dışa aktarımı. MIZAN_EXPORT ortam değişkeni bir dosya
  * yolu verildiğinde firmaların mizanlarını (kuruş cinsinden) JSON olarak yazar:
