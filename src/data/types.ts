@@ -1,6 +1,17 @@
 import type { FirmInput } from '../engine/evaluate'
 import type { CollateralTypeId, ProductMix } from '../engine/modelConfig'
 
+/** İşletme ölçeği: KOBİ tanımındaki çalışan sayısı sınıfları ve holding (büyük kurumsal grup). */
+export type FirmSegment = 'micro' | 'small' | 'medium' | 'large' | 'holding'
+
+export const SEGMENT_LABELS: Record<FirmSegment, string> = {
+  micro: 'Mikro işletme',
+  small: 'Küçük işletme',
+  medium: 'Orta büyüklükte işletme',
+  large: 'Büyük işletme',
+  holding: 'Holding',
+}
+
 /** Hayali firma kaydı: künye + motor girdileri. */
 export interface Firm extends FirmInput {
   id: string
@@ -10,6 +21,9 @@ export interface Firm extends FirmInput {
   city: string
   foundedYear: number
   employees: number
+  segment: FirmSegment
+  /** Holdinglerde konsolide edilen grup şirketi sayısı. */
+  groupCompanies?: number
   /** Mizan ve KVB'nin ait olduğu mali yıl. */
   fiscalYear: number
   /** Talep edilen kredi tutarı (TL). */

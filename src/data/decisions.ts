@@ -1,5 +1,6 @@
 /**
- * Başlangıç karar durumları: 8 firma "Tahsis Bekliyor", 6 firma karara bağlanmış.
+ * Başlangıç karar durumları: 9 firma "Tahsis Bekliyor" (8 KOBİ + 1 holding),
+ * 7 firma karara bağlanmış (6 KOBİ + 1 holding).
  * Karara bağlanmış firmaların sistem görüşü, kararın verildiği andaki veriyle
  * (`dataAsOf`) ve kararın model sürümüyle motor tarafından hesaplanır; burada
  * yalnızca tahsis yöneticisinin kararı ve gerekçesi tutulur.
@@ -31,6 +32,7 @@ export const PENDING_FIRM_IDS: readonly string[] = [
   'toros-yapi',
   'denizli-dokuma',
   'karadeniz-nakliyat',
+  'caglayan-holding',
 ]
 
 export const SEED_DECISIONS: SeedDecision[] = [
@@ -123,6 +125,21 @@ export const SEED_DECISIONS: SeedDecision[] = [
     auditLog: [
       { at: '2026-04-08T10:30:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
       { at: '2026-04-10T15:25:00+03:00', by: 'Zeynep Tunç', action: 'Sistem önerisiyle onaylandı' },
+    ],
+  },
+  {
+    firmId: 'kuzeyhan-holding',
+    status: 'approved',
+    modelVersion: BASE_MODEL_VERSION,
+    decidedBy: 'Murat Aksoy',
+    decidedAt: '2026-05-28T15:40:00+03:00',
+    dataAsOf: '2026-04',
+    note: 'Grup genelinde ihracat hacmi ve sipariş birikimi güçlü, müşteri yoğunlaşması düşük; kurumsal kredi komitesi görüşüyle sistem önerisi aynen onaylandı.',
+    utilizationRate: 0.58,
+    auditLog: [
+      { at: '2026-05-25T10:15:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
+      { at: '2026-05-27T11:00:00+03:00', by: 'Murat Aksoy', action: 'Kurumsal kredi komitesine sunuldu' },
+      { at: '2026-05-28T15:40:00+03:00', by: 'Murat Aksoy', action: 'Sistem önerisiyle onaylandı' },
     ],
   },
   {

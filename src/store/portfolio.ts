@@ -15,6 +15,19 @@ export const PORTFOLIO_STATUS_LABELS: Record<PortfolioStatus, string> = {
   pending: 'Beklemede',
 }
 
+export type SegmentFilter = 'all' | 'sme' | 'holding'
+
+export const SEGMENT_FILTER_LABELS: Record<SegmentFilter, string> = {
+  all: 'Tümü',
+  sme: 'KOBİ',
+  holding: 'Holding',
+}
+
+export function matchesSegment(v: FirmView, filter: SegmentFilter): boolean {
+  if (filter === 'all') return true
+  return filter === 'holding' ? v.firm.segment === 'holding' : v.firm.segment !== 'holding'
+}
+
 export function isInPortfolio(v: FirmView): boolean {
   return v.status === 'approved' || v.status === 'revisedApproved'
 }

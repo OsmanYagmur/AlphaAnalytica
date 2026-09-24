@@ -120,6 +120,6 @@ describe('diğer arayüzlere etkisi', () => {
     const s = getState()
     expect(s.versions.map((v) => v.version)).toEqual(['v1.0'])
     expect(s.activeVersion).toBe('v1.0')
-    expect(Object.keys(s.decisions)).toHaveLength(6)
+    expect(Object.keys(s.decisions)).toHaveLength(7)
   })
 })

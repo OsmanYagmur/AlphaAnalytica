@@ -1,11 +1,12 @@
 import { AlertTriangle, ChevronRight, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { AppShell } from '../../components/AppShell'
-import { Card, GradeBadge, ModelVersionTag, StatusBadge, cx, inputClass } from '../../components/ui'
+import { Badge, Card, GradeBadge, ModelVersionTag, StatusBadge, cx, inputClass } from '../../components/ui'
 import { CREDIT_GRADES, SECTOR_IDS, type CreditGrade, type SectorId } from '../../engine/modelConfig'
 import { daysSince, formatDate, formatTL } from '../../lib/format'
 import { navigate } from '../../lib/router'
 import { useActiveConfig, useActiveVersion, useFirmViews, type FirmView } from '../../store/evaluations'
+import { SEGMENT_FILTER_LABELS, matchesSegment, type SegmentFilter } from '../../store/portfolio'
 
 type StatusFilter = 'pending' | 'decided' | 'all'
 
@@ -38,6 +39,7 @@ export function Queue() {
   const [status, setStatus] = useState<StatusFilter>('pending')
   const [sector, setSector] = useState<SectorId | ''>('')
   const [grade, setGrade] = useState<CreditGrade | ''>('')
+  const [segment, setSegment] = useState<SegmentFilter>('all')
   const [query, setQuery] = useState('')
 
   const counts = {
@@ -52,6 +54,7 @@ export function Queue() {
       .filter((v) => (status === 'all' ? true : status === 'pending' ? v.status === 'pending' : v.status !== 'pending'))
       .filter((v) => !sector || v.firm.sectorId === sector)
       .filter((v) => !grade || v.evaluation.grade === grade)
+      .filter((v) => matchesSegment(v, segment))
       .filter((v) => !q || normalize(v.firm.name).includes(q) || v.firm.vkn.includes(q) || normalize(v.firm.city).includes(q))
       .sort((a, b) => {
         if (a.status === 'pending' && b.status !== 'pending') return -1
@@ -59,7 +62,7 @@ export function Queue() {
         if (a.status === 'pending') return a.firm.applicationDate.localeCompare(b.firm.applicationDate)
         return (b.decision?.decidedAt ?? '').localeCompare(a.decision?.decidedAt ?? '')
       })
-  }, [views, status, sector, grade, query])
+  }, [views, status, sector, grade, segment, query])
 
   const pendingTotal = views.filter((v) => v.status === 'pending').reduce((acc, v) => acc + v.firm.requestedAmount, 0)
 
@@ -98,7 +101,7 @@ export function Queue() {
               </button>
             ))}
           </div>
-          <div className="grid gap-2 sm:grid-cols-3 2xl:flex">
+          <div className="grid gap-2 sm:grid-cols-4 2xl:flex">
             <div className="relative">
               <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
               <input
@@ -114,6 +117,13 @@ export function Queue() {
               {SECTOR_IDS.map((s) => (
                 <option key={s} value={s}>
                   {config.sectors[s].label}
+                </option>
+              ))}
+            </select>
+            <select className={cx(inputClass, '2xl:w-36')} value={segment} onChange={(e) => setSegment(e.target.value as SegmentFilter)} aria-label="Ölçek">
+              {(['all', 'sme', 'holding'] as const).map((s) => (
+                <option key={s} value={s}>
+                  {s === 'all' ? 'Tüm ölçekler' : SEGMENT_FILTER_LABELS[s]}
                 </option>
               ))}
             </select>
@@ -153,7 +163,10 @@ export function Queue() {
                     className="cursor-pointer border-b border-line last:border-b-0 hover:bg-subtle/60"
                   >
                     <td className="px-5 py-3">
-                      <div className="font-medium text-ink">{v.firm.name}</div>
+                      <div className="flex flex-wrap items-center gap-1.5 font-medium text-ink">
+                        {v.firm.name}
+                        {v.firm.segment === 'holding' && <Badge tone="navy">Holding</Badge>}
+                      </div>
                       <div className="num text-xs text-muted">
                         {v.firm.city} · VKN {v.firm.vkn}
                       </div>

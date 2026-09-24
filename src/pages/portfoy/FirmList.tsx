@@ -1,7 +1,7 @@
 import { AlertTriangle, ChevronRight, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { AppShell } from '../../components/AppShell'
-import { Card, ModelVersionTag, cx, inputClass } from '../../components/ui'
+import { Badge, Card, ModelVersionTag, cx, inputClass } from '../../components/ui'
 import { formatDate, formatPercent, formatTL } from '../../lib/format'
 import { navigate } from '../../lib/router'
 import { useActiveVersion, useFirmViews } from '../../store/evaluations'
@@ -73,6 +73,7 @@ export function PortfolioFirmList() {
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-1.5 font-medium text-ink">
                         {v.firm.name}
+                        {v.firm.segment === 'holding' && <Badge tone="navy">Holding</Badge>}
                         {hasEarlyWarning(v) && v.status !== 'pending' && (
                           <span title="Erken uyarı">
                             <AlertTriangle size={14} className={v.current.earlyWarnings.critical.length ? 'text-negative' : 'text-warning'} />

@@ -8,13 +8,15 @@ import { CREDIT_GRADES } from '../../engine/modelConfig'
 import { formatPercent, formatTL, formatTLShort } from '../../lib/format'
 import { navigate } from '../../lib/router'
 import { useActiveConfig, useActiveVersion, useFirmViews } from '../../store/evaluations'
-import { approvedLimit, summarizePortfolio } from '../../store/portfolio'
+import { SEGMENT_FILTER_LABELS, approvedLimit, matchesSegment, summarizePortfolio, type SegmentFilter } from '../../store/portfolio'
 import { GradeChange, KpiCard } from './common'
 
 type GradeScope = 'portfolio' | 'all'
 
 export function PortfolioSummary() {
-  const views = useFirmViews()
+  const allViews = useFirmViews()
+  const [segment, setSegment] = useState<SegmentFilter>('all')
+  const views = allViews.filter((v) => matchesSegment(v, segment))
   const version = useActiveVersion()
   const config = useActiveConfig()
   const [scope, setScope] = useState<GradeScope>('portfolio')
@@ -28,7 +30,27 @@ export function PortfolioSummary() {
   const pendingCount = views.filter((v) => v.status === 'pending').length
 
   return (
-    <AppShell role="portfoy" title="Portföy Özeti" actions={<ModelVersionTag version={version} />}>
+    <AppShell
+      role="portfoy"
+      title="Portföy Özeti"
+      actions={
+        <>
+          <div className="flex gap-1 rounded-md border border-line bg-subtle p-0.5" role="group" aria-label="Ölçek">
+            {(['all', 'sme', 'holding'] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSegment(s)}
+                className={cx('rounded px-2.5 py-1 text-xs', segment === s ? 'bg-surface font-medium text-navy shadow-card' : 'text-muted hover:text-ink')}
+              >
+                {SEGMENT_FILTER_LABELS[s]}
+              </button>
+            ))}
+          </div>
+          <ModelVersionTag version={version} />
+        </>
+      }
+    >
       <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Toplam onaylı limit" value={formatTL(summary.totalLimit)} hint={`${summary.firmCount} firma`} />
         <KpiCard

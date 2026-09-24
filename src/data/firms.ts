@@ -1,5 +1,5 @@
 /**
- * 14 hayali firma. Adlar, VKN'ler ve tüm rakamlar hayalidir.
+ * 16 hayali firma (14 KOBİ + 2 holding). Adlar, VKN'ler ve tüm rakamlar hayalidir.
  * Mizan ve KVB 2025 mali yılına, aylık seriler Eylül 2024 – Ağustos 2026 dönemine aittir.
  */
 
@@ -17,7 +17,7 @@ import {
   series,
   type FinancialProfile,
 } from './generators'
-import type { Firm } from './types'
+import type { Firm, FirmSegment } from './types'
 
 interface SeriesContext {
   rand: () => number
@@ -34,6 +34,9 @@ interface FirmDefinition {
   city: string
   foundedYear: number
   employees: number
+  /** Verilmezse çalışan sayısından (KOBİ sınıfları) türetilir. */
+  segment?: FirmSegment
+  groupCompanies?: number
   sectorId: SectorId
   seasonProfile?: SeasonProfileId
   requestedAmount: number
@@ -45,6 +48,14 @@ interface FirmDefinition {
   financial: FinancialProfile
   riskFlags?: Partial<RiskFlags>
   series: (ctx: SeriesContext) => Record<string, number[]>
+}
+
+/** KOBİ tanımındaki çalışan sınıfları: <10 mikro, <50 küçük, <250 orta. */
+function segmentFromEmployees(employees: number): FirmSegment {
+  if (employees < 10) return 'micro'
+  if (employees < 50) return 'small'
+  if (employees < 250) return 'medium'
+  return 'large'
 }
 
 function defineFirm(def: FirmDefinition): Firm {
@@ -59,6 +70,8 @@ function defineFirm(def: FirmDefinition): Firm {
     city: def.city,
     foundedYear: def.foundedYear,
     employees: def.employees,
+    segment: def.segment ?? segmentFromEmployees(def.employees),
+    ...(def.groupCompanies ? { groupCompanies: def.groupCompanies } : {}),
     fiscalYear: FISCAL_YEAR,
     requestedAmount: def.requestedAmount,
     applicationDate: def.applicationDate,
@@ -689,6 +702,92 @@ export const FIRMS: Firm[] = [
         sgkHeadcount: series(rand, growth(17, -0.12), { noise: 0.03 }),
       }
     },
+  }),
+
+  // 15) Holding — büyük ölçekli tekstil ihracatçısı grubu, güçlü bilanço (karara bağlanmış)
+  defineFirm({
+    id: 'kuzeyhan-holding',
+    name: 'Kuzeyhan Tekstil Holding A.Ş.',
+    vkn: '6120938457',
+    city: 'İstanbul',
+    foundedYear: 1987,
+    employees: 2_400,
+    segment: 'holding',
+    groupCompanies: 7,
+    sectorId: 'textileExport',
+    requestedAmount: 900_000_000,
+    applicationDate: '2026-05-25',
+    seed: 1515,
+    revenueLevel: growth(420_000_000, 0.12),
+    revenueNoise: 0.03,
+    financial: {
+      ...BASE,
+      exportShare: 0.82,
+      cogsRatio: 0.72,
+      opexRatio: 0.12,
+      depreciationRatio: 0.035,
+      financeExpenseRatio: 0.02,
+      receivableDays: 70,
+      inventoryDays: 80,
+      payableDays: 70,
+      cashRatio: 0.07,
+      fixedAssetRatio: 0.28,
+      shortTermLoanRatio: 0.16,
+      longTermLoanRatio: 0.1,
+      otherLiabilityRatio: 0.03,
+      capital: 600_000_000,
+      debtServiceRatio: 0.025,
+      kvbSalesGap: 0.004,
+    },
+    series: ({ rand, pattern }) => ({
+      eExportInvoiceAmount: series(rand, growth(340_000_000, 0.12), { noise: 0.03, pattern, digits: -3 }),
+      exportDeclarations: series(rand, growth(610, 0.08), { noise: 0.04, pattern }),
+      orderBacklogMonths: series(rand, flat(3.2), { noise: 0.03, digits: 2 }),
+      top3CustomerShare: series(rand, flat(0.28), { noise: 0.02, digits: 3 }),
+      netFxShortToEquity: series(rand, flat(0.05), { noise: 0.1, digits: 3 }),
+    }),
+  }),
+
+  // 16) Holding — satın alma sonrası kaldıraçlı tarım/gıda grubu (tahsis bekliyor)
+  defineFirm({
+    id: 'caglayan-holding',
+    name: 'Çağlayan Gıda ve Tarım Holding A.Ş.',
+    vkn: '3875016249',
+    city: 'Konya',
+    foundedYear: 1994,
+    employees: 1_150,
+    segment: 'holding',
+    groupCompanies: 5,
+    sectorId: 'agriFood',
+    requestedAmount: 250_000_000,
+    applicationDate: '2026-09-14',
+    seed: 1616,
+    revenueLevel: growth(250_000_000, 0.06),
+    revenueNoise: 0.05,
+    financial: {
+      ...BASE,
+      cogsRatio: 0.86,
+      opexRatio: 0.075,
+      depreciationRatio: 0.012,
+      financeExpenseRatio: 0.033,
+      receivableDays: 60,
+      inventoryDays: 75,
+      payableDays: 45,
+      cashRatio: 0.04,
+      fixedAssetRatio: 0.26,
+      shortTermLoanRatio: 0.17,
+      longTermLoanRatio: 0.1,
+      otherLiabilityRatio: 0.03,
+      capital: 300_000_000,
+      debtServiceRatio: 0.015,
+      kvbSalesGap: 0.012,
+    },
+    series: ({ rand, pattern }) => ({
+      purchaseVolumeTons: series(rand, growth(98_000, 0.02), { noise: 0.04, pattern }),
+      commodityPrice: series(rand, growth(18.5, 0.1), { noise: 0.03, digits: 2 }),
+      warehouseOccupancy: series(rand, flat(0.82), { noise: 0.04, digits: 3 }),
+      eDispatchCount: series(rand, growth(9_400, 0.04), { noise: 0.04, pattern }),
+    }),
   }),
 ]
 

@@ -3,7 +3,8 @@ import { useCallback, useState } from 'react'
 import { AppShell } from '../../components/AppShell'
 import { Gauge } from '../../components/Gauge'
 import { Badge, Button, Card, GradeBadge, ModelVersionTag, StatusBadge, Tabs } from '../../components/ui'
-import { formatDate, formatDateTime, formatPercent, formatTL } from '../../lib/format'
+import { formatDate, formatDateTime, formatNumber, formatPercent, formatTL } from '../../lib/format'
+import { SEGMENT_LABELS } from '../../data'
 import { navigate } from '../../lib/router'
 import { useActiveVersion, useFirmView, type FirmView } from '../../store/evaluations'
 import { AlternativeTab } from './AlternativeTab'
@@ -33,16 +34,19 @@ function TopStrip({ view }: { view: FirmView }) {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold text-navy">{firm.name}</h2>
             <StatusBadge status={view.status} />
+            {firm.segment === 'holding' && <Badge tone="navy">Holding</Badge>}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
             <span>{config.sectors[firm.sectorId].label}</span>
             {ev.alternative.seasonProfile.id !== 'standard' && <Badge>{ev.alternative.seasonProfile.label}</Badge>}
           </div>
-          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 xl:grid-cols-6">
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-8">
             <Kunye label="VKN" value={firm.vkn} />
             <Kunye label="İl" value={firm.city} />
             <Kunye label="Kuruluş" value={String(firm.foundedYear)} />
-            <Kunye label="Çalışan" value={String(firm.employees)} />
+            <Kunye label="Çalışan" value={formatNumber(firm.employees)} />
+            <Kunye label="Ölçek" value={SEGMENT_LABELS[firm.segment]} />
+            {firm.groupCompanies && <Kunye label="Grup şirketi" value={String(firm.groupCompanies)} />}
             <Kunye label="Talep tutarı" value={formatTL(firm.requestedAmount)} />
             <Kunye label="Başvuru" value={formatDate(firm.applicationDate)} />
           </dl>

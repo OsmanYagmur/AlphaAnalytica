@@ -73,7 +73,7 @@ src/
     impact.ts, sensitivity.ts   Etki simülasyonu, şelale, duyarlılık
     validation.ts, schema.ts, configDiff.ts   Doğrulama, JSON şeması, sürüm farkları
     *.test.ts          Birim testleri; engine.test.ts demo çıktıları ve senaryolar
-  data/              14 hayali firma, başlangıç kararları, deterministik veri üreteçleri
+  data/              16 hayali firma (14 KOBİ + 2 holding), başlangıç kararları, deterministik veri üreteçleri
   store/             localStorage durumu, firma görünümleri, portföy, Model Yöneticisi çalışma kopyası
   components/        Kabuk, logo, arayüz bileşenleri, grafikler, Model Yöneticisi düzenleyicileri
   pages/             tahsis/, portfoy/, model/ ve giriş ekranı

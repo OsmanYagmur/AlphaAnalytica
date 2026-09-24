@@ -5,7 +5,7 @@ import { AppShell } from '../../components/AppShell'
 import { CHART_COLORS } from '../../components/charts'
 import { Gauge } from '../../components/Gauge'
 import { Badge, Button, Card, DataRow, GradeBadge, ModelVersionTag, cx } from '../../components/ui'
-import { REJECTION_REASONS } from '../../data'
+import { REJECTION_REASONS, SEGMENT_LABELS } from '../../data'
 import { scoreTrend } from '../../engine/evaluate'
 import { strengthLabel } from '../../engine/factors'
 import { PRODUCT_IDS, PRODUCT_LABELS, type AlternativeIndicatorConfig, type CollateralTypeId } from '../../engine/modelConfig'
@@ -273,7 +273,8 @@ export function PortfolioFirmDetail({ firmId }: { firmId: string }) {
                 <PortfolioStatusBadge view={view} />
               </div>
               <p className="mt-1 text-sm text-muted">
-                {view.config.sectors[view.firm.sectorId].label} · {view.firm.city} · VKN <span className="num">{view.firm.vkn}</span>
+                {view.config.sectors[view.firm.sectorId].label} · {SEGMENT_LABELS[view.firm.segment]}
+                {view.firm.groupCompanies ? ` (${view.firm.groupCompanies} grup şirketi)` : ''} · {view.firm.city} · VKN <span className="num">{view.firm.vkn}</span>
               </p>
               <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
                 <div>

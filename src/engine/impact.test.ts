@@ -16,7 +16,7 @@ const alt30 = (): ModelConfig => {
 describe('computeImpact', () => {
   it('aynı konfigürasyonda değişim yok', () => {
     const { firms, summary } = computeImpact(FIRMS, cfg, createDefaultModelConfig())
-    expect(summary.unchanged).toBe(14)
+    expect(summary.unchanged).toBe(FIRMS.length)
     firms.forEach((f) => expect(f.scoreChange).toBeCloseTo(0, 12))
     expect(summary.totalLimitAfter).toBe(summary.totalLimitBefore)
   })
@@ -30,7 +30,7 @@ describe('computeImpact', () => {
     expect(defne.limitChange).toBeLessThan(0)
     const auto = firms.find((f) => f.firmId === 'kuzey-oto')!
     expect(auto.scoreChange).toBeGreaterThan(0)
-    expect(summary.upgraded + summary.downgraded + summary.unchanged).toBe(14)
+    expect(summary.upgraded + summary.downgraded + summary.unchanged).toBe(FIRMS.length)
     expect(summary.downgraded).toBeGreaterThanOrEqual(1)
   })
 })

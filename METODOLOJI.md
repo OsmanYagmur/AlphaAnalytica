@@ -461,9 +461,9 @@ Sezon endeksi — Standart (Kış (grip dönemi) yüksek; yaz ayları düşük):
 
 ## 10. Demo verisi ve senaryolar
 
-14 hayali firma (10 sektörün tamamı) `src/data` altındadır. Adlar, VKN'ler ve tüm rakamlar hayalidir; gerçek marka veya pazaryeri adı kullanılmaz ("Pazaryeri A", "Yemek Platformu A"). Her firma için künye (VKN, il, kuruluş yılı, çalışan sayısı), hesap kodlu ve denk mizan (2025), KVB özeti (net satış, matrah, ödenen vergi), 24 aylık ciro (Eylül 2024 – Ağustos 2026) ve sektöre özgü aylık gösterge serileri vardır. Seriler tohumlu (deterministik) üreteçlerle oluşturulur; mizandaki 2025 net satışı aylık ciro serisinin 2025 toplamına eşittir.
+16 hayali firma `src/data` altındadır: 10 sektörün tamamını kapsayan 14 KOBİ ve farklı bir kitleyi temsil eden 2 holding (milyar TL ölçeğinde ciro, binlerce çalışan, konsolide grup şirketleri). Her firmanın ölçeği künyede gösterilir: KOBİ'lerde çalışan sayısından türetilir (<10 mikro, <50 küçük, <250 orta işletme), holdinglerde "Holding" ve grup şirketi sayısıdır. Adlar, VKN'ler ve tüm rakamlar hayalidir; gerçek marka veya pazaryeri adı kullanılmaz ("Pazaryeri A", "Yemek Platformu A"). Her firma için künye (VKN, il, kuruluş yılı, çalışan sayısı), hesap kodlu ve denk mizan (2025), KVB özeti (net satış, matrah, ödenen vergi), 24 aylık ciro (Eylül 2024 – Ağustos 2026) ve sektöre özgü aylık gösterge serileri vardır. Seriler tohumlu (deterministik) üreteçlerle oluşturulur; mizandaki 2025 net satışı aylık ciro serisinin 2025 toplamına eşittir.
 
-Başlangıçta 8 firma "Tahsis Bekliyor", 6 firma karara bağlanmıştır (3 onay, 2 revize onay, 1 red). Karara bağlanmış firmaların sistem görüşü, kararın verildiği andaki veriyle ve Model v1.0 ile hesaplanır.
+Başlangıçta 9 firma "Tahsis Bekliyor" (8 KOBİ + Çağlayan Holding), 7 firma karara bağlanmıştır (4 onay, 2 revize onay, 1 red). Tahsis kuyruğunda ve Portföy özetinde ölçek filtresi (Tümü / KOBİ / Holding) vardır; KOBİ filtresi holdinglerin büyük limitlerinden bağımsız bir KOBİ portföyü görünümü verir. Karara bağlanmış firmaların sistem görüşü, kararın verildiği andaki veriyle ve Model v1.0 ile hesaplanır.
 
 ### 10.1 Model v1.0 çıktıları
 
@@ -483,6 +483,8 @@ Başlangıçta 8 firma "Tahsis Bekliyor", 6 firma karara bağlanmıştır (3 ona
 | Bodrum Mavi Tur Seyahat Acentesi Ltd. Şti. (yaz) | Turizm | Onaylandı | 59,0 | 73,9 | 66,4 | BBB | %1,71 | 800.000 ₺ |
 | Karadeniz Nakliyat ve Lojistik Ltd. Şti. | Lojistik | Tahsis Bekliyor | 88,8 | 80,8 | 84,8 | AA → BB | %0,23 | 1.550.000 ₺ |
 | Kapadokya Lezzet Kafe Ltd. Şti. | Restoran / Kafe | Reddedildi | 46,2 | 47,4 | 46,8 | B | %13,37 | 150.000 ₺ |
+| Kuzeyhan Tekstil Holding A.Ş. (holding) | Tekstil | Onaylandı | 85,5 | 87,2 | 86,3 | AA | %0,19 | 865.200.000 ₺ |
+| Çağlayan Gıda ve Tarım Holding A.Ş. (holding) | Tarım / Gıda | Tahsis Bekliyor | 54,4 | 75,4 | 64,9 | BBB | %2,03 | 115.150.000 ₺ |
 
 Bu değerler `src/engine/engine.test.ts` tarafından doğrulanır. Hiçbir firmanın skoru bir not eşiğine 0,5 puandan yakın değildir.
 
@@ -493,7 +495,8 @@ Bu değerler `src/engine/engine.test.ts` tarafından doğrulanır. Hiçbir firma
 3. **Kış turizmi — sezonsallık.** Palandöken Kar Turizm'in haziran–ağustos cirosu yıllık ortalamanın %60'ının altındadır. Kış alt profiliyle bu düşüş beklenen desendir (SU > 90), not A'dır. Aynı firma yaz profiliyle değerlendirilseydi SU 20'nin altına düşer ve not kötüleşirdi.
 4. **E-ticaret — not bir kademe düşüyor.** Mavi Sepet, Mart 2026'da Şubat verisiyle A notuyla onaylanmıştır. Son altı ayda yorum puanı 4,6'dan 4,0'a iniyor, iade ve olumsuz yorum oranları iki katından fazla artıyor. Güncel not BBB'dir; firma Portföy özetinde erken uyarı listesinde görünür.
 5. **Uçlar ve override.** Toros Yapı C alır (zarar, karşılıksız çek, %28 beyan sapması; limit yok, red senaryosu). Marmara Lojistik AAA, Şifa Eczanesi AA alır. Karadeniz Nakliyat'ın skoru AA'dır ancak vadesi geçmiş vergi/SGK borcu (mizanda 368 hesabı) nedeniyle not BB ile sınırlanır.
-6. **Sunum finali.** Alternatif veri ağırlığı %50'den %30'a düşürüldüğünde Defne Kırtasiye'nin skoru 64,4'ten 58,7'ye iner; not BBB'den BB'ye, önerilen limit 1.150.000 ₺'den 850.000 ₺'ye düşer. Aynı değişiklik Kuzey Oto Galeri'yi BBB'den A'ya yükseltir.
+6. **Holding ölçeği.** Kuzeyhan Tekstil Holding (7 grup şirketi, 2.400 çalışan, ~5,5 milyar ₺ net satış) güçlü bilanço ve alternatif veriyle AA alır; 865,2 milyon ₺ limitle onaylanmıştır ve kurumsal kredi komitesi adımı karar geçmişinde görünür. Çağlayan Gıda ve Tarım Holding (5 grup şirketi, 1.150 çalışan, ~3,2 milyar ₺ net satış) satın alma sonrası kaldıraçlı ve ince marjlıdır: geleneksel skor tek başına BB, alternatif veriyle BBB; borç servis kapasitesi (K3) nedeniyle önerilen limit 115,15 milyon ₺, talep edilen 250 milyon ₺'nin altındadır. Aynı formüller KOBİ'den holdinge kadar ölçekten bağımsız çalışır.
+7. **Sunum finali.** Alternatif veri ağırlığı %50'den %30'a düşürüldüğünde Defne Kırtasiye'nin skoru 64,4'ten 58,7'ye iner; not BBB'den BB'ye, önerilen limit 1.150.000 ₺'den 850.000 ₺'ye düşer. Aynı değişiklik Kuzey Oto Galeri'yi BBB'den A'ya yükseltir.
 
 ## 11. Etki simülasyonu ve sürümleme
 
@@ -508,7 +511,7 @@ Bu değerler `src/engine/engine.test.ts` tarafından doğrulanır. Hiçbir firma
 
 | Süre | Adım | Ne gösterilir |
 |---|---|---|
-| 0:00–0:30 | Giriş ekranı → **Tahsis Yöneticisi** | Üç rol; kuyrukta 8 bekleyen başvuru, sistem notları ve önerilen limitler, sektör/not filtresi |
+| 0:00–0:30 | Giriş ekranı → **Tahsis Yöneticisi** | Üç rol; kuyrukta 9 bekleyen başvuru (biri holding), sistem notları ve önerilen limitler, sektör/not/ölçek filtresi |
 | 0:30–1:45 | **Defne Kırtasiye** | Analiz animasyonu. Üst şerit: S 64,4, BBB, PD %2,15. Geleneksel sekme: zayıf likidite ve kaldıraç çubukları. Alternatif sekme: POS ve okul sezonu kartları, sezonsallık grafiğinde eylül piki. Faktörler ve sistem önerisi: 1.150.000 ₺ (talep 2.000.000 ₺). Mesaj: "Geleneksel yöntemle reddedilecek firma, alternatif veriyle BBB alıyor." |
 | 1:45–2:30 | **Kuzey Oto Galeri** | Güçlü bilanço ama izleme rozetleri; ilanda kalma süresi kartı ve mini grafiği; not BBB, limit 1.550.000 ₺. Mesaj: "Bilanço geçmişi, alternatif veri bugünü gösterir." |
 | 2:30–3:00 | **Palandöken Kar Turizm** | Sezonsallık grafiği: yaz düşüşü beklenen çizgiyle örtüşüyor; SU yüksek, not A |

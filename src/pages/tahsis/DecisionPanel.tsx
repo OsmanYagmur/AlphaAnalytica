@@ -20,6 +20,13 @@ import type { Decision } from '../../store/types'
 import { TermsView } from './TermsView'
 
 const TENOR_OPTIONS = [3, 6, 12, 18, 24, 36]
+
+/** ± adımı: tutarın büyüklüğüne göre (holding ölçeğinde 1 mn ₺). */
+function limitStep(reference: number): number {
+  if (reference >= 100_000_000) return 1_000_000
+  if (reference >= 10_000_000) return 250_000
+  return 50_000
+}
 const COVENANT_SUGGESTIONS = [
   'Ciro ile orantılı hesap çalıştırma',
   'Üç aylık mizan ve KDV beyannamesi paylaşımı',
@@ -279,7 +286,7 @@ function ReviseModal({ view, open, onClose }: { view: FirmView; open: boolean; o
 
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Limit (₺)" error={touched ? errors.limit : null} hint={<span className="num">{formatTL(form.limit)}</span>}>
-          <NumberInput value={form.limit} onChange={(v) => set('limit', v)} step={50_000} min={0} suffix="₺" edited={edited.limit} invalid={touched && !!errors.limit} ariaLabel="Limit" />
+          <NumberInput value={form.limit} onChange={(v) => set('limit', v)} step={limitStep(systemLimit || view.firm.requestedAmount)} min={0} suffix="₺" edited={edited.limit} invalid={touched && !!errors.limit} ariaLabel="Limit" />
         </Field>
         <Field label="Vade">
           <div className="flex gap-2">

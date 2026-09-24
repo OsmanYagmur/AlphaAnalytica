@@ -46,13 +46,16 @@ const EXPECTED: Record<string, { G: number; A: number; S: number; grade: CreditG
   'bodrum-mavi-tur': { G: 58.97, A: 73.92, S: 66.44, grade: 'BBB', pd: 0.01714, limit: 800000 },
   'karadeniz-nakliyat': { G: 88.78, A: 80.8, S: 84.79, grade: 'BB', pd: 0.00227, limit: 1550000 },
   'kapadokya-kafe': { G: 46.2, A: 47.44, S: 46.82, grade: 'B', pd: 0.13367, limit: 150000 },
+  'kuzeyhan-holding': { G: 85.51, A: 87.16, S: 86.33, grade: 'AA', pd: 0.00191, limit: 865200000 },
+  'caglayan-holding': { G: 54.39, A: 75.36, S: 64.87, grade: 'BBB', pd: 0.02034, limit: 115150000 },
 }
 
 describe('Demo verisi bütünlüğü', () => {
-  it('14 firma, benzersiz kimlik ve 10 haneli benzersiz VKN', () => {
-    expect(FIRMS).toHaveLength(14)
-    expect(new Set(FIRMS.map((f) => f.id)).size).toBe(14)
-    expect(new Set(FIRMS.map((f) => f.vkn)).size).toBe(14)
+  it('16 firma (14 KOBİ + 2 holding), benzersiz kimlik ve 10 haneli benzersiz VKN', () => {
+    expect(FIRMS).toHaveLength(16)
+    expect(FIRMS.filter((f) => f.segment === 'holding')).toHaveLength(2)
+    expect(new Set(FIRMS.map((f) => f.id)).size).toBe(16)
+    expect(new Set(FIRMS.map((f) => f.vkn)).size).toBe(16)
     FIRMS.forEach((f) => expect(f.vkn).toMatch(/^\d{10}$/))
   })
 
@@ -102,9 +105,10 @@ describe('Demo verisi bütünlüğü', () => {
 })
 
 describe('Başlangıç karar durumları', () => {
-  it('8 firma tahsis bekliyor, 6 firma karara bağlanmış; kümeler ayrık ve tüm firmaları kapsar', () => {
-    expect(PENDING_FIRM_IDS).toHaveLength(8)
-    expect(SEED_DECISIONS).toHaveLength(6)
+  it('9 firma tahsis bekliyor (8 KOBİ + 1 holding), 7 karara bağlanmış; kümeler ayrık ve tüm firmaları kapsar', () => {
+    expect(PENDING_FIRM_IDS).toHaveLength(9)
+    expect(PENDING_FIRM_IDS.filter((id) => getFirm(id)!.segment !== 'holding')).toHaveLength(8)
+    expect(SEED_DECISIONS).toHaveLength(7)
     const decided = SEED_DECISIONS.map((d) => d.firmId)
     expect(decided.filter((id) => PENDING_FIRM_IDS.includes(id))).toHaveLength(0)
     expect(new Set([...PENDING_FIRM_IDS, ...decided])).toEqual(new Set(FIRMS.map((f) => f.id)))
@@ -337,5 +341,35 @@ describe('Hikâye 5 — Not dağılımı uçları', () => {
   it('bekleyen başvurular farklı notlara dağılıyor', () => {
     const grades = new Set(PENDING_FIRM_IDS.map((id) => evaluate(id).grade))
     expect(grades.size).toBeGreaterThanOrEqual(4)
+  })
+})
+
+describe('Hikâye 6 — Holding ölçeği', () => {
+  it('iki holding milyar TL ölçeğinde ciro ve grup şirketi bilgisiyle', () => {
+    for (const id of ['kuzeyhan-holding', 'caglayan-holding']) {
+      const f = firm(id)
+      expect(f.segment).toBe('holding')
+      expect(f.groupCompanies).toBeGreaterThan(1)
+      expect(f.employees).toBeGreaterThanOrEqual(250)
+      expect(evaluate(id).traditional.statement.netSales).toBeGreaterThan(1_000_000_000)
+    }
+  })
+
+  it('KOBİ firmalarının ölçeği çalışan sayısından türetilir', () => {
+    expect(firm('sifa-eczanesi').segment).toBe('micro')
+    expect(firm('defne-kirtasiye').segment).toBe('small')
+    expect(firm('denizli-dokuma').segment).toBe('medium')
+  })
+
+  it('güçlü holding AA ve karara bağlanmış; kaldıraçlı holding BBB, talebin altında limit', () => {
+    const strong = evaluate('kuzeyhan-holding')
+    expect(strong.grade).toBe('AA')
+    expect(SEED_DECISIONS.find((d) => d.firmId === 'kuzeyhan-holding')?.status).toBe('approved')
+    const leveraged = evaluate('caglayan-holding')
+    expect(leveraged.grade).toBe('BBB')
+    expect(PENDING_FIRM_IDS).toContain('caglayan-holding')
+    expect(isWorseGrade(gradeFromScore(leveraged.traditional.score, cfg), 'BBB')).toBe(true)
+    expect(leveraged.limit.limit).toBeLessThan(firm('caglayan-holding').requestedAmount)
+    expect(leveraged.limit.binding).toBe('k3')
   })
 })

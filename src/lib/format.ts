@@ -25,6 +25,7 @@ export function formatTL(value: number): string {
 
 /** Kısa tutar: 1,25 mn ₺ */
 export function formatTLShort(value: number): string {
+  if (Math.abs(value) >= 1_000_000_000) return `${formatNumber(value / 1_000_000_000, 2)} mr ₺`
   if (Math.abs(value) >= 1_000_000) return `${formatNumber(value / 1_000_000, 2)} mn ₺`
   if (Math.abs(value) >= 1_000) return `${formatNumber(value / 1_000, 0)} bin ₺`
   return formatTL(value)
