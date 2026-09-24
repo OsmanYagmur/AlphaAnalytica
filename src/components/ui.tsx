@@ -96,7 +96,8 @@ export function Badge({ tone = 'neutral', children, className }: { tone?: Tone; 
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1 whitespace-nowrap rounded border px-1.5 py-0.5 text-[0.6875rem] font-medium leading-4',
+        'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[0.6875rem] font-medium leading-4',
+        className?.includes('whitespace-normal') ? '' : 'whitespace-nowrap',
         TONES[tone],
         className,
       )}

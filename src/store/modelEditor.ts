@@ -202,3 +202,27 @@ export function useImpactPanelOpen(): boolean {
     () => false,
   )
 }
+
+/**
+ * Tarayıcının geri/ileri düğmesi veya adres çubuğuyla Model Yöneticisi dışına
+ * çıkış. Modül yüklenirken (yönlendiriciden önce) kaydedilir; iptal edilirse
+ * olayı durdurup eski adresi geri yazar, böylece sayfa hiç değişmez.
+ */
+function hashPath(url: string): string {
+  return new URL(url).hash.replace(/^#/, '') || '/'
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('hashchange', (e) => {
+    const from = hashPath(e.oldURL)
+    const to = hashPath(e.newURL)
+    if (!from.startsWith('/model') || to.startsWith('/model')) return
+    if (!working || deepEqual(working, editorBaseConfig(getState()))) return
+    if (window.confirm(LEAVE_MESSAGE)) {
+      editorActions.revert()
+      return
+    }
+    e.stopImmediatePropagation()
+    window.history.replaceState(null, '', new URL(e.oldURL).hash || '#/model')
+  })
+}

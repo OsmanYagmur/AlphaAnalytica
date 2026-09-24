@@ -199,9 +199,9 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={cx('relative h-5 w-9 shrink-0 rounded-full transition-colors', checked ? 'bg-accent' : 'bg-[#c9ccd3]')}
+      className={cx('relative h-5 w-9 shrink-0 rounded transition-colors', checked ? 'bg-accent' : 'bg-[#c9ccd3]')}
     >
-      <span className={cx('absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all', checked ? 'left-[1.125rem]' : 'left-0.5')} />
+      <span className={cx('absolute top-0.5 h-4 w-4 rounded-sm bg-white shadow-sm transition-all', checked ? 'left-[1.125rem]' : 'left-0.5')} />
     </button>
   )
 }

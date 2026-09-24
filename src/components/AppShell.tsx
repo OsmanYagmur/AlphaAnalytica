@@ -71,8 +71,8 @@ function PresentationToggle() {
         <Monitor size={15} />
         Sunum Modu
       </span>
-      <span className={cx('relative h-4 w-7 rounded-full transition-colors', on ? 'bg-accent' : 'bg-[#34465f]')}>
-        <span className={cx('absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all', on ? 'left-3.5' : 'left-0.5')} />
+      <span className={cx('relative h-4 w-7 rounded transition-colors', on ? 'bg-accent' : 'bg-[#34465f]')}>
+        <span className={cx('absolute top-0.5 h-3 w-3 rounded-sm bg-white transition-all', on ? 'left-3.5' : 'left-0.5')} />
       </span>
     </button>
   )
@@ -187,7 +187,7 @@ export function AppShell({ role, title, breadcrumb, actions: headerActions, chil
       )}
 
       <div className="lg:pl-60">
-        <header className="sticky top-0 z-30 border-b border-line bg-canvas/95 backdrop-blur-[2px]">
+        <header className="sticky top-0 z-30 border-b border-line bg-canvas">
           <div className="flex items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
             <button type="button" className="rounded p-1.5 text-navy hover:bg-subtle lg:hidden" onClick={() => setDrawer(true)} aria-label="Menü">
               {drawer ? <X size={20} /> : <Menu size={20} />}

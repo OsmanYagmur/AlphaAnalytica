@@ -29,7 +29,7 @@ function TopStrip({ view }: { view: FirmView }) {
   return (
     <Card bodyClassName="p-0">
       <div className="grid lg:grid-cols-[1fr_auto]">
-        <div className="px-5 py-4">
+        <div className="min-w-0 px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold text-navy">{firm.name}</h2>
             <StatusBadge status={view.status} />
@@ -49,14 +49,14 @@ function TopStrip({ view }: { view: FirmView }) {
           {(ev.earlyWarnings.critical.length > 0 || ev.earlyWarnings.watch.length > 0) && (
             <div className="mt-4 flex flex-wrap gap-1.5 border-t border-line pt-3">
               {ev.earlyWarnings.critical.map((s) => (
-                <Badge key={s.id} tone="negative">
-                  <AlertOctagon size={12} />
+                <Badge key={s.id} tone="negative" className="whitespace-normal">
+                  <AlertOctagon size={12} className="shrink-0" />
                   Erken uyarı: {s.label}
                 </Badge>
               ))}
               {ev.earlyWarnings.watch.map((s) => (
-                <Badge key={s.id} tone="warning">
-                  <Eye size={12} />
+                <Badge key={s.id} tone="warning" className="whitespace-normal">
+                  <Eye size={12} className="shrink-0" />
                   {s.label}
                   {s.indicators && s.indicators.length > 0 && `: ${s.indicators.map((i) => indicatorLabels[i] ?? i).join(', ')}`}
                 </Badge>

@@ -40,7 +40,8 @@ function Waterfall({ firmId }: { firmId: string }) {
   const highs = data.map((d) => d.offset + d.value)
   const lo = Math.max(0, Math.floor(Math.min(...lows) - 3))
   const hi = Math.min(100, Math.ceil(Math.max(...highs) + 3))
-  const color = (k: string) => (k === 'total' ? CHART_COLORS.navy : k === 'up' ? '#1E7B4F' : '#B42318')
+  // Tek renk ailesi: toplamlar lacivert, artış petrol, azalış soluk lacivert
+  const color = (k: string) => (k === 'total' ? CHART_COLORS.navy : k === 'up' ? CHART_COLORS.petrol : '#8FA1B8')
 
   return (
     <div>
@@ -183,6 +184,11 @@ export function ModelImpact() {
             </div>
           </div>
           <Waterfall firmId={focus} />
+          <p className="mt-1 flex flex-wrap gap-4 text-xs text-muted">
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-navy" />Toplam skor</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-accent" />Skoru artıran</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[#8FA1B8]" />Skoru azaltan</span>
+          </p>
         </Card>
         <Card title="Duyarlılık analizi" subtitle={`${firmName(focus)} · seçilen parametre min–max arasında kaydırılır`}>
           <Sensitivity firmId={focus} />
