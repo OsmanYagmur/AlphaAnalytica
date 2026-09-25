@@ -1,6 +1,6 @@
 /** tr-TR biçimlendirme yardımcıları. */
 
-import type { IndicatorUnit } from '../engine/modelConfig'
+import type { IndicatorUnit, SeriesUnit } from '../engine/modelConfig'
 
 const numberFormats = new Map<number, Intl.NumberFormat>()
 function nf(digits: number): Intl.NumberFormat {
@@ -121,4 +121,38 @@ export function formatSeriesValue(value: number): string {
   if (Math.abs(value) >= 100) return formatNumber(value, 0)
   if (Math.abs(value) >= 10) return formatNumber(value, 1)
   return formatNumber(value, 2)
+}
+
+/** Aylık kaynak verinin dönem ortalamasını birimine göre biçimlendirir (ör. "142.319 ₺", "1.284 adet"). */
+export function formatSeriesAverage(value: number | null, unit: SeriesUnit): string {
+  if (value === null || !Number.isFinite(value)) return 'Veri yok'
+  const digits = (v: number) => (Math.abs(v) < 10 ? 2 : Math.abs(v) < 100 ? 1 : 0)
+  switch (unit) {
+    case 'tl':
+      return Math.abs(value) >= 10_000_000 ? formatTLShort(value) : formatTL(value)
+    case 'count':
+      return `${formatNumber(value, digits(value))} adet`
+    case 'people':
+      return `${formatNumber(value, Math.abs(value) < 100 ? 1 : 0)} kişi`
+    case 'tons':
+      return `${formatNumber(value, 0)} ton`
+    case 'tlPerKg':
+      return `${formatNumber(value, 2)} ₺/kg`
+    case 'binary':
+      return value >= 1 ? 'Geçerli' : value <= 0 ? 'Geçersiz' : 'Dönemin bir kısmında geçerli'
+    default:
+      return formatIndicatorValue(value, unit)
+  }
+}
+
+/** Dönem ayları → "Haz 26 – Ağu 26" (tek ayda "Ağu 26"). */
+export function formatPeriodRange(months: readonly string[]): string {
+  if (months.length === 0) return '—'
+  const first = formatYearMonth(months[0])
+  return months.length === 1 ? first : `${first} – ${formatYearMonth(months[months.length - 1])}`
+}
+
+/** "önceki aya göre" / "önceki 3 aya göre" */
+export function formatPeriodComparison(periodMonths: number): string {
+  return periodMonths === 1 ? 'önceki aya göre' : `önceki ${periodMonths} aya göre`
 }

@@ -256,6 +256,36 @@ export function Tabs<T extends string>({ value, onChange, items }: TabsProps<T>)
   )
 }
 
+interface SegmentedControlProps<T extends string | number> {
+  value: T
+  onChange: (value: T) => void
+  items: { value: T; label: ReactNode }[]
+  ariaLabel: string
+}
+
+/** Segment kontrol: birbirini dışlayan birkaç seçenek (ör. dönem seçimi). */
+export function SegmentedControl<T extends string | number>({ value, onChange, items, ariaLabel }: SegmentedControlProps<T>) {
+  return (
+    <div className="inline-flex shrink-0 gap-0.5 rounded-md border border-line bg-subtle p-0.5" role="radiogroup" aria-label={ariaLabel}>
+      {items.map((item) => (
+        <button
+          key={item.value}
+          type="button"
+          role="radio"
+          aria-checked={item.value === value}
+          onClick={() => onChange(item.value)}
+          className={cx(
+            'whitespace-nowrap rounded px-2.5 py-1 text-xs transition-colors',
+            item.value === value ? 'bg-surface font-medium text-navy shadow-card' : 'text-muted hover:text-ink',
+          )}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Form alanları
 // ---------------------------------------------------------------------------

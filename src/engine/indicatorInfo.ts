@@ -26,10 +26,10 @@ export function describeIndicatorValue(measure: IndicatorMeasure): string {
 }
 
 /** Yalnızca gösterim amaçlı, parametre olmayan gösterge alanları. */
-export const INDICATOR_TEXT_KEYS = ['aciklama', 'birimAciklamasi'] as const satisfies readonly (keyof AlternativeIndicatorConfig)[]
+export const INDICATOR_TEXT_KEYS = ['aciklama', 'birimAciklamasi', 'seriesUnit'] as const satisfies readonly (keyof AlternativeIndicatorConfig)[]
 
 /**
- * Bu alanlardan önce kaydedilmiş (localStorage veya JSON) konfigürasyonlarda
+ * Bu alanlardan (açıklamalar, veri birimi) önce kaydedilmiş (localStorage veya JSON) konfigürasyonlarda
  * eksik gösterim alanlarını v1.0 varsayılanlarından tamamlar. Parametrelere
  * dokunmaz; eksik alan yoksa aynı nesneyi döner.
  */

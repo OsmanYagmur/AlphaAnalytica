@@ -259,7 +259,7 @@ Konfigürasyon `ModelConfig` tipindedir (`src/engine/modelConfig.ts`). Aşağıd
 | `sectors.<sektör>.riskCoefficient` | Sektör Risk Katsayısı (SRK) | Bölüm 6 ve 9 |
 | `sectors.<sektör>.cccMedianDays` | Sektörel NDS medyanı | Bölüm 9 |
 | `sectors.<sektör>.indicators.<gösterge>` | Gösterge: etiket, ağırlık, veri kaynağı, ölçüm yöntemi, kırılımlar | Bölüm 9 |
-| `sectors.<sektör>.indicators.<gösterge>.aciklama` / `.birimAciklamasi` | Göstergenin neyi ölçtüğü ve aylık verinin birimi (yalnızca gösterim; skoru etkilemez, sürüm farkında parametre sayılmaz) | Bölüm 9 |
+| `sectors.<sektör>.indicators.<gösterge>.aciklama` / `.birimAciklamasi` / `.seriesUnit` | Göstergenin neyi ölçtüğü, aylık verinin açıklaması ve birimi (yalnızca gösterim; skoru etkilemez, sürüm farkında parametre sayılmaz) | Bölüm 9 |
 | `sectors.<sektör>.seasonality.profiles.<profil>.index` | 12 aylık sezon endeksi (ortalama 1,00) | Bölüm 9 |
 | `sectors.<sektör>.productMix` | Sektörel ürün kırılımı | Bölüm 9 |
 | `presentation.strengthBands.strongMin / moderateMin` | "Güçlü / Orta / Zayıf" etiket sınırları | 70 / 40 |
@@ -273,6 +273,8 @@ Konfigürasyon `ModelConfig` tipindedir (`src/engine/modelConfig.ts`). Aşağıd
 Her sektörde 4–6 gösterge vardır ve ağırlık toplamı %100'dür. "Veri" sütunu, firma verisindeki aylık seri anahtarıdır (`revenue` = aylık ciro).
 
 Tahsis Yöneticisi (Alternatif Veri sekmesi) ve Portföy Yöneticisi (Erken uyarı ve izleme kartı) ekranlarında her gösterge adının yanında bir bilgi ikonu vardır; üzerine gelince veya tıklayınca göstergenin ne ölçtüğü ve aylık verinin birimi görünür. Sunum Modu'nda açıklama adın altında sürekli yazılır. Gösterilen değerin ne olduğu (ör. "Geçen yılın aynı dönemine göre değişim · son 3 ay") değerin altında, ölçüm yönteminden türetilerek yazılır. Açıklamalar formül, ağırlık veya eşik içermez.
+
+**Dönem görünümü (yalnızca görüntüleme).** Aynı iki ekranda 1 ay | 3 ay | 6 ay | 12 ay dönem seçici vardır (varsayılan 3 ay). Seçilen N ay için her göstergenin aylık verisinden dönem ortalaması, bir önceki eşit uzunluktaki döneme göre değişim yüzdesi ve mini grafik (önceki ve seçili dönem; en az 6 ay, seçili dönem vurgulu) gösterilir; veri firmanın 24 aylık serilerinden okunur. Kartın alt başlığında dönem tarihleri yazar (ör. "Haz 26 – Ağu 26, önceki 3 aya göre"). Güçlü / Orta / Zayıf etiketi, göstergenin ölçüm yöntemi seçili döneme uyarlanarak hesaplanan değerin kırılım eğrisi ve `presentation.strengthBands` sınırlarıyla yeniden belirlenir. Değişimin rengi göstergenin yönüne göredir (ör. iade oranındaki artış olumsuz). **Dönem seçimi skoru etkilemez:** kredi skoru, not ve limit motorun kendi ölçüm pencereleriyle (Bölüm 4) hesaplanmaya devam eder; kartlarda skora giren değer ayrıca gösterilir. Hesaplama `src/engine/indicatorPeriod.ts` içindedir.
 
 ### E-ticaret
 
@@ -633,4 +635,5 @@ Sunumdan önce **Ctrl+Shift+R** ile demo başlangıç durumuna (v1.0, başlangı
 - **Kullandırılan risk:** Onaylı limitin kullanım oranı demo verisinde karar kaydıyla birlikte tutulur; yeni kararlarda %0 başlar.
 - **Teminat türleri:** Şartname teminat türünü yalnız AAA için (müşterek kefalet) ve BBB altı için (ipotek) belirtir; AA ve A için "çek / senet temliki + müşterek kefalet" varsayılmıştır. Oto galeri stok finansmanı için dördüncü ürün olarak "Stok finansmanı" eklenmiştir.
 - **Fiyatlama:** TLREF'in sayısal değeri modele dahil değildir; fiyat "TLREF + spread" olarak gösterilir.
+- **Dönem görünümünde ölçüm uyarlaması:** Ortalama ölçümlü göstergelerde etiket dönem ortalamasından; değişim ölçümlülerde dönem uzunluğunda aynı karşılaştırma aralığıyla (ör. geçen yılın aynı dönemi, sezonsallıktan etkilenmemesi için); eğilimli seviyede dönem uzunluğunda regresyonla (en az 3 ay) hesaplanır. Son gözlem ve sezon dönemi ölçümleri dönemden bağımsızdır. Karşılaştırma için yeterli geçmiş yoksa (ör. karar tarihindeki veriyle 12 ay) değişim "—", etiket "Yetersiz veri" gösterilir. Ekranda gösterilen değişim ise her zaman bir önceki eşit uzunluktaki dönemedir.
 - **Model değişiklik akışı:** Model Yöneticisi'ndeki düzenlemeler önce çalışma kopyasında tutulur, "Taslak" ile saklanabilir; aktif model yalnızca "Yeni sürüm olarak kaydet" veya bir sürümün aktif yapılmasıyla değişir.

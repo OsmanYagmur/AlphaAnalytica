@@ -1,4 +1,4 @@
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Legend, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { formatSeriesValue, formatTL, formatTLShort, formatYearMonth } from '../lib/format'
 
 export const CHART_COLORS = {
@@ -21,10 +21,12 @@ interface SparklineProps {
   values: number[]
   months: string[]
   height?: number
+  /** Bu aydan serinin sonuna kadarki bölge (seçili dönem) hafifçe vurgulanır. */
+  highlightFrom?: string
 }
 
-/** Mini grafik: gösterge serisinin son 24 ayı. */
-export function Sparkline({ values, months, height = 44 }: SparklineProps) {
+/** Mini grafik: gösterge serisi; isteğe bağlı olarak seçili dönem vurgulu. */
+export function Sparkline({ values, months, height = 44, highlightFrom }: SparklineProps) {
   const offset = months.length - values.length
   const data = values.map((v, i) => ({ m: months[offset + i], v }))
   return (
@@ -40,6 +42,9 @@ export function Sparkline({ values, months, height = 44 }: SparklineProps) {
             labelStyle={{ color: '#5B6475' }}
           />
           <XAxis dataKey="m" hide />
+          {highlightFrom && data.length > 0 && (
+            <ReferenceArea x1={highlightFrom} x2={data[data.length - 1].m} fill={CHART_COLORS.petrol} fillOpacity={0.08} stroke="none" ifOverflow="extendDomain" />
+          )}
           <Line type="monotone" dataKey="v" stroke={CHART_COLORS.petrol} strokeWidth={1.5} dot={false} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>

@@ -116,7 +116,7 @@ function walk(before: unknown, after: unknown, path: string[], out: { path: stri
   if (before && after && typeof before === 'object' && typeof after === 'object') {
     const keys = new Set([...Object.keys(before as object), ...Object.keys(after as object)])
     for (const key of keys) {
-      if (key === 'label' || key === 'description' || key === 'aciklama' || key === 'birimAciklamasi') continue
+      if (key === 'label' || key === 'description' || key === 'aciklama' || key === 'birimAciklamasi' || key === 'seriesUnit') continue
       walk((before as Record<string, unknown>)[key], (after as Record<string, unknown>)[key], [...path, key], out)
     }
     return

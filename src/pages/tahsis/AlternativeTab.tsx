@@ -1,16 +1,24 @@
+import { useState } from 'react'
+import { DEFAULT_PERIOD_MONTHS, PeriodChange, PeriodNote, PeriodSelector, periodCaption, type PeriodMonths } from '../../components/IndicatorPeriod'
 import { IndicatorName } from '../../components/IndicatorName'
 import { SeasonalityChart, Sparkline } from '../../components/charts'
 import { Badge, Card, ScoreBar, cx } from '../../components/ui'
-import { resolveSourceSeries, sectorIndicators } from '../../engine/alternativeScore'
+import { sectorIndicators } from '../../engine/alternativeScore'
 import type { FirmEvaluation } from '../../engine/evaluate'
 import { strengthLabel } from '../../engine/factors'
 import { describeIndicatorValue } from '../../engine/indicatorInfo'
+import { computeIndicatorPeriod, type IndicatorPeriodStats } from '../../engine/indicatorPeriod'
 import type { ModelConfig } from '../../engine/modelConfig'
 import type { Firm } from '../../data'
 import { alternativeInputAsOf } from '../../engine/evaluate'
-import { formatIndicatorValue, formatScore } from '../../lib/format'
+import { formatIndicatorValue, formatPeriodComparison, formatScore, formatSeriesAverage } from '../../lib/format'
 
 const STRENGTH_TONE = { Güçlü: 'positive', Orta: 'warning', Zayıf: 'negative' } as const
+
+/** Seçili dönemin ayları (ilk verisi olan göstergeden). */
+function periodMonthsOf(stats: Record<string, IndicatorPeriodStats>): string[] {
+  return Object.values(stats).find((s) => s.months.length > 0)?.months ?? []
+}
 
 export function AlternativeTab({
   firm,
@@ -26,6 +34,9 @@ export function AlternativeTab({
   const alt = evaluation.alternative
   const input = alternativeInputAsOf(firm.alternative, dataAsOf)
   const indicators = sectorIndicators(config, firm.sectorId)
+  const [period, setPeriod] = useState<PeriodMonths>(DEFAULT_PERIOD_MONTHS)
+  // Yalnızca görüntüleme: skor, not ve limit motorun kendi pencereleriyle hesaplanır
+  const periodStats = Object.fromEntries(indicators.map(([id, ind]) => [id, computeIndicatorPeriod(ind, input, period, config)]))
 
   return (
     <div className="space-y-4">
@@ -58,29 +69,51 @@ export function AlternativeTab({
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-        {indicators.map(([id, ind]) => {
-          const result = alt.indicators[id]
-          const series = resolveSourceSeries(ind.source, input)
-          const strength = result.score !== null ? strengthLabel(result.score, config) : null
-          return (
-            <div key={id} className={cx('rounded-lg border border-line bg-surface p-4 shadow-card', !result.available && 'opacity-60')}>
-              <div className="flex items-start justify-between gap-3">
-                <IndicatorName label={ind.label} aciklama={ind.aciklama} birimAciklamasi={ind.birimAciklamasi} labelClassName="text-sm font-medium leading-snug text-ink" />
-                {strength ? <Badge tone={STRENGTH_TONE[strength]}>{strength}</Badge> : <Badge>Veri yok</Badge>}
+      <Card
+        title="Sektör göstergeleri"
+        subtitle={periodCaption(periodMonthsOf(periodStats), period)}
+        actions={<PeriodSelector value={period} onChange={setPeriod} />}
+      >
+        <PeriodNote className="-mt-1 mb-3" />
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {indicators.map(([id, ind]) => {
+            const result = alt.indicators[id]
+            const stats = periodStats[id]
+            return (
+              <div key={id} className={cx('flex flex-col rounded-lg border border-line bg-surface p-4', !result.available && 'opacity-60')}>
+                <div className="flex items-start justify-between gap-3">
+                  <IndicatorName label={ind.label} aciklama={ind.aciklama} birimAciklamasi={ind.birimAciklamasi} labelClassName="text-sm font-medium leading-snug text-ink" />
+                  {stats.strength ? <Badge tone={STRENGTH_TONE[stats.strength]}>{stats.strength}</Badge> : <Badge>Yetersiz veri</Badge>}
+                </div>
+                <div className="mt-2 flex items-baseline justify-between gap-3">
+                  <span className="num text-lg font-semibold text-navy">{formatSeriesAverage(stats.average, ind.seriesUnit)}</span>
+                  <PeriodChange stats={stats} />
+                </div>
+                <div className="flex items-baseline justify-between gap-3 text-xs text-muted">
+                  <span>{period === 1 ? 'Dönem değeri' : 'Dönem ortalaması (aylık)'}</span>
+                  <span>{formatPeriodComparison(period)}</span>
+                </div>
+                <div className="mt-2">
+                  {stats.spark.values.length > 0 ? (
+                    <Sparkline values={stats.spark.values} months={stats.spark.months} highlightFrom={stats.months[0]} />
+                  ) : (
+                    <div className="h-11" />
+                  )}
+                </div>
+                <p className="mt-auto border-t border-line pt-2 text-xs leading-snug text-muted">
+                  <span className="text-ink">Skordaki değer:</span>{' '}
+                  <span className="num text-ink">{formatIndicatorValue(result.value, ind.unit)}</span> · {describeIndicatorValue(ind.measure)}
+                  {result.score !== null && (
+                    <>
+                      {' '}· <span className="num">Puan {formatScore(result.score)}</span>
+                    </>
+                  )}
+                </p>
               </div>
-              <div className="mt-2 flex items-baseline justify-between gap-3">
-                <span className="num text-lg font-semibold text-navy">{formatIndicatorValue(result.value, ind.unit)}</span>
-                {result.score !== null && <span className="num text-xs text-muted">Puan {formatScore(result.score)}</span>}
-              </div>
-              <p className="mt-0.5 text-xs leading-snug text-muted">{describeIndicatorValue(ind.measure)}</p>
-              <div className="mt-3 border-t border-line pt-2">
-                {series ? <Sparkline values={series} months={input.months} /> : <div className="h-11" />}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      </Card>
     </div>
   )
 }

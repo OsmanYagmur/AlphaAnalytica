@@ -1,17 +1,17 @@
 import { AlertOctagon, ArrowLeft, Eye, Info } from 'lucide-react'
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AppShell } from '../../components/AppShell'
-import { CHART_COLORS } from '../../components/charts'
+import { CHART_COLORS, Sparkline } from '../../components/charts'
+import { DEFAULT_PERIOD_MONTHS, PeriodChange, PeriodNote, PeriodSelector, periodCaption, type PeriodMonths } from '../../components/IndicatorPeriod'
 import { Gauge } from '../../components/Gauge'
 import { IndicatorName } from '../../components/IndicatorName'
 import { Badge, Button, Card, DataRow, GradeBadge, ModelVersionTag, cx } from '../../components/ui'
 import { REJECTION_REASONS, SEGMENT_LABELS } from '../../data'
 import { scoreTrend } from '../../engine/evaluate'
-import { strengthLabel } from '../../engine/factors'
-import { describeIndicatorValue } from '../../engine/indicatorInfo'
+import { computeIndicatorPeriod } from '../../engine/indicatorPeriod'
 import { PRODUCT_IDS, PRODUCT_LABELS, type AlternativeIndicatorConfig, type CollateralTypeId } from '../../engine/modelConfig'
-import { formatDateTime, formatIndicatorValue, formatPercent, formatScore, formatTL, formatYearMonth } from '../../lib/format'
+import { formatDateTime, formatPercent, formatPeriodComparison, formatScore, formatSeriesAverage, formatTL, formatYearMonth } from '../../lib/format'
 import { navigate } from '../../lib/router'
 import { useActiveConfig, useActiveVersion, useFirmView, type FirmView } from '../../store/evaluations'
 import { approvedLimit, utilizedAmount } from '../../store/portfolio'
@@ -174,16 +174,24 @@ function LimitDetail({ view }: { view: FirmView }) {
   )
 }
 
+const STRENGTH_TONE = { Güçlü: 'positive', Orta: 'warning', Zayıf: 'negative' } as const
+
 function Monitoring({ view }: { view: FirmView }) {
   const ev = view.current
+  const [period, setPeriod] = useState<PeriodMonths>(DEFAULT_PERIOD_MONTHS)
   const indicators = view.config.sectors[view.firm.sectorId].indicators as Record<string, AlternativeIndicatorConfig>
-  const weakest = Object.entries(ev.alternative.indicators)
-    .filter(([, r]) => r.score !== null)
-    .sort((a, b) => a[1].score! - b[1].score!)
-    .slice(0, 3)
+  // Yalnızca görüntüleme: güncel veriyle seçili dönem; skor ve not motorun kendi pencereleriyle hesaplanır
+  const rows = useMemo(
+    () =>
+      Object.entries(indicators)
+        .map(([id, ind]) => ({ id, ind, stats: computeIndicatorPeriod(ind, view.firm.alternative, period, view.config) }))
+        .sort((a, b) => (a.stats.score ?? Infinity) - (b.stats.score ?? Infinity)),
+    [indicators, view.firm.alternative, view.config, period],
+  )
+  const periodMonths = rows.find((r) => r.stats.months.length > 0)?.stats.months ?? []
   const hasSignals = ev.earlyWarnings.critical.length > 0 || ev.earlyWarnings.watch.length > 0
   return (
-    <Card title="Erken uyarı ve izleme" subtitle="Aktif model ve güncel veriyle">
+    <Card title="Erken uyarı ve izleme" subtitle={`Aktif model ve güncel veriyle · ${periodCaption(periodMonths, period)}`}>
       <p className="label-caps mb-2">Erken uyarı sinyalleri</p>
       {hasSignals ? (
         <ul className="mb-4 space-y-2">
@@ -208,24 +216,29 @@ function Monitoring({ view }: { view: FirmView }) {
       ) : (
         <p className="mb-4 text-sm text-muted">Aktif erken uyarı sinyali yok.</p>
       )}
-      <p className="label-caps mb-2">İzlenmesi gereken göstergeler</p>
-      <ul className="space-y-2">
-        {weakest.map(([id, r]) => {
-          const strength = strengthLabel(r.score!, view.config)
-          return (
-            <li key={id} className="border-b border-line pb-2 text-sm last:border-b-0">
-              <div className="flex items-start justify-between gap-3">
-                <IndicatorName label={r.label} aciklama={indicators[id].aciklama} birimAciklamasi={indicators[id].birimAciklamasi} labelClassName="text-ink" />
-                <span className="flex shrink-0 items-baseline gap-2">
-                  <span className="num">{formatIndicatorValue(r.value, indicators[id].unit)}</span>
-                  <Badge tone={strength === 'Güçlü' ? 'positive' : strength === 'Orta' ? 'warning' : 'negative'}>{strength}</Badge>
-                </span>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <p className="label-caps">İzlenmesi gereken göstergeler</p>
+        <PeriodSelector value={period} onChange={setPeriod} />
+      </div>
+      <p className="mb-2 text-xs text-muted">Seçili dönemde zayıftan güçlüye; tutar dönem ortalaması, yüzde {formatPeriodComparison(period)} değişim.</p>
+      <ul className="space-y-2.5">
+        {rows.map(({ id, ind, stats }) => (
+          <li key={id} className="border-b border-line pb-2.5 text-sm last:border-b-0">
+            <div className="flex items-start justify-between gap-3">
+              <IndicatorName label={ind.label} aciklama={ind.aciklama} birimAciklamasi={ind.birimAciklamasi} labelClassName="text-ink" />
+              {stats.strength ? <Badge tone={STRENGTH_TONE[stats.strength]}>{stats.strength}</Badge> : <Badge>Yetersiz veri</Badge>}
+            </div>
+            <div className="mt-1 grid grid-cols-[1fr_6rem] items-center gap-3">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="num text-ink">{formatSeriesAverage(stats.average, ind.seriesUnit)}</span>
+                <PeriodChange stats={stats} />
               </div>
-              <p className="mt-0.5 text-xs leading-snug text-muted">{describeIndicatorValue(indicators[id].measure)}</p>
-            </li>
-          )
-        })}
+              {stats.spark.values.length > 0 && <Sparkline values={stats.spark.values} months={stats.spark.months} height={28} highlightFrom={stats.months[0]} />}
+            </div>
+          </li>
+        ))}
       </ul>
+      <PeriodNote className="mt-3 border-t border-line pt-2.5" />
     </Card>
   )
 }
