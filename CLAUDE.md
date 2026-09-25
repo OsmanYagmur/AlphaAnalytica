@@ -9,6 +9,7 @@ Tam şartname **SPEC.md** dosyasındadır. Aşama aşama ilerlenir; aşama liste
 - Uzun planlama yapma; aşamayı küçük adımlara bölüp doğrudan uygulamaya başla.
 - Her aşama sonunda `npm run build` ve `npm test` hatasız geçmeli.
 - Her aşama sonunda anlamlı bir mesajla git commit at.
+- Revizyonlar: her revizyon SPEC.md sonundaki "# REVİZYONLAR" bölümüne bir sonraki numarayla (R4, R5 …) madde olarak eklenir. Revizyon, yukarıdaki şartname maddeleriyle çelişirse revizyon geçerlidir. Her revizyondan sonra `npm test` ve `npm run build` çalıştırılır, commit atılır, durulur ve özet verilir. METODOLOJI.md etkileniyorsa o da (ve `docs/METODOLOJI.pdf`) güncellenir.
 
 ## Teknik kurallar
 - Stack: Vite + React + TypeScript + Tailwind CSS + Recharts + lucide-react. Test: Vitest.

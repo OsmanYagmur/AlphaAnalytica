@@ -256,3 +256,20 @@ Bitirdiğinde proje kökünde METODOLOJI.md oluştur. İçinde şunlar olsun:
 - 5–6 dakikalık sunum akışı önerisi: hangi firmayı hangi sırayla açmalı. Son adım: Model Yöneticisi panelinde alternatif veri ağırlığını %50'den %30'a düşürüp kırtasiye firmasının notunun ve limitinin nasıl değiştiğini canlı göstermek.
 
 Önce motor ve demo verisini kur, testleri çalıştır, sonra sırasıyla Tahsis, Portföy ve Model Yöneticisi arayüzlerini yap. Her aşamadan sonra dur ve bana özet ver.
+
+# REVİZYONLAR
+Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukarıdaki bölümlerle çelişen bir madde varsa revizyon geçerlidir; aynı konudaki daha yeni revizyon eskisini geçersiz kılar. Her yeni revizyon bir sonraki numarayla bu listenin sonuna eklenir; ardından testler ve build çalıştırılır ve commit atılır.
+
+## R1 — Holding ölçeğinde demo firmaları (Eylül 2026)
+- "DEMO VERİSİ"ndeki 14 KOBİ'ye ek olarak büyük hacimli 2 holding firması eklenir; toplam **16 firma**. Kuzeyhan Tekstil Holding A.Ş. (tekstil, İstanbul, 2.400 çalışan, 7 grup şirketi, onaylanmış) ve Çağlayan Gıda ve Tarım Holding A.Ş. (tarım/gıda, Konya, 1.150 çalışan, 5 grup şirketi, tahsis bekliyor). Başlangıç durumu: 9 bekleyen (8 KOBİ + Çağlayan), 7 karara bağlanmış.
+- Her firmanın ölçeği (segment) vardır: çalışan sayısından <10 mikro, <50 küçük, <250 orta, diğerleri büyük işletme; holdinglerde "Holding" ve grup şirketi sayısı. Ölçek künyede ve listelerde rozet olarak gösterilir.
+- Tahsis kuyruğunda ve Portföy özetinde ölçek filtresi vardır: Tümü / KOBİ / Holding.
+- Formüller ölçekten bağımsızdır; holdingler için ayrı parametre yoktur. Milyar TL tutarları kısa gösterimde "mr ₺" ile yazılır; limit revize adımı tutara göre ölçeklenir.
+
+## R2 — Kuruş hassasiyeti ve mizan PDF'leri (Eylül 2026)
+- Demo verisindeki tüm TL tutarları yuvarlak değil, kuruş hassasiyetindedir (ör. 1.500 ₺ yerine 1.457,43 ₺). Mizan, borç/alacak hareket toplamları ve bakiyeleriyle kuruşu kuruşuna denktir; alt hesap bölüşümleri firmaya özgü sapmalar içerir.
+- Mizan tablosu Borç, Alacak, Borç Bakiye, Alacak Bakiye sütunlarıyla ve iki ondalıkla gösterilir.
+- Her firmanın 2025 mizanı gerçek bir muhasebe programı çıktısı biçiminde `docs/mizanlar/` altında PDF olarak bulunur (firma başına bir dosya + hepsini içeren `00_tum_firmalar_mizan_2025.pdf`). Üretici: `scripts/mizan_pdf.py`.
+
+## R3 — Metodolojinin PDF sürümü (Eylül 2026)
+- METODOLOJI.md'nin baskıya hazır PDF sürümü `docs/METODOLOJI.pdf` olarak tutulur (kapak, içindekiler, akış şeması, tablolar). Üretici: `scripts/metodoloji_pdf.py`. METODOLOJI.md değiştiğinde PDF yeniden üretilir.
