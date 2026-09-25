@@ -245,7 +245,15 @@ export type IndicatorMeasure =
 
 export interface AlternativeIndicatorConfig {
   label: string
+  /** Teknik tanım (Model Yöneticisi paneli). */
   description: string
+  /**
+   * Göstergenin neyi ölçtüğü: tek cümle, sade Türkçe; formül, ağırlık veya eşik
+   * içermez. Tahsis ve Portföy ekranlarında bilgi ipucu olarak gösterilir.
+   */
+  aciklama: string
+  /** Aylık verinin neyi ve hangi birimde ifade ettiği (ör. "Ay içinde düzenlenen e-irsaliye sayısı (adet)."). */
+  birimAciklamasi: string
   unit: IndicatorUnit
   /** SP içindeki ağırlık; sektör içi toplam 1. */
   weight: number
@@ -679,6 +687,8 @@ const DEFAULTS: ModelConfig = {
           label: 'Ürün yorum puanı ve trendi',
           description:
             'Pazaryeri ürün yorumlarının ortalama puanı (5 üzerinden); seviye ve son dönem eğilimi birlikte değerlendirilir',
+          aciklama: 'Pazaryerindeki ürün yorumlarının ortalama puanı ve bu puanın son aylardaki yönü; müşteri memnuniyetini gösterir.',
+          birimAciklamasi: 'Ay içindeki ürün yorumlarının ortalama puanı (5 üzerinden).',
           unit: 'rating5',
           weight: 0.2,
           source: { series: 'reviewRating' },
@@ -688,6 +698,8 @@ const DEFAULTS: ModelConfig = {
         negativeReviewRatio: {
           label: 'Yorum duygu skoru (olumsuz yorum oranı)',
           description: 'Duygu analizinde olumsuz sınıflanan yorumların toplam yorumlara oranı',
+          aciklama: 'Müşteri yorumları içinde olumsuz olarak sınıflanan yorumların payı; ürün ve hizmet kalitesine yönelik şikâyet yoğunluğunu gösterir.',
+          birimAciklamasi: 'Ay içindeki olumsuz yorumların tüm yorumlara oranı (%).',
           unit: 'share',
           weight: 0.15,
           source: { series: 'negativeReviewRatio' },
@@ -697,6 +709,8 @@ const DEFAULTS: ModelConfig = {
         orderVolume: {
           label: 'Sipariş adedi ve ortalama sepet tutarı',
           description: `Sipariş hacmi (sipariş adedi × ortalama sepet tutarı); ${YOY_DESC}`,
+          aciklama: 'Alınan sipariş sayısı ile sepet tutarlarının birlikte oluşturduğu sipariş hacmi; satışların gerçek yönünü gösterir.',
+          birimAciklamasi: 'Ay içinde alınan siparişlerin toplam tutarı (TL).',
           unit: 'change',
           weight: 0.2,
           source: { product: ['orderCount', 'averageBasket'] },
@@ -706,6 +720,8 @@ const DEFAULTS: ModelConfig = {
         returnRate: {
           label: 'İade oranı',
           description: 'İade edilen siparişlerin toplam siparişlere oranı',
+          aciklama: 'İade edilen siparişlerin payı; ürün kalitesini, ürün tanıtımının doğruluğunu ve müşteri memnuniyetini yansıtır.',
+          birimAciklamasi: 'Ay içinde iade edilen siparişlerin tüm siparişlere oranı (%).',
           unit: 'share',
           weight: 0.2,
           source: { series: 'returnRate' },
@@ -715,6 +731,8 @@ const DEFAULTS: ModelConfig = {
         onTimeDelivery: {
           label: 'Kargo teslim süresi ve zamanında teslim oranı',
           description: 'Taahhüt edilen kargo teslim süresi içinde teslim edilen siparişlerin oranı',
+          aciklama: 'Siparişlerin söz verilen kargo süresi içinde müşteriye ulaşma oranı; operasyonel güvenilirliği gösterir.',
+          birimAciklamasi: 'Ay içinde zamanında teslim edilen siparişlerin oranı (%).',
           unit: 'share',
           weight: 0.1,
           source: { series: 'onTimeDeliveryRate' },
@@ -724,6 +742,8 @@ const DEFAULTS: ModelConfig = {
         sellerScore: {
           label: 'Pazaryeri satıcı puanı',
           description: 'Pazaryeri A satıcı performans puanı (10 üzerinden)',
+          aciklama: 'Pazaryerinin satıcıya verdiği performans puanı; teslimat, iletişim ve iade süreçlerindeki genel başarıyı özetler.',
+          birimAciklamasi: 'Pazaryerinin aylık satıcı performans puanı (10 üzerinden).',
           unit: 'rating10',
           weight: 0.15,
           source: { series: 'sellerScore' },
@@ -753,6 +773,8 @@ const DEFAULTS: ModelConfig = {
         newListings: {
           label: 'Aylık yeni ilan sayısı',
           description: `İlan platformlarına eklenen yeni araç ilanı sayısı; ${YOY_DESC}`,
+          aciklama: 'İlan platformlarına eklenen yeni araç ilanı sayısı; galerinin stok yenileme temposunu ve iş hacmini gösterir.',
+          birimAciklamasi: 'Ay içinde eklenen yeni araç ilanı sayısı (adet).',
           unit: 'change',
           weight: 0.15,
           source: { series: 'newListings' },
@@ -762,6 +784,8 @@ const DEFAULTS: ModelConfig = {
         soldListings: {
           label: 'Satılan / kaldırılan ilan sayısı',
           description: `Satış nedeniyle kaldırılan ilan sayısı; ${YOY_DESC}`,
+          aciklama: 'Araç satıldığı için yayından kaldırılan ilan sayısı; fiili satış temposunu gösterir.',
+          birimAciklamasi: 'Ay içinde satılarak kaldırılan ilan sayısı (adet).',
           unit: 'change',
           weight: 0.25,
           source: { series: 'soldListings' },
@@ -772,6 +796,8 @@ const DEFAULTS: ModelConfig = {
           label: 'Ortalama ilanda kalma süresi (stok devir)',
           description:
             'Aracın ilana konmasından satışına kadar geçen ortalama gün; seviye ve son dönem eğilimi birlikte değerlendirilir',
+          aciklama: 'Bir aracın satılana kadar ilanda kaldığı süre; stokların ne kadar hızlı nakde döndüğünü gösterir.',
+          birimAciklamasi: 'Ay içinde satılan araçların ilanda kaldığı ortalama süre (gün).',
           unit: 'days',
           weight: 0.25,
           source: { series: 'daysOnMarket' },
@@ -781,6 +807,8 @@ const DEFAULTS: ModelConfig = {
         inventoryValue: {
           label: 'Stok değeri',
           description: 'Araç stok değerinin aylık ciroya oranı (kaç aylık satışa yettiği)',
+          aciklama: 'Galerinin elinde tuttuğu araç stokunun aylık satışlara kıyasla büyüklüğü; stokta bağlı kalan sermayeyi gösterir.',
+          birimAciklamasi: 'Ay sonu stok değerinin kaç aylık ciroya karşılık geldiği (kat).',
           unit: 'months',
           weight: 0.15,
           source: { ratio: ['inventoryValue', 'revenue'] },
@@ -790,6 +818,8 @@ const DEFAULTS: ModelConfig = {
         priceCutFrequency: {
           label: 'Fiyat indirimi sıklığı',
           description: 'Ay içinde fiyatı düşürülen ilanların aktif ilanlara oranı',
+          aciklama: 'Fiyatı düşürülen ilanların payı; satış baskısını ve talepteki zayıflığı gösterir.',
+          birimAciklamasi: 'Ay içinde fiyatı düşürülen ilanların tüm ilanlara oranı (%).',
           unit: 'share',
           weight: 0.2,
           source: { series: 'priceCutRatio' },
@@ -819,6 +849,8 @@ const DEFAULTS: ModelConfig = {
         posRevenue: {
           label: 'POS ciro',
           description: `Üye işyeri POS cirosu; ${YOY_DESC}`,
+          aciklama: 'Mağazadaki POS cihazlarından geçen kartlı satış tutarı; satış hacmini doğrudan gösterir.',
+          birimAciklamasi: 'Aylık POS cirosu (TL).',
           unit: 'change',
           weight: 0.2,
           source: { series: 'posRevenue' },
@@ -828,6 +860,8 @@ const DEFAULTS: ModelConfig = {
         posTransactions: {
           label: 'POS işlem adedi',
           description: `POS işlem sayısı; ${YOY_DESC}`,
+          aciklama: 'POS cihazlarında yapılan işlem sayısı; mağazaya gelen müşteri trafiğini gösterir.',
+          birimAciklamasi: 'Ay içindeki POS işlem sayısı (adet).',
           unit: 'change',
           weight: 0.15,
           source: { series: 'posTransactions' },
@@ -838,6 +872,8 @@ const DEFAULTS: ModelConfig = {
           label: 'Okul sezonu performansı',
           description:
             'Okul açılışı (Ağustos sonu–Eylül) ve ikinci dönem (Şubat) aylarındaki POS cirosunun bir önceki sezona göre değişimi',
+          aciklama: 'Okul açılışı ve yarıyıl dönemlerinde elde edilen satışlar; sektörün en kritik sezonundaki performansı gösterir.',
+          birimAciklamasi: 'Aylık POS cirosu (TL); değerlendirme okul sezonu aylarına bakar.',
           unit: 'change',
           weight: 0.25,
           source: { series: 'posRevenue' },
@@ -847,6 +883,8 @@ const DEFAULTS: ModelConfig = {
         inventoryTurnover: {
           label: 'Stok devir hızı',
           description: TURNOVER_DESC,
+          aciklama: 'Stokların bir yıl içinde kaç kez satılıp yenilendiği; stok yönetiminin verimliliğini gösterir.',
+          birimAciklamasi: 'Stokların yıllık devir sayısı (kez).',
           unit: 'times',
           weight: 0.15,
           source: { series: 'inventoryTurnover' },
@@ -856,6 +894,8 @@ const DEFAULTS: ModelConfig = {
         supplierPayment: {
           label: 'Tedarikçi ödeme düzeni',
           description: 'Tedarikçilere vadesinde yapılan ödemelerin toplam ödemelere oranı',
+          aciklama: 'Tedarikçilere yapılan ödemelerin vadesinde yapılma oranı; firmanın ödeme disiplinini ve nakit sıkışıklığı olup olmadığını gösterir.',
+          birimAciklamasi: 'Ay içinde vadesinde yapılan tedarikçi ödemelerinin oranı (%).',
           unit: 'share',
           weight: 0.25,
           source: { series: 'supplierOnTimePaymentRate' },
@@ -885,6 +925,8 @@ const DEFAULTS: ModelConfig = {
         bookingVolume: {
           label: 'Rezervasyon hacmi',
           description: `Alınan rezervasyon sayısı; ${YOY_DESC}`,
+          aciklama: 'Acentenin aldığı rezervasyon sayısı; gelecekteki satışların öncü göstergesidir.',
+          birimAciklamasi: 'Ay içinde alınan rezervasyon sayısı (adet).',
           unit: 'change',
           weight: 0.25,
           source: { series: 'bookings' },
@@ -894,6 +936,8 @@ const DEFAULTS: ModelConfig = {
         cancellationRate: {
           label: 'İptal oranı',
           description: 'İptal edilen rezervasyonların toplam rezervasyonlara oranı',
+          aciklama: 'İptal edilen rezervasyonların payı; talebin sağlamlığını ve olası iade yükünü gösterir.',
+          birimAciklamasi: 'Ay içindeki iptallerin rezervasyonlara oranı (%).',
           unit: 'share',
           weight: 0.2,
           source: { series: 'cancellationRate' },
@@ -903,6 +947,8 @@ const DEFAULTS: ModelConfig = {
         earlyBookingRate: {
           label: 'Erken rezervasyon oranı',
           description: 'Erken rezervasyon döneminde alınan rezervasyonların toplam rezervasyonlara oranı',
+          aciklama: 'Sezondan önce yapılan erken rezervasyonların payı; gelirin önceden görülebilmesini ve nakdin erken gelmesini gösterir.',
+          birimAciklamasi: 'Ay içindeki erken rezervasyonların tüm rezervasyonlara oranı (%).',
           unit: 'share',
           weight: 0.2,
           source: { series: 'earlyBookingRate' },
@@ -912,6 +958,8 @@ const DEFAULTS: ModelConfig = {
         customerRating: {
           label: 'Müşteri yorum puanı',
           description: 'Seyahat platformlarındaki ortalama müşteri puanı (5 üzerinden)',
+          aciklama: 'Müşterilerin tur ve hizmetlere verdiği ortalama puan; hizmet kalitesini ve acentenin itibarını gösterir.',
+          birimAciklamasi: 'Ay içindeki müşteri yorumlarının ortalama puanı (5 üzerinden).',
           unit: 'rating5',
           weight: 0.2,
           source: { series: 'customerRating' },
@@ -921,6 +969,8 @@ const DEFAULTS: ModelConfig = {
         tursabLicense: {
           label: 'TÜRSAB belge durumu',
           description: 'TÜRSAB acente belgesinin geçerliliği (geçerli = 1, askıda / iptal = 0)',
+          aciklama: 'Acentenin TÜRSAB belgesinin geçerli olup olmadığı; yasal olarak faaliyet gösterebilmenin ön koşuludur.',
+          birimAciklamasi: 'Belgenin ay sonundaki durumu (geçerli / geçersiz).',
           unit: 'binary',
           weight: 0.15,
           source: { series: 'tursabLicenseValid' },
@@ -955,6 +1005,8 @@ const DEFAULTS: ModelConfig = {
         mapRating: {
           label: 'Harita platformu puanı',
           description: 'Harita uygulamasındaki işletme puanı (5 üzerinden)',
+          aciklama: 'Harita platformlarında işletmeye verilen ortalama puan; salondaki müşteri memnuniyetini gösterir.',
+          birimAciklamasi: 'Harita platformundaki aylık ortalama puan (5 üzerinden).',
           unit: 'rating5',
           weight: 0.15,
           source: { series: 'mapRating' },
@@ -964,6 +1016,8 @@ const DEFAULTS: ModelConfig = {
         deliveryPlatformRating: {
           label: 'Yemek platformu puanı',
           description: 'Yemek Platformu A restoran puanı (10 üzerinden)',
+          aciklama: 'Yemek sipariş platformundaki işletme puanı; paket servis kalitesini gösterir.',
+          birimAciklamasi: 'Yemek platformundaki aylık işletme puanı (10 üzerinden).',
           unit: 'rating10',
           weight: 0.15,
           source: { series: 'deliveryPlatformRating' },
@@ -973,6 +1027,8 @@ const DEFAULTS: ModelConfig = {
         onlineOrders: {
           label: 'Online sipariş adedi',
           description: `Yemek platformu üzerinden alınan sipariş sayısı; ${YOY_DESC}`,
+          aciklama: 'Yemek platformları üzerinden alınan sipariş sayısı; paket servis talebinin yönünü gösterir.',
+          birimAciklamasi: 'Ay içinde platformlardan alınan sipariş sayısı (adet).',
           unit: 'change',
           weight: 0.2,
           source: { series: 'onlineOrders' },
@@ -982,6 +1038,8 @@ const DEFAULTS: ModelConfig = {
         posTransactions: {
           label: 'POS işlem sayısı',
           description: `Salon POS işlem adedi; ${YOY_DESC}`,
+          aciklama: 'Kasadaki POS işlem sayısı; işletmeye gelen müşteri trafiğini gösterir.',
+          birimAciklamasi: 'Ay içindeki POS işlem sayısı (adet).',
           unit: 'change',
           weight: 0.2,
           source: { series: 'posTransactions' },
@@ -991,6 +1049,8 @@ const DEFAULTS: ModelConfig = {
         averageTicket: {
           label: 'Ortalama adisyon',
           description: `POS cirosu / POS işlem sayısı; ${YOY_DESC}`,
+          aciklama: 'Müşteri başına ortalama hesap tutarı; fiyatlama gücünü ve harcama eğilimini gösterir.',
+          birimAciklamasi: 'Ay içindeki işlem başına ortalama tutar (TL).',
           unit: 'change',
           weight: 0.1,
           source: { ratio: ['posRevenue', 'posTransactions'] },
@@ -1000,6 +1060,8 @@ const DEFAULTS: ModelConfig = {
         sgkHeadcount: {
           label: 'SGK çalışan sayısı trendi',
           description: `SGK bildirgelerine göre sigortalı çalışan sayısı; ${YOY_DESC}`,
+          aciklama: "SGK'ya bildirilen çalışan sayısı; işletmenin büyüdüğünü ya da küçüldüğünü gösterir.",
+          birimAciklamasi: "Ay sonunda SGK'ya bildirilen çalışan sayısı (kişi).",
           unit: 'change',
           weight: 0.2,
           source: { series: 'sgkHeadcount' },
@@ -1028,6 +1090,8 @@ const DEFAULTS: ModelConfig = {
         buildingPermits: {
           label: 'Bölgesel yapı ruhsatı verisi',
           description: `Firmanın faaliyet gösterdiği ilde verilen yapı ruhsatı sayısı; ${YOY_DESC}`,
+          aciklama: 'Firmanın bulunduğu bölgede verilen yapı ruhsatı sayısı; yakın dönemde yapı malzemesine olacak talebin öncü göstergesidir.',
+          birimAciklamasi: 'Bölgede ay içinde verilen yapı ruhsatı sayısı (adet).',
           unit: 'change',
           weight: 0.2,
           source: { series: 'regionalBuildingPermits' },
@@ -1037,6 +1101,8 @@ const DEFAULTS: ModelConfig = {
         eDispatchVolume: {
           label: 'e-İrsaliye hacmi',
           description: `Düzenlenen e-irsaliye adedi; ${YOY_DESC}`,
+          aciklama: 'Firmanın düzenlediği elektronik sevk irsaliyesi sayısı; fiili mal sevkiyatı ve taşıma yoğunluğunu gösterir.',
+          birimAciklamasi: 'Ay içinde düzenlenen e-irsaliye sayısı (adet).',
           unit: 'change',
           weight: 0.3,
           source: { series: 'eDispatchCount' },
@@ -1046,6 +1112,8 @@ const DEFAULTS: ModelConfig = {
         chequePayment: {
           label: 'Çek ödeme performansı',
           description: 'Vadesinde karşılığı ödenen çeklerin vadesi gelen çeklere oranı',
+          aciklama: 'Firmanın verdiği çeklerin vadesinde ödenme oranı; ödeme disiplinini ve karşılıksız çek riskini gösterir.',
+          birimAciklamasi: 'Ay içinde vadesi gelen çeklerden zamanında ödenenlerin oranı (%).',
           unit: 'share',
           weight: 0.3,
           source: { series: 'chequePaidOnTimeRate' },
@@ -1055,6 +1123,8 @@ const DEFAULTS: ModelConfig = {
         publicTenders: {
           label: 'Kamu ihale kazanımları',
           description: 'Kazanılan kamu ihalesi sayısı (aylık ortalama)',
+          aciklama: 'Firmanın kazandığı kamu ihaleleri; kamu projelerinden gelecek iş hacmini ve sözleşmeye bağlı geliri gösterir.',
+          birimAciklamasi: 'Aylık ortalama kazanılan kamu ihalesi sayısı.',
           unit: 'count',
           weight: 0.2,
           source: { series: 'publicTenderWins' },
@@ -1084,6 +1154,8 @@ const DEFAULTS: ModelConfig = {
         exportInvoiceVolume: {
           label: 'e-Fatura / e-İhracat hacmi',
           description: `Düzenlenen e-fatura ve e-ihracat faturası tutarı; ${YOY_DESC}`,
+          aciklama: 'Düzenlenen e-Fatura ve e-İhracat faturalarının tutarı; gerçekleşen ihracat satışlarını gösterir.',
+          birimAciklamasi: 'Ay içinde düzenlenen ihracat faturalarının toplam tutarı (TL).',
           unit: 'change',
           weight: 0.25,
           source: { series: 'eExportInvoiceAmount' },
@@ -1093,6 +1165,8 @@ const DEFAULTS: ModelConfig = {
         exportDeclarations: {
           label: 'İhracat beyannamesi sayısı',
           description: `Gümrük ihracat beyannamesi adedi; ${YOY_DESC}`,
+          aciklama: 'Gümrükte açılan ihracat beyannamesi sayısı; fiili sevkiyatların sıklığını gösterir.',
+          birimAciklamasi: 'Ay içinde açılan ihracat beyannamesi sayısı (adet).',
           unit: 'change',
           weight: 0.15,
           source: { series: 'exportDeclarations' },
@@ -1102,6 +1176,8 @@ const DEFAULTS: ModelConfig = {
         orderBacklog: {
           label: 'Sipariş birikimi',
           description: 'Teyitli ve henüz sevk edilmemiş siparişlerin aylık ortalama sevkiyata oranı (kaç aylık iş)',
+          aciklama: 'Alınmış ancak henüz üretilip sevk edilmemiş siparişlerin büyüklüğü; önümüzdeki aylarda gelirin ne kadar güvende olduğunu gösterir.',
+          birimAciklamasi: 'Ay sonundaki sipariş stokunun kaç aylık üretime karşılık geldiği (ay).',
           unit: 'months',
           weight: 0.25,
           source: { series: 'orderBacklogMonths' },
@@ -1111,6 +1187,8 @@ const DEFAULTS: ModelConfig = {
         customerConcentration: {
           label: 'Müşteri yoğunlaşması',
           description: 'En büyük 3 müşterinin ihracat içindeki payı',
+          aciklama: 'Satışların en büyük birkaç müşteride toplanma derecesi; tek müşteriye bağımlılık riskini gösterir.',
+          birimAciklamasi: 'En büyük üç müşterinin aylık satışlar içindeki payı (%).',
           unit: 'share',
           weight: 0.2,
           source: { series: 'top3CustomerShare' },
@@ -1120,6 +1198,8 @@ const DEFAULTS: ModelConfig = {
         fxPosition: {
           label: 'Döviz pozisyonu',
           description: 'Net döviz açık pozisyonunun özkaynağa oranı (açık pozisyon pozitif, fazla pozisyon negatif)',
+          aciklama: 'Döviz borçlarının döviz varlıklarını aşan kısmının özkaynağa göre büyüklüğü; kur artışlarına karşı kırılganlığı gösterir.',
+          birimAciklamasi: 'Ay sonundaki net döviz açığının özkaynağa oranı (kat).',
           unit: 'ratio',
           weight: 0.15,
           source: { series: 'netFxShortToEquity' },
@@ -1148,6 +1228,8 @@ const DEFAULTS: ModelConfig = {
         harvestVolume: {
           label: 'Hasat dönemi hacmi',
           description: 'Hasat aylarında (Haziran–Ekim) alınan ürün miktarının bir önceki hasat dönemine göre değişimi',
+          aciklama: 'Hasat aylarında satın alınan ürün miktarı; firmanın ana sezondaki iş hacmini gösterir.',
+          birimAciklamasi: 'Ay içinde satın alınan ürün miktarı (ton); değerlendirme hasat aylarına bakar.',
           unit: 'change',
           weight: 0.3,
           source: { series: 'purchaseVolumeTons' },
@@ -1157,6 +1239,8 @@ const DEFAULTS: ModelConfig = {
         commodityPriceTrend: {
           label: 'Ürün borsası fiyat trendi',
           description: `Firmanın işlediği ürünlerin ticaret borsası ortalama fiyatı; ${YOY_DESC}`,
+          aciklama: 'Firmanın alıp sattığı ürünlerin borsadaki fiyat eğilimi; stok değerini ve satış gelirini doğrudan etkiler.',
+          birimAciklamasi: 'Ürün borsasındaki aylık ortalama fiyat (TL/kg).',
           unit: 'change',
           weight: 0.2,
           source: { series: 'commodityPrice' },
@@ -1167,6 +1251,8 @@ const DEFAULTS: ModelConfig = {
           label: 'Depo doluluk oranı',
           description:
             'Kullanılan depo kapasitesinin toplam kapasiteye oranı; çok düşük doluluk atıl kapasiteyi, çok yüksek doluluk satılamayan stoğu işaret eder',
+          aciklama: 'Depoların doluluk oranı; kapasitenin verimli kullanılıp kullanılmadığını gösterir, çok boş ya da tamamen dolu depo olumsuz işarettir.',
+          birimAciklamasi: 'Ay içindeki ortalama depo doluluk oranı (%).',
           unit: 'share',
           weight: 0.2,
           source: { series: 'warehouseOccupancy' },
@@ -1176,6 +1262,8 @@ const DEFAULTS: ModelConfig = {
         eDispatchVolume: {
           label: 'e-İrsaliye hacmi',
           description: `Düzenlenen e-irsaliye adedi; ${YOY_DESC}`,
+          aciklama: 'Firmanın düzenlediği elektronik sevk irsaliyesi sayısı; fiili mal sevkiyatı ve taşıma yoğunluğunu gösterir.',
+          birimAciklamasi: 'Ay içinde düzenlenen e-irsaliye sayısı (adet).',
           unit: 'change',
           weight: 0.3,
           source: { series: 'eDispatchCount' },
@@ -1205,6 +1293,8 @@ const DEFAULTS: ModelConfig = {
         fleetUtilization: {
           label: 'Filo kullanım oranı (telematik)',
           description: 'Telematik verisine göre araçların aktif seferde geçirdiği gün oranı',
+          aciklama: 'Araç filosunun telematik verilerine göre aktif kullanılma oranı; kapasitenin ne kadarının gelir ürettiğini gösterir.',
+          birimAciklamasi: 'Ay içinde aktif kullanılan filo kapasitesinin oranı (%).',
           unit: 'share',
           weight: 0.3,
           source: { series: 'fleetUtilization' },
@@ -1214,6 +1304,8 @@ const DEFAULTS: ModelConfig = {
         tripCount: {
           label: 'Sefer sayısı',
           description: `Tamamlanan sefer adedi; ${YOY_DESC}`,
+          aciklama: 'Filonun gerçekleştirdiği sefer sayısı; taşıma hizmetine olan talebi gösterir.',
+          birimAciklamasi: 'Ay içinde yapılan sefer sayısı (adet).',
           unit: 'change',
           weight: 0.25,
           source: { series: 'tripCount' },
@@ -1223,6 +1315,8 @@ const DEFAULTS: ModelConfig = {
         fuelPerKm: {
           label: 'Yakıt harcaması / km',
           description: 'Telematik verisine göre 100 km başına ortalama yakıt tüketimi (litre)',
+          aciklama: 'Araçların yol başına yakıt tüketimi; filonun verimliliğini ve maliyet kontrolünü gösterir.',
+          birimAciklamasi: 'Aylık ortalama yakıt tüketimi (litre / 100 km).',
           unit: 'lPer100km',
           weight: 0.15,
           source: { series: 'fuelLitresPer100Km' },
@@ -1232,6 +1326,8 @@ const DEFAULTS: ModelConfig = {
         collectionDays: {
           label: 'Tahsilat süresi',
           description: 'Faturalandırılan navlun bedelinin ortalama tahsil süresi (gün)',
+          aciklama: 'Müşterilerden alacakların tahsil edilme süresi; nakit akışının hızını gösterir.',
+          birimAciklamasi: 'Ay içindeki ortalama tahsilat süresi (gün).',
           unit: 'days',
           weight: 0.3,
           source: { series: 'collectionDays' },
@@ -1261,6 +1357,8 @@ const DEFAULTS: ModelConfig = {
         prescriptionVolume: {
           label: 'SGK reçete hacmi',
           description: `SGK sistemine göre karşılanan reçete sayısı; ${YOY_DESC}`,
+          aciklama: 'Eczanede karşılanan SGK reçetesi sayısı; eczanenin ana gelir kaynağının hacmini gösterir.',
+          birimAciklamasi: 'Ay içinde karşılanan SGK reçetesi sayısı (adet).',
           unit: 'change',
           weight: 0.35,
           source: { series: 'sgkPrescriptions' },
@@ -1270,6 +1368,8 @@ const DEFAULTS: ModelConfig = {
         sgkPaymentDelay: {
           label: 'SGK ödeme gecikmesi',
           description: 'SGK reçete bedellerinin sözleşme vadesini aşan ortalama ödeme gecikmesi (gün)',
+          aciklama: "SGK'nın reçete bedellerini ödemesindeki gecikme; eczanenin nakit akışı üzerindeki baskıyı gösterir.",
+          birimAciklamasi: 'SGK ödemelerinin ay içindeki ortalama gecikmesi (gün).',
           unit: 'days',
           weight: 0.25,
           source: { series: 'sgkPaymentDelayDays' },
@@ -1279,6 +1379,8 @@ const DEFAULTS: ModelConfig = {
         inventoryTurnover: {
           label: 'Stok devir hızı',
           description: TURNOVER_DESC,
+          aciklama: 'İlaç ve ürün stoklarının bir yıl içinde kaç kez yenilendiği; stok yönetiminin verimliliğini gösterir.',
+          birimAciklamasi: 'Stokların yıllık devir sayısı (kez).',
           unit: 'times',
           weight: 0.2,
           source: { series: 'inventoryTurnover' },
@@ -1289,6 +1391,8 @@ const DEFAULTS: ModelConfig = {
           label: 'Reçete dışı satış payı',
           description:
             'Reçetesiz ilaç, dermokozmetik ve diğer ürün satışlarının toplam satışa oranı; SGK bağımlılığını ölçer',
+          aciklama: "Reçetesiz ürün ve dermokozmetik satışlarının toplam satışlar içindeki payı; eczanenin SGK'ya ne kadar az bağımlı olduğunu gösterir.",
+          birimAciklamasi: 'Ay içindeki reçete dışı satışların toplam satışlara oranı (%).',
           unit: 'share',
           weight: 0.2,
           source: { series: 'nonPrescriptionSalesShare' },

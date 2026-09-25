@@ -8,6 +8,7 @@ import { useSyncExternalStore } from 'react'
 import { FIRMS, SEED_DECISIONS, getFirm, type SeedDecision } from '../data'
 import { revisedCollateral, allocateProducts, type CreditTerms } from '../engine/collateral'
 import { evaluateFirmAsOf, type FirmEvaluation } from '../engine/evaluate'
+import { withIndicatorTexts } from '../engine/indicatorInfo'
 import {
   BASE_MODEL_VERSION,
   MODEL_SCHEMA_VERSION,
@@ -220,12 +221,19 @@ function loadState(): AppState {
   const audit = read<AppState['audit']>(KEYS.audit)
   const ui = read<Pick<AppState, 'role' | 'presentation'>>(KEYS.ui)
   const draft = read<ModelConfig>(KEYS.draft)
-  const modelSlice = isValidModel(model) ? { ...model, modelLog: Array.isArray(model.modelLog) ? model.modelLog : initialModel().modelLog } : initialModel()
+  // Gösterge açıklamaları eklenmeden önce kaydedilmiş sürümler: eksik metinler varsayılandan tamamlanır
+  const modelSlice = isValidModel(model)
+    ? {
+        ...model,
+        versions: model.versions.map((v) => ({ ...v, config: withIndicatorTexts(v.config) })),
+        modelLog: Array.isArray(model.modelLog) ? model.modelLog : initialModel().modelLog,
+      }
+    : initialModel()
   return {
     ...modelSlice,
     decisions: decisions && typeof decisions === 'object' ? decisions : initial.decisions,
     audit: audit && typeof audit === 'object' ? audit : initial.audit,
-    modelDraft: draft?.schemaVersion === MODEL_SCHEMA_VERSION ? draft : null,
+    modelDraft: draft?.schemaVersion === MODEL_SCHEMA_VERSION ? withIndicatorTexts(draft) : null,
     role: ui?.role ?? null,
     presentation: ui?.presentation ?? false,
   }

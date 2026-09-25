@@ -273,3 +273,8 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 
 ## R3 — Metodolojinin PDF sürümü (Eylül 2026)
 - METODOLOJI.md'nin baskıya hazır PDF sürümü `docs/METODOLOJI.pdf` olarak tutulur (kapak, içindekiler, akış şeması, tablolar). Üretici: `scripts/metodoloji_pdf.py`. METODOLOJI.md değiştiğinde PDF yeniden üretilir.
+
+## R4 — Gösterge açıklamaları (Eylül 2026)
+- modelConfig'teki her sektör göstergesinde iki metin alanı vardır: `aciklama` (göstergenin neyi ölçtüğü; tek cümle, sade Türkçe; formül, ağırlık, eşik veya rakam içermez) ve `birimAciklamasi` (aylık verinin neyi hangi birimde ifade ettiği, ör. "Aylık ortalama kazanılan kamu ihalesi sayısı."). 10 sektörün 48 göstergesinin tamamı doldurulur. Bu alanlar yalnızca gösterim içindir: skoru etkilemez, sürüm farkında parametre değişikliği sayılmaz; alanlar eklenmeden önce kaydedilmiş sürümler ve JSON dosyaları yüklenirken eksik metinler v1.0'dan tamamlanır.
+- Tahsis Yöneticisi Alternatif Veri sekmesindeki gösterge kartlarında ve Portföy Yöneticisi firma detayındaki "Erken uyarı ve izleme" kartında gösterge adının yanında küçük bir bilgi ikonu (lucide Info) bulunur; üzerine gelince, odaklanınca veya tıklayınca açıklama ve aylık veri birimi ipucu olarak görünür. Sunum Modu açıkken açıklama ipucu yerine gösterge adının altında soluk ikincil metin olarak sürekli görünür.
+- Gösterge değerinin altında değerin ne olduğu yazar; metin ölçüm yönteminden türetilir (ör. "Geçen yılın aynı dönemine göre değişim · son 3 ay", "Son 3 ayın ortalaması", "Son durum").

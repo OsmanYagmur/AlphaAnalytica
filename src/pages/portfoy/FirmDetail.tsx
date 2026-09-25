@@ -4,10 +4,12 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { AppShell } from '../../components/AppShell'
 import { CHART_COLORS } from '../../components/charts'
 import { Gauge } from '../../components/Gauge'
+import { IndicatorName } from '../../components/IndicatorName'
 import { Badge, Button, Card, DataRow, GradeBadge, ModelVersionTag, cx } from '../../components/ui'
 import { REJECTION_REASONS, SEGMENT_LABELS } from '../../data'
 import { scoreTrend } from '../../engine/evaluate'
 import { strengthLabel } from '../../engine/factors'
+import { describeIndicatorValue } from '../../engine/indicatorInfo'
 import { PRODUCT_IDS, PRODUCT_LABELS, type AlternativeIndicatorConfig, type CollateralTypeId } from '../../engine/modelConfig'
 import { formatDateTime, formatIndicatorValue, formatPercent, formatScore, formatTL, formatYearMonth } from '../../lib/format'
 import { navigate } from '../../lib/router'
@@ -211,12 +213,15 @@ function Monitoring({ view }: { view: FirmView }) {
         {weakest.map(([id, r]) => {
           const strength = strengthLabel(r.score!, view.config)
           return (
-            <li key={id} className="flex items-baseline justify-between gap-3 border-b border-line pb-2 text-sm last:border-b-0">
-              <span className="text-ink">{r.label}</span>
-              <span className="flex shrink-0 items-baseline gap-2">
-                <span className="num">{formatIndicatorValue(r.value, indicators[id].unit)}</span>
-                <Badge tone={strength === 'Güçlü' ? 'positive' : strength === 'Orta' ? 'warning' : 'negative'}>{strength}</Badge>
-              </span>
+            <li key={id} className="border-b border-line pb-2 text-sm last:border-b-0">
+              <div className="flex items-start justify-between gap-3">
+                <IndicatorName label={r.label} aciklama={indicators[id].aciklama} birimAciklamasi={indicators[id].birimAciklamasi} labelClassName="text-ink" />
+                <span className="flex shrink-0 items-baseline gap-2">
+                  <span className="num">{formatIndicatorValue(r.value, indicators[id].unit)}</span>
+                  <Badge tone={strength === 'Güçlü' ? 'positive' : strength === 'Orta' ? 'warning' : 'negative'}>{strength}</Badge>
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs leading-snug text-muted">{describeIndicatorValue(indicators[id].measure)}</p>
             </li>
           )
         })}

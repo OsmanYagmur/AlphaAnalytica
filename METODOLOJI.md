@@ -259,6 +259,7 @@ Konfigürasyon `ModelConfig` tipindedir (`src/engine/modelConfig.ts`). Aşağıd
 | `sectors.<sektör>.riskCoefficient` | Sektör Risk Katsayısı (SRK) | Bölüm 6 ve 9 |
 | `sectors.<sektör>.cccMedianDays` | Sektörel NDS medyanı | Bölüm 9 |
 | `sectors.<sektör>.indicators.<gösterge>` | Gösterge: etiket, ağırlık, veri kaynağı, ölçüm yöntemi, kırılımlar | Bölüm 9 |
+| `sectors.<sektör>.indicators.<gösterge>.aciklama` / `.birimAciklamasi` | Göstergenin neyi ölçtüğü ve aylık verinin birimi (yalnızca gösterim; skoru etkilemez, sürüm farkında parametre sayılmaz) | Bölüm 9 |
 | `sectors.<sektör>.seasonality.profiles.<profil>.index` | 12 aylık sezon endeksi (ortalama 1,00) | Bölüm 9 |
 | `sectors.<sektör>.productMix` | Sektörel ürün kırılımı | Bölüm 9 |
 | `presentation.strengthBands.strongMin / moderateMin` | "Güçlü / Orta / Zayıf" etiket sınırları | 70 / 40 |
@@ -270,6 +271,8 @@ Konfigürasyon `ModelConfig` tipindedir (`src/engine/modelConfig.ts`). Aşağıd
 ## 9. Sektör göstergeleri, ağırlıkları ve sezon endeksleri
 
 Her sektörde 4–6 gösterge vardır ve ağırlık toplamı %100'dür. "Veri" sütunu, firma verisindeki aylık seri anahtarıdır (`revenue` = aylık ciro).
+
+Tahsis Yöneticisi (Alternatif Veri sekmesi) ve Portföy Yöneticisi (Erken uyarı ve izleme kartı) ekranlarında her gösterge adının yanında bir bilgi ikonu vardır; üzerine gelince veya tıklayınca göstergenin ne ölçtüğü ve aylık verinin birimi görünür. Sunum Modu'nda açıklama adın altında sürekli yazılır. Gösterilen değerin ne olduğu (ör. "Geçen yılın aynı dönemine göre değişim · son 3 ay") değerin altında, ölçüm yönteminden türetilerek yazılır. Açıklamalar formül, ağırlık veya eşik içermez.
 
 ### E-ticaret
 
@@ -283,6 +286,17 @@ SRK **0,95** · NDS medyanı **25 gün** · Ürün kırılımı: Rotatif kredi %
 | İade oranı | %20 | `returnRate` | Son 3 ay ortalaması | %3→100; %6→75; %10→40; %15→0 |
 | Kargo teslim süresi ve zamanında teslim oranı | %10 | `onTimeDeliveryRate` | Son 3 ay ortalaması | %80→0; %90→50; %95→80; %98→100 |
 | Pazaryeri satıcı puanı | %15 | `sellerScore` | Son 3 ay ortalaması | 7→0; 8→45; 9→85; 9,5→100 |
+
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| Ürün yorum puanı ve trendi | Pazaryerindeki ürün yorumlarının ortalama puanı ve bu puanın son aylardaki yönü; müşteri memnuniyetini gösterir. | Ay içindeki ürün yorumlarının ortalama puanı (5 üzerinden). |
+| Yorum duygu skoru (olumsuz yorum oranı) | Müşteri yorumları içinde olumsuz olarak sınıflanan yorumların payı; ürün ve hizmet kalitesine yönelik şikâyet yoğunluğunu gösterir. | Ay içindeki olumsuz yorumların tüm yorumlara oranı (%). |
+| Sipariş adedi ve ortalama sepet tutarı | Alınan sipariş sayısı ile sepet tutarlarının birlikte oluşturduğu sipariş hacmi; satışların gerçek yönünü gösterir. | Ay içinde alınan siparişlerin toplam tutarı (TL). |
+| İade oranı | İade edilen siparişlerin payı; ürün kalitesini, ürün tanıtımının doğruluğunu ve müşteri memnuniyetini yansıtır. | Ay içinde iade edilen siparişlerin tüm siparişlere oranı (%). |
+| Kargo teslim süresi ve zamanında teslim oranı | Siparişlerin söz verilen kargo süresi içinde müşteriye ulaşma oranı; operasyonel güvenilirliği gösterir. | Ay içinde zamanında teslim edilen siparişlerin oranı (%). |
+| Pazaryeri satıcı puanı | Pazaryerinin satıcıya verdiği performans puanı; teslimat, iletişim ve iade süreçlerindeki genel başarıyı özetler. | Pazaryerinin aylık satıcı performans puanı (10 üzerinden). |
 
 Sezon endeksi — Standart (Kasım–Aralık kampanya dönemi pik; ocak–şubat durgun):
 
@@ -302,6 +316,16 @@ SRK **0,90** · NDS medyanı **55 gün** · Ürün kırılımı: Rotatif kredi %
 | Stok değeri | %15 | `inventoryValue` / `revenue` | Son 3 ay ortalaması | 1→100; 2→75; 3→45; 5→0 |
 | Fiyat indirimi sıklığı | %20 | `priceCutRatio` | Son 3 ay ortalaması | %10→100; %20→75; %35→35; %50→0 |
 
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| Aylık yeni ilan sayısı | İlan platformlarına eklenen yeni araç ilanı sayısı; galerinin stok yenileme temposunu ve iş hacmini gösterir. | Ay içinde eklenen yeni araç ilanı sayısı (adet). |
+| Satılan / kaldırılan ilan sayısı | Araç satıldığı için yayından kaldırılan ilan sayısı; fiili satış temposunu gösterir. | Ay içinde satılarak kaldırılan ilan sayısı (adet). |
+| Ortalama ilanda kalma süresi (stok devir) | Bir aracın satılana kadar ilanda kaldığı süre; stokların ne kadar hızlı nakde döndüğünü gösterir. | Ay içinde satılan araçların ilanda kaldığı ortalama süre (gün). |
+| Stok değeri | Galerinin elinde tuttuğu araç stokunun aylık satışlara kıyasla büyüklüğü; stokta bağlı kalan sermayeyi gösterir. | Ay sonu stok değerinin kaç aylık ciroya karşılık geldiği (kat). |
+| Fiyat indirimi sıklığı | Fiyatı düşürülen ilanların payı; satış baskısını ve talepteki zayıflığı gösterir. | Ay içinde fiyatı düşürülen ilanların tüm ilanlara oranı (%). |
+
 Sezon endeksi — Standart (İlkbahar–yaz yüksek; aralıkta yıl sonu kampanyası):
 
 | Oca | Şub | Mar | Nis | May | Haz | Tem | Ağu | Eyl | Eki | Kas | Ara |
@@ -320,6 +344,16 @@ SRK **1,00** · NDS medyanı **70 gün** · Ürün kırılımı: Rotatif kredi %
 | Stok devir hızı | %15 | `inventoryTurnover` | Son 12 ay ortalaması | 2→0; 4→50; 6→80; 8→100 |
 | Tedarikçi ödeme düzeni | %25 | `supplierOnTimePaymentRate` | Son 6 ay ortalaması | %70→0; %85→50; %95→85; %100→100 |
 
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| POS ciro | Mağazadaki POS cihazlarından geçen kartlı satış tutarı; satış hacmini doğrudan gösterir. | Aylık POS cirosu (TL). |
+| POS işlem adedi | POS cihazlarında yapılan işlem sayısı; mağazaya gelen müşteri trafiğini gösterir. | Ay içindeki POS işlem sayısı (adet). |
+| Okul sezonu performansı | Okul açılışı ve yarıyıl dönemlerinde elde edilen satışlar; sektörün en kritik sezonundaki performansı gösterir. | Aylık POS cirosu (TL); değerlendirme okul sezonu aylarına bakar. |
+| Stok devir hızı | Stokların bir yıl içinde kaç kez satılıp yenilendiği; stok yönetiminin verimliliğini gösterir. | Stokların yıllık devir sayısı (kez). |
+| Tedarikçi ödeme düzeni | Tedarikçilere yapılan ödemelerin vadesinde yapılma oranı; firmanın ödeme disiplinini ve nakit sıkışıklığı olup olmadığını gösterir. | Ay içinde vadesinde yapılan tedarikçi ödemelerinin oranı (%). |
+
 Sezon endeksi — Standart (Ağustos sonu–Eylül ana pik (okul açılışı), Şubat ikinci pik):
 
 | Oca | Şub | Mar | Nis | May | Haz | Tem | Ağu | Eyl | Eki | Kas | Ara |
@@ -337,6 +371,16 @@ SRK **0,85** · NDS medyanı **15 gün** · Ürün kırılımı: Rotatif kredi %
 | Erken rezervasyon oranı | %20 | `earlyBookingRate` | Son 12 ay ortalaması | %5→0; %15→40; %30→80; %45→100 |
 | Müşteri yorum puanı | %20 | `customerRating` | Son 6 ay ortalaması | 3,5→0; 4→50; 4,5→85; 4,8→100 |
 | TÜRSAB belge durumu | %15 | `tursabLicenseValid` | Son gözlem | 0→0; 1→100 |
+
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| Rezervasyon hacmi | Acentenin aldığı rezervasyon sayısı; gelecekteki satışların öncü göstergesidir. | Ay içinde alınan rezervasyon sayısı (adet). |
+| İptal oranı | İptal edilen rezervasyonların payı; talebin sağlamlığını ve olası iade yükünü gösterir. | Ay içindeki iptallerin rezervasyonlara oranı (%). |
+| Erken rezervasyon oranı | Sezondan önce yapılan erken rezervasyonların payı; gelirin önceden görülebilmesini ve nakdin erken gelmesini gösterir. | Ay içindeki erken rezervasyonların tüm rezervasyonlara oranı (%). |
+| Müşteri yorum puanı | Müşterilerin tur ve hizmetlere verdiği ortalama puan; hizmet kalitesini ve acentenin itibarını gösterir. | Ay içindeki müşteri yorumlarının ortalama puanı (5 üzerinden). |
+| TÜRSAB belge durumu | Acentenin TÜRSAB belgesinin geçerli olup olmadığı; yasal olarak faaliyet gösterebilmenin ön koşuludur. | Belgenin ay sonundaki durumu (geçerli / geçersiz). |
 
 Sezon endeksi — Yaz turizmi (Haziran–Eylül pik; kış ayları düşük):
 
@@ -363,6 +407,17 @@ SRK **0,90** · NDS medyanı **10 gün** · Ürün kırılımı: Rotatif kredi %
 | Ortalama adisyon | %10 | `posRevenue` / `posTransactions` | Son 3 ay / 12 ay önceki 3 ay − 1 | −%10→0; %0→40; %20→80; %35→100 |
 | SGK çalışan sayısı trendi | %20 | `sgkHeadcount` | Son 3 ay / 12 ay önceki 3 ay − 1 | −%30→0; −%10→35; %0→60; %15→100 |
 
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| Harita platformu puanı | Harita platformlarında işletmeye verilen ortalama puan; salondaki müşteri memnuniyetini gösterir. | Harita platformundaki aylık ortalama puan (5 üzerinden). |
+| Yemek platformu puanı | Yemek sipariş platformundaki işletme puanı; paket servis kalitesini gösterir. | Yemek platformundaki aylık işletme puanı (10 üzerinden). |
+| Online sipariş adedi | Yemek platformları üzerinden alınan sipariş sayısı; paket servis talebinin yönünü gösterir. | Ay içinde platformlardan alınan sipariş sayısı (adet). |
+| POS işlem sayısı | Kasadaki POS işlem sayısı; işletmeye gelen müşteri trafiğini gösterir. | Ay içindeki POS işlem sayısı (adet). |
+| Ortalama adisyon | Müşteri başına ortalama hesap tutarı; fiyatlama gücünü ve harcama eğilimini gösterir. | Ay içindeki işlem başına ortalama tutar (TL). |
+| SGK çalışan sayısı trendi | SGK'ya bildirilen çalışan sayısı; işletmenin büyüdüğünü ya da küçüldüğünü gösterir. | Ay sonunda SGK'ya bildirilen çalışan sayısı (kişi). |
+
 Sezon endeksi — Standart (Hafif dalgalı; Ramazan dönemi (Şubat–Mart) hafif düşüş, yaz aylarında artış):
 
 | Oca | Şub | Mar | Nis | May | Haz | Tem | Ağu | Eyl | Eki | Kas | Ara |
@@ -379,6 +434,15 @@ SRK **0,90** · NDS medyanı **90 gün** · Ürün kırılımı: Rotatif kredi %
 | e-İrsaliye hacmi | %30 | `eDispatchCount` | Son 3 ay / 12 ay önceki 3 ay − 1 | −%30→0; −%10→35; %0→55; %20→100 |
 | Çek ödeme performansı | %30 | `chequePaidOnTimeRate` | Son 6 ay ortalaması | %85→0; %95→60; %99→90; %100→100 |
 | Kamu ihale kazanımları | %20 | `publicTenderWins` | Son 12 ay ortalaması | 0→30; 0,25→60; 0,5→80; 1→100 |
+
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| Bölgesel yapı ruhsatı verisi | Firmanın bulunduğu bölgede verilen yapı ruhsatı sayısı; yakın dönemde yapı malzemesine olacak talebin öncü göstergesidir. | Bölgede ay içinde verilen yapı ruhsatı sayısı (adet). |
+| e-İrsaliye hacmi | Firmanın düzenlediği elektronik sevk irsaliyesi sayısı; fiili mal sevkiyatı ve taşıma yoğunluğunu gösterir. | Ay içinde düzenlenen e-irsaliye sayısı (adet). |
+| Çek ödeme performansı | Firmanın verdiği çeklerin vadesinde ödenme oranı; ödeme disiplinini ve karşılıksız çek riskini gösterir. | Ay içinde vadesi gelen çeklerden zamanında ödenenlerin oranı (%). |
+| Kamu ihale kazanımları | Firmanın kazandığı kamu ihaleleri; kamu projelerinden gelecek iş hacmini ve sözleşmeye bağlı geliri gösterir. | Aylık ortalama kazanılan kamu ihalesi sayısı. |
 
 Sezon endeksi — Standart (İlkbahar–sonbahar inşaat sezonu yüksek; kış düşük):
 
@@ -398,6 +462,16 @@ SRK **0,95** · NDS medyanı **95 gün** · Ürün kırılımı: Rotatif kredi %
 | Müşteri yoğunlaşması | %20 | `top3CustomerShare` | Son 3 ay ortalaması | %30→100; %50→70; %70→30; %90→0 |
 | Döviz pozisyonu | %15 | `netFxShortToEquity` | Son gözlem | 0→100; 0,25→70; 0,5→35; 1→0 |
 
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| e-Fatura / e-İhracat hacmi | Düzenlenen e-Fatura ve e-İhracat faturalarının tutarı; gerçekleşen ihracat satışlarını gösterir. | Ay içinde düzenlenen ihracat faturalarının toplam tutarı (TL). |
+| İhracat beyannamesi sayısı | Gümrükte açılan ihracat beyannamesi sayısı; fiili sevkiyatların sıklığını gösterir. | Ay içinde açılan ihracat beyannamesi sayısı (adet). |
+| Sipariş birikimi | Alınmış ancak henüz üretilip sevk edilmemiş siparişlerin büyüklüğü; önümüzdeki aylarda gelirin ne kadar güvende olduğunu gösterir. | Ay sonundaki sipariş stokunun kaç aylık üretime karşılık geldiği (ay). |
+| Müşteri yoğunlaşması | Satışların en büyük birkaç müşteride toplanma derecesi; tek müşteriye bağımlılık riskini gösterir. | En büyük üç müşterinin aylık satışlar içindeki payı (%). |
+| Döviz pozisyonu | Döviz borçlarının döviz varlıklarını aşan kısmının özkaynağa göre büyüklüğü; kur artışlarına karşı kırılganlığı gösterir. | Ay sonundaki net döviz açığının özkaynağa oranı (kat). |
+
 Sezon endeksi — Standart (İlkbahar/yaz ve sonbahar/kış koleksiyonları öncesi sevkiyat dönemleri (Şubat–Mart, Ağustos–Eylül)):
 
 | Oca | Şub | Mar | Nis | May | Haz | Tem | Ağu | Eyl | Eki | Kas | Ara |
@@ -414,6 +488,15 @@ SRK **0,90** · NDS medyanı **60 gün** · Ürün kırılımı: Rotatif kredi %
 | Ürün borsası fiyat trendi | %20 | `commodityPrice` | Son 3 ay / 12 ay önceki 3 ay − 1 | −%20→0; %0→40; %30→85; %50→100 |
 | Depo doluluk oranı | %20 | `warehouseOccupancy` | Son 12 ay ortalaması | %20→0; %50→60; %75→100; %90→80; %100→40 |
 | e-İrsaliye hacmi | %30 | `eDispatchCount` | Son 3 ay / 12 ay önceki 3 ay − 1 | −%30→0; −%10→35; %0→55; %20→100 |
+
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| Hasat dönemi hacmi | Hasat aylarında satın alınan ürün miktarı; firmanın ana sezondaki iş hacmini gösterir. | Ay içinde satın alınan ürün miktarı (ton); değerlendirme hasat aylarına bakar. |
+| Ürün borsası fiyat trendi | Firmanın alıp sattığı ürünlerin borsadaki fiyat eğilimi; stok değerini ve satış gelirini doğrudan etkiler. | Ürün borsasındaki aylık ortalama fiyat (TL/kg). |
+| Depo doluluk oranı | Depoların doluluk oranı; kapasitenin verimli kullanılıp kullanılmadığını gösterir, çok boş ya da tamamen dolu depo olumsuz işarettir. | Ay içindeki ortalama depo doluluk oranı (%). |
+| e-İrsaliye hacmi | Firmanın düzenlediği elektronik sevk irsaliyesi sayısı; fiili mal sevkiyatı ve taşıma yoğunluğunu gösterir. | Ay içinde düzenlenen e-irsaliye sayısı (adet). |
 
 Sezon endeksi — Standart (Hasat ayları (Haziran–Ekim) yüksek; kış ve ilkbahar düşük):
 
@@ -432,6 +515,15 @@ SRK **1,00** · NDS medyanı **50 gün** · Ürün kırılımı: Rotatif kredi %
 | Yakıt harcaması / km | %15 | `fuelLitresPer100Km` | Son 3 ay ortalaması | 28→100; 32→75; 36→40; 40→0 |
 | Tahsilat süresi | %30 | `collectionDays` | Son 3 ay ortalaması | 30→100; 45→80; 60→55; 90→15; 120→0 |
 
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| Filo kullanım oranı (telematik) | Araç filosunun telematik verilerine göre aktif kullanılma oranı; kapasitenin ne kadarının gelir ürettiğini gösterir. | Ay içinde aktif kullanılan filo kapasitesinin oranı (%). |
+| Sefer sayısı | Filonun gerçekleştirdiği sefer sayısı; taşıma hizmetine olan talebi gösterir. | Ay içinde yapılan sefer sayısı (adet). |
+| Yakıt harcaması / km | Araçların yol başına yakıt tüketimi; filonun verimliliğini ve maliyet kontrolünü gösterir. | Aylık ortalama yakıt tüketimi (litre / 100 km). |
+| Tahsilat süresi | Müşterilerden alacakların tahsil edilme süresi; nakit akışının hızını gösterir. | Ay içindeki ortalama tahsilat süresi (gün). |
+
 Sezon endeksi — Standart (4. çeyrek pik (yıl sonu ticaret ve ihracat yoğunluğu)):
 
 | Oca | Şub | Mar | Nis | May | Haz | Tem | Ağu | Eyl | Eki | Kas | Ara |
@@ -448,6 +540,15 @@ SRK **1,05** · NDS medyanı **35 gün** · Ürün kırılımı: Rotatif kredi %
 | SGK ödeme gecikmesi | %25 | `sgkPaymentDelayDays` | Son 3 ay ortalaması | 0→100; 15→75; 30→40; 60→0 |
 | Stok devir hızı | %20 | `inventoryTurnover` | Son 3 ay ortalaması | 4→0; 6→50; 9→85; 12→100 |
 | Reçete dışı satış payı | %20 | `nonPrescriptionSalesShare` | Son 6 ay ortalaması | %0→0; %10→40; %20→75; %30→100 |
+
+Göstergelerin ekranlardaki açıklamaları (bilgi ikonu):
+
+| Gösterge | Ne ölçer | Aylık veri |
+|---|---|---|
+| SGK reçete hacmi | Eczanede karşılanan SGK reçetesi sayısı; eczanenin ana gelir kaynağının hacmini gösterir. | Ay içinde karşılanan SGK reçetesi sayısı (adet). |
+| SGK ödeme gecikmesi | SGK'nın reçete bedellerini ödemesindeki gecikme; eczanenin nakit akışı üzerindeki baskıyı gösterir. | SGK ödemelerinin ay içindeki ortalama gecikmesi (gün). |
+| Stok devir hızı | İlaç ve ürün stoklarının bir yıl içinde kaç kez yenilendiği; stok yönetiminin verimliliğini gösterir. | Stokların yıllık devir sayısı (kez). |
+| Reçete dışı satış payı | Reçetesiz ürün ve dermokozmetik satışlarının toplam satışlar içindeki payı; eczanenin SGK'ya ne kadar az bağımlı olduğunu gösterir. | Ay içindeki reçete dışı satışların toplam satışlara oranı (%). |
 
 Sezon endeksi — Standart (Kış (grip dönemi) yüksek; yaz ayları düşük):
 

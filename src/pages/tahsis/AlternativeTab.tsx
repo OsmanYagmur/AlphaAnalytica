@@ -1,8 +1,10 @@
+import { IndicatorName } from '../../components/IndicatorName'
 import { SeasonalityChart, Sparkline } from '../../components/charts'
 import { Badge, Card, ScoreBar, cx } from '../../components/ui'
 import { resolveSourceSeries, sectorIndicators } from '../../engine/alternativeScore'
 import type { FirmEvaluation } from '../../engine/evaluate'
 import { strengthLabel } from '../../engine/factors'
+import { describeIndicatorValue } from '../../engine/indicatorInfo'
 import type { ModelConfig } from '../../engine/modelConfig'
 import type { Firm } from '../../data'
 import { alternativeInputAsOf } from '../../engine/evaluate'
@@ -64,13 +66,14 @@ export function AlternativeTab({
           return (
             <div key={id} className={cx('rounded-lg border border-line bg-surface p-4 shadow-card', !result.available && 'opacity-60')}>
               <div className="flex items-start justify-between gap-3">
-                <h3 className="text-sm font-medium leading-snug text-ink">{ind.label}</h3>
+                <IndicatorName label={ind.label} aciklama={ind.aciklama} birimAciklamasi={ind.birimAciklamasi} labelClassName="text-sm font-medium leading-snug text-ink" />
                 {strength ? <Badge tone={STRENGTH_TONE[strength]}>{strength}</Badge> : <Badge>Veri yok</Badge>}
               </div>
               <div className="mt-2 flex items-baseline justify-between gap-3">
                 <span className="num text-lg font-semibold text-navy">{formatIndicatorValue(result.value, ind.unit)}</span>
                 {result.score !== null && <span className="num text-xs text-muted">Puan {formatScore(result.score)}</span>}
               </div>
+              <p className="mt-0.5 text-xs leading-snug text-muted">{describeIndicatorValue(ind.measure)}</p>
               <div className="mt-3 border-t border-line pt-2">
                 {series ? <Sparkline values={series} months={input.months} /> : <div className="h-11" />}
               </div>
