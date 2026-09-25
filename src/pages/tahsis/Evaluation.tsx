@@ -2,6 +2,7 @@ import { AlertOctagon, ArrowLeft, Eye, Info, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { AppShell } from '../../components/AppShell'
 import { Gauge } from '../../components/Gauge'
+import { MarketIntelTab } from '../../components/MarketIntel'
 import { Badge, Button, Card, GradeBadge, ModelVersionTag, StatusBadge, Tabs } from '../../components/ui'
 import { formatDate, formatDateTime, formatNumber, formatPercent, formatTL } from '../../lib/format'
 import { SEGMENT_LABELS } from '../../data'
@@ -90,7 +91,7 @@ function TopStrip({ view }: { view: FirmView }) {
   )
 }
 
-type TabId = 'traditional' | 'alternative'
+type TabId = 'traditional' | 'alternative' | 'market'
 
 function EvaluationContent({ view }: { view: FirmView }) {
   const [tab, setTab] = useState<TabId>('traditional')
@@ -120,13 +121,12 @@ function EvaluationContent({ view }: { view: FirmView }) {
             items={[
               { value: 'traditional', label: 'Geleneksel Analiz' },
               { value: 'alternative', label: 'Alternatif Veri' },
+              { value: 'market', label: 'Piyasa İstihbaratı' },
             ]}
           />
-          {tab === 'traditional' ? (
-            <TraditionalTab firm={view.firm} evaluation={view.evaluation} config={view.config} />
-          ) : (
-            <AlternativeTab firm={view.firm} evaluation={view.evaluation} config={view.config} dataAsOf={dataAsOf} />
-          )}
+          {tab === 'traditional' && <TraditionalTab firm={view.firm} evaluation={view.evaluation} config={view.config} />}
+          {tab === 'alternative' && <AlternativeTab firm={view.firm} evaluation={view.evaluation} config={view.config} dataAsOf={dataAsOf} />}
+          {tab === 'market' && <MarketIntelTab sectorId={view.firm.sectorId} sectorLabel={view.config.sectors[view.firm.sectorId].label} />}
         </div>
         <div className="min-w-0 space-y-4 xl:col-span-4">
           <SystemRecommendation firm={view.firm} evaluation={view.evaluation} />

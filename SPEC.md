@@ -287,3 +287,9 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 - Bu seçim yalnızca görüntülemeyi etkiler; kredi skoru, not ve limit motorun kendi pencereleriyle hesaplanmaya devam eder. Kartta "Dönem seçimi skoru etkilemez." notu bulunur; Tahsis kartlarında skora giren değer ve puanı ayrıca yazılır.
 - Portföy kartında göstergeler seçili döneme göre zayıftan güçlüye sıralanır.
 - Her göstergede aylık verinin birimi `seriesUnit` alanıyla tanımlıdır (yalnızca gösterim; eski kayıtlarda v1.0'dan tamamlanır). Hesaplama `src/engine/indicatorPeriod.ts` içinde saf fonksiyondur ve testlidir.
+
+## R6 — Piyasa İstihbaratı modülü (Eylül 2026)
+- 10 sektörün her biri için Türkiye'deki son 3–6 ayın gelişmeleri web araştırmasıyla derlenir ve `src/data/marketIntel.ts` dosyasına statik veri olarak yazılır (çalışma zamanında internetten çekilmez). Her sektörde 3–5 madde; her madde kısa başlık, 1–2 cümle özet (kendi cümlelerle), etki yönü (Olumlu / Nötr / Olumsuz), kaynak adı, kaynak bağlantısı ve tarih içerir. Sektör başına "Kredi açısından ne anlama geliyor" başlıklı 1–2 cümlelik yorum ve "Son güncelleme: [tarih]" bulunur. Yalnızca gerçek ve doğrulanabilir bilgi kullanılır; rakamların kaynağı mutlaka verilir.
+- Görünüm: Tahsis Yöneticisi firma değerlendirme ekranında ayrı "Piyasa İstihbaratı" sekmesi; Portföy Yöneticisi firma detayında sağ sütunda kompakt kart; Portföy Özeti'nde sektör bazında olumsuz sinyal sayısını gösteren küçük özet.
+- İçerik skoru etkilemez, yalnızca bilgi amaçlıdır; ekranlarda bu not yer alır.
+- Model Yöneticisi'nde "Piyasa İstihbaratı" ekranı: madde ekleme, düzenleme, silme (onaylı), kredi yorumunu düzenleme ve sektör bazında araştırma verisine dönme. Değişiklikler localStorage'da tutulur, model denetim izine yazılır, model sürümlerine dahil değildir; demo sıfırlaması başlangıç verisini geri yükler.

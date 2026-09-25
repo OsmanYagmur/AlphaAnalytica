@@ -1,6 +1,6 @@
 import type { CollateralTerms, CreditTerms, ProductAllocation } from '../engine/collateral'
 import type { CreditGrade, ModelConfig, ProductMix } from '../engine/modelConfig'
-import type { RejectionReasonId } from '../data'
+import type { MarketIntel, RejectionReasonId } from '../data'
 
 export type Role = 'tahsis' | 'portfoy' | 'model'
 
@@ -77,4 +77,6 @@ export interface AppState {
   audit: Record<string, AuditEntry[]>
   role: Role | null
   presentation: boolean
+  /** Piyasa İstihbaratı (bilgi amaçlı; skoru etkilemez). Model Yöneticisi'nden düzenlenir. */
+  marketIntel: MarketIntel
 }

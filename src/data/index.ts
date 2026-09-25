@@ -3,3 +3,13 @@ export { PENDING_FIRM_IDS, REJECTION_REASONS, SEED_DECISIONS, type RejectionReas
 export { DATA_MONTHS, FISCAL_YEAR } from './generators'
 export { SEGMENT_LABELS } from './types'
 export type { AuditEntry, DecisionStatus, Firm, FirmSegment, RevisedTerms, SeedDecision } from './types'
+export {
+  DEFAULT_MARKET_INTEL,
+  INTEL_IMPACT_LABELS,
+  isValidMarketIntel,
+  negativeSignalCount,
+  type IntelImpact,
+  type MarketIntel,
+  type MarketIntelItem,
+  type SectorIntel,
+} from './marketIntel'

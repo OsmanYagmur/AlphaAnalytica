@@ -6,6 +6,7 @@ import { CHART_COLORS, Sparkline } from '../../components/charts'
 import { DEFAULT_PERIOD_MONTHS, PeriodChange, PeriodNote, PeriodSelector, periodCaption, type PeriodMonths } from '../../components/IndicatorPeriod'
 import { Gauge } from '../../components/Gauge'
 import { IndicatorName } from '../../components/IndicatorName'
+import { MarketIntelCompact } from '../../components/MarketIntel'
 import { Badge, Button, Card, DataRow, GradeBadge, ModelVersionTag, cx } from '../../components/ui'
 import { REJECTION_REASONS, SEGMENT_LABELS } from '../../data'
 import { scoreTrend } from '../../engine/evaluate'
@@ -359,6 +360,7 @@ export function PortfolioFirmDetail({ firmId }: { firmId: string }) {
           <div className="min-w-0 space-y-4 xl:col-span-4">
             <Monitoring view={view} />
             <LimitDetail view={view} />
+            <MarketIntelCompact sectorId={view.firm.sectorId} sectorLabel={view.config.sectors[view.firm.sectorId].label} />
           </div>
         </div>
       </div>

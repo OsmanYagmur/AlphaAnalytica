@@ -637,3 +637,12 @@ Sunumdan önce **Ctrl+Shift+R** ile demo başlangıç durumuna (v1.0, başlangı
 - **Fiyatlama:** TLREF'in sayısal değeri modele dahil değildir; fiyat "TLREF + spread" olarak gösterilir.
 - **Dönem görünümünde ölçüm uyarlaması:** Ortalama ölçümlü göstergelerde etiket dönem ortalamasından; değişim ölçümlülerde dönem uzunluğunda aynı karşılaştırma aralığıyla (ör. geçen yılın aynı dönemi, sezonsallıktan etkilenmemesi için); eğilimli seviyede dönem uzunluğunda regresyonla (en az 3 ay) hesaplanır. Son gözlem ve sezon dönemi ölçümleri dönemden bağımsızdır. Karşılaştırma için yeterli geçmiş yoksa (ör. karar tarihindeki veriyle 12 ay) değişim "—", etiket "Yetersiz veri" gösterilir. Ekranda gösterilen değişim ise her zaman bir önceki eşit uzunluktaki dönemedir.
 - **Model değişiklik akışı:** Model Yöneticisi'ndeki düzenlemeler önce çalışma kopyasında tutulur, "Taslak" ile saklanabilir; aktif model yalnızca "Yeni sürüm olarak kaydet" veya bir sürümün aktif yapılmasıyla değişir.
+
+## 14. Piyasa İstihbaratı
+
+Piyasa İstihbaratı, her sektör için Türkiye'deki son 3–6 ayın gelişmelerini özetleyen **bilgi amaçlı** bir modüldür. **Kredi skorunu, notu ve limiti etkilemez**, model konfigürasyonunun ve sürümlerinin parçası değildir.
+
+- **Kaynak:** Uygulama çevrimdışı çalıştığı için içerik çalışma zamanında internetten çekilmez. Başlangıç maddeleri 25.09.2026'da yapılan web araştırmasıyla derlenmiş ve `src/data/marketIntel.ts` dosyasına statik veri olarak yazılmıştır. Her sektörde 3–5 madde vardır.
+- **Madde yapısı:** kısa başlık, 1–2 cümlelik özet (kaynağın cümleleri değil, özet ifadeler), etki yönü (Olumlu / Nötr / Olumsuz), kaynak adı, kaynak bağlantısı ve tarih. Her rakamın kaynağı maddede yer alır. Sektör başına bir "Kredi açısından ne anlama geliyor" yorumu ve "Son güncelleme" tarihi tutulur.
+- **Görünüm:** Tahsis Yöneticisi değerlendirme ekranında ayrı "Piyasa İstihbaratı" sekmesi (maddeler yeniden eskiye, kaynak bağlantılarıyla); Portföy Yöneticisi firma detayında sağ sütunda kompakt kart (olumsuzlar önce); Portföy Özeti'nde seçili ölçekteki firmaların sektörleri için olumsuz sinyal sayısı.
+- **Düzenleme:** Model Yöneticisi → "Piyasa İstihbaratı" ekranında maddeler eklenir, düzenlenir, silinir ve kredi yorumu güncellenir. Kayıt anında "Son güncelleme" bugünün tarihine çekilir, değişiklik model denetim izine yazılır ve localStorage'da saklanır. Sektör bazında "Araştırma verisine dön" ile başlangıç maddelerine dönülür; demo sıfırlaması (Ctrl+Shift+R) da başlangıç verisini geri yükler.

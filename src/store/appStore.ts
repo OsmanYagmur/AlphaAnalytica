@@ -5,15 +5,17 @@
  */
 
 import { useSyncExternalStore } from 'react'
-import { FIRMS, SEED_DECISIONS, getFirm, type SeedDecision } from '../data'
+import { DEFAULT_MARKET_INTEL, FIRMS, SEED_DECISIONS, getFirm, isValidMarketIntel, type MarketIntel, type SectorIntel, type SeedDecision } from '../data'
 import { revisedCollateral, allocateProducts, type CreditTerms } from '../engine/collateral'
 import { evaluateFirmAsOf, type FirmEvaluation } from '../engine/evaluate'
 import { withIndicatorTexts } from '../engine/indicatorInfo'
 import {
   BASE_MODEL_VERSION,
   MODEL_SCHEMA_VERSION,
+  SECTOR_IDS,
   createDefaultModelConfig,
   type ModelConfig,
+  type SectorId,
 } from '../engine/modelConfig'
 import type { AppState, AuditEntry, Decision, FinalTerms, ModelVersion, Role, SystemView } from './types'
 
@@ -23,6 +25,7 @@ const KEYS = {
   audit: 'alphaanalytica:audit',
   ui: 'alphaanalytica:ui',
   draft: 'alphaanalytica:draft',
+  marketIntel: 'alphaanalytica:marketIntel',
 } as const
 
 export const USERS: Record<Role, { name: string; title: string }> = {
@@ -182,6 +185,7 @@ export function createInitialState(): AppState {
     modelDraft: null,
     role: null,
     presentation: false,
+    marketIntel: structuredClone(DEFAULT_MARKET_INTEL),
   }
 }
 
@@ -221,6 +225,7 @@ function loadState(): AppState {
   const audit = read<AppState['audit']>(KEYS.audit)
   const ui = read<Pick<AppState, 'role' | 'presentation'>>(KEYS.ui)
   const draft = read<ModelConfig>(KEYS.draft)
+  const marketIntel = read<MarketIntel>(KEYS.marketIntel)
   // Gösterge açıklamaları eklenmeden önce kaydedilmiş sürümler: eksik metinler varsayılandan tamamlanır
   const modelSlice = isValidModel(model)
     ? {
@@ -236,6 +241,7 @@ function loadState(): AppState {
     modelDraft: draft?.schemaVersion === MODEL_SCHEMA_VERSION ? withIndicatorTexts(draft) : null,
     role: ui?.role ?? null,
     presentation: ui?.presentation ?? false,
+    marketIntel: isValidMarketIntel(marketIntel, SECTOR_IDS) ? marketIntel : initial.marketIntel,
   }
 }
 
@@ -245,6 +251,7 @@ function persist(state: AppState): void {
   write(KEYS.audit, state.audit)
   write(KEYS.ui, { role: state.role, presentation: state.presentation })
   write(KEYS.draft, state.modelDraft)
+  write(KEYS.marketIntel, state.marketIntel)
 }
 
 // ---------------------------------------------------------------------------
@@ -292,6 +299,16 @@ if (typeof window !== 'undefined') {
 
 export function useAppState<T>(selector: (s: AppState) => T): T {
   return useSyncExternalStore(subscribe, () => selector(state), () => selector(state))
+}
+
+/** ISO zaman damgası → yerel 'YYYY-MM-DD'. */
+function localDate(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export function useSectorIntel(sectorId: SectorId): SectorIntel {
+  return useAppState((s) => s.marketIntel[sectorId])
 }
 
 export function versionConfig(s: AppState, version: string): ModelConfig {
@@ -376,6 +393,24 @@ export const actions = {
       const action = version === BASE_MODEL_VERSION ? `${BASE_MODEL_VERSION} varsayılanlarına dönüldü` : `${version} aktif yapıldı`
       return { ...s, activeVersion: version, lastChange: { at, by: author }, modelLog: [...s.modelLog, { at, by: author, action }] }
     })
+  },
+  /** Bir sektörün piyasa istihbaratını kaydeder; son güncelleme tarihi bugüne çekilir. */
+  saveSectorIntel(sectorId: SectorId, intel: SectorIntel, author: string, summary: string): void {
+    const at = new Date().toISOString()
+    setState((s) => ({
+      ...s,
+      marketIntel: { ...s.marketIntel, [sectorId]: { ...intel, lastUpdated: localDate(at) } },
+      modelLog: [...s.modelLog, { at, by: author, action: `Piyasa istihbaratı · ${summary}` }],
+    }))
+  },
+  /** Bir sektörün piyasa istihbaratını araştırma verisine (varsayılan) döndürür. */
+  resetSectorIntel(sectorId: SectorId, author: string, sectorLabel: string): void {
+    const at = new Date().toISOString()
+    setState((s) => ({
+      ...s,
+      marketIntel: { ...s.marketIntel, [sectorId]: structuredClone(DEFAULT_MARKET_INTEL[sectorId]) },
+      modelLog: [...s.modelLog, { at, by: author, action: `Piyasa istihbaratı · ${sectorLabel}: araştırma verisine dönüldü` }],
+    }))
   },
   appendModelLog(entry: AuditEntry): void {
     setState((s) => ({ ...s, modelLog: [...s.modelLog, entry] }))

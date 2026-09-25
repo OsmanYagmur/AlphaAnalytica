@@ -2,6 +2,7 @@ import { AlertOctagon, ChevronRight, Eye } from 'lucide-react'
 import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AppShell } from '../../components/AppShell'
+import { MarketIntelSummary } from '../../components/MarketIntel'
 import { CHART_COLORS } from '../../components/charts'
 import { Badge, Card, ModelVersionTag, cx } from '../../components/ui'
 import { CREDIT_GRADES } from '../../engine/modelConfig'
@@ -28,6 +29,12 @@ export function PortfolioSummary() {
       : (Object.fromEntries(CREDIT_GRADES.map((g) => [g, views.filter((v) => v.current.grade === g).length])) as Record<string, number>)
   const gradeData = CREDIT_GRADES.map((g) => ({ grade: g, count: gradeCounts[g] }))
   const pendingCount = views.filter((v) => v.status === 'pending').length
+  // Seçili ölçekteki firmaların sektörleri (piyasa istihbaratı özeti için)
+  const intelSectors = [...new Set(views.map((v) => v.firm.sectorId))].map((sectorId) => ({
+    sectorId,
+    label: config.sectors[sectorId].label,
+    firmCount: views.filter((v) => v.firm.sectorId === sectorId).length,
+  }))
 
   return (
     <AppShell
@@ -120,58 +127,61 @@ export function PortfolioSummary() {
         </Card>
       </div>
 
-      <Card title="Erken uyarıdaki firmalar" subtitle="Portföydeki firmaların aktif model ve güncel veriyle izlenmesi" className="mt-4" bodyClassName="p-0">
-        {summary.warnings.length === 0 ? (
-          <p className="px-5 py-6 text-sm text-muted">Erken uyarı sinyali olan portföy firması yok.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead>
-                <tr className="border-b border-line bg-subtle/60 text-left">
-                  <th className="label-caps px-5 py-2.5 font-semibold">Firma</th>
-                  <th className="label-caps px-3 py-2.5 font-semibold">Not (karar → güncel)</th>
-                  <th className="label-caps px-3 py-2.5 text-right font-semibold">Onaylı limit</th>
-                  <th className="label-caps px-3 py-2.5 font-semibold">Sinyaller</th>
-                  <th className="w-8" />
-                </tr>
-              </thead>
-              <tbody>
-                {summary.warnings.map((v) => (
-                  <tr key={v.firm.id} onClick={() => navigate(`/portfoy/firma/${v.firm.id}`)} className="cursor-pointer border-b border-line last:border-b-0 hover:bg-subtle/60">
-                    <td className="px-5 py-3">
-                      <div className="font-medium text-ink">{v.firm.name}</div>
-                      <div className="text-xs text-muted">{config.sectors[v.firm.sectorId].label}</div>
-                    </td>
-                    <td className="px-3 py-3">
-                      <GradeChange from={v.decision?.system.grade ?? null} to={v.current.grade} />
-                    </td>
-                    <td className="num whitespace-nowrap px-3 py-3 text-right">{formatTL(approvedLimit(v))}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {v.current.earlyWarnings.critical.map((s) => (
-                          <Badge key={s.id} tone="negative">
-                            <AlertOctagon size={11} />
-                            {s.label}
-                          </Badge>
-                        ))}
-                        {v.current.earlyWarnings.watch.map((s) => (
-                          <Badge key={s.id} tone="warning">
-                            <Eye size={11} />
-                            {s.label}
-                          </Badge>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="pr-4 text-faint">
-                      <ChevronRight size={16} />
-                    </td>
+      <div className="mt-4 grid gap-4 2xl:grid-cols-3">
+        <Card title="Erken uyarıdaki firmalar" subtitle="Portföydeki firmaların aktif model ve güncel veriyle izlenmesi" className="2xl:col-span-2" bodyClassName="p-0">
+          {summary.warnings.length === 0 ? (
+            <p className="px-5 py-6 text-sm text-muted">Erken uyarı sinyali olan portföy firması yok.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-sm">
+                <thead>
+                  <tr className="border-b border-line bg-subtle/60 text-left">
+                    <th className="label-caps px-5 py-2.5 font-semibold">Firma</th>
+                    <th className="label-caps px-3 py-2.5 font-semibold">Not (karar → güncel)</th>
+                    <th className="label-caps px-3 py-2.5 text-right font-semibold">Onaylı limit</th>
+                    <th className="label-caps px-3 py-2.5 font-semibold">Sinyaller</th>
+                    <th className="w-8" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+                </thead>
+                <tbody>
+                  {summary.warnings.map((v) => (
+                    <tr key={v.firm.id} onClick={() => navigate(`/portfoy/firma/${v.firm.id}`)} className="cursor-pointer border-b border-line last:border-b-0 hover:bg-subtle/60">
+                      <td className="px-5 py-3">
+                        <div className="font-medium text-ink">{v.firm.name}</div>
+                        <div className="text-xs text-muted">{config.sectors[v.firm.sectorId].label}</div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <GradeChange from={v.decision?.system.grade ?? null} to={v.current.grade} />
+                      </td>
+                      <td className="num whitespace-nowrap px-3 py-3 text-right">{formatTL(approvedLimit(v))}</td>
+                      <td className="px-3 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {v.current.earlyWarnings.critical.map((s) => (
+                            <Badge key={s.id} tone="negative">
+                              <AlertOctagon size={11} />
+                              {s.label}
+                            </Badge>
+                          ))}
+                          {v.current.earlyWarnings.watch.map((s) => (
+                            <Badge key={s.id} tone="warning">
+                              <Eye size={11} />
+                              {s.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="pr-4 text-faint">
+                        <ChevronRight size={16} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+        <MarketIntelSummary sectors={intelSectors} />
+      </div>
     </AppShell>
   )
 }
