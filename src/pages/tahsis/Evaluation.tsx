@@ -2,8 +2,9 @@ import { AlertOctagon, ArrowLeft, Eye, Info, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { AppShell } from '../../components/AppShell'
 import { Gauge } from '../../components/Gauge'
+import { KkbSignalBadges, KkbTab } from '../../components/Kkb'
 import { MarketIntelTab } from '../../components/MarketIntel'
-import { Badge, Button, Card, GradeBadge, ModelVersionTag, StatusBadge, Tabs } from '../../components/ui'
+import { Badge, Button, Card, GradeBadge, ModelVersionTag, StatusBadge, Tabs, cx } from '../../components/ui'
 import { formatDate, formatDateTime, formatNumber, formatPercent, formatTL } from '../../lib/format'
 import { SEGMENT_LABELS } from '../../data'
 import { navigate } from '../../lib/router'
@@ -15,11 +16,11 @@ import { Factors } from './Factors'
 import { SystemRecommendation } from './SystemRecommendation'
 import { TraditionalTab } from './TraditionalTab'
 
-function Kunye({ label, value }: { label: string; value: string }) {
+function Kunye({ label, value, wrap }: { label: string; value: string; wrap?: boolean }) {
   return (
     <div>
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="num mt-0.5 whitespace-nowrap text-sm text-ink">{value}</dd>
+      <dd className={cx('num mt-0.5 text-sm text-ink', wrap ? 'leading-snug' : 'whitespace-nowrap')}>{value}</dd>
     </div>
   )
 }
@@ -46,20 +47,23 @@ function TopStrip({ view }: { view: FirmView }) {
             <Kunye label="İl" value={firm.city} />
             <Kunye label="Kuruluş" value={String(firm.foundedYear)} />
             <Kunye label="Çalışan" value={formatNumber(firm.employees)} />
-            <Kunye label="Ölçek" value={SEGMENT_LABELS[firm.segment]} />
+            <Kunye label="Ölçek" value={SEGMENT_LABELS[firm.segment]} wrap />
             {firm.groupCompanies && <Kunye label="Grup şirketi" value={String(firm.groupCompanies)} />}
             <Kunye label="Talep tutarı" value={formatTL(firm.requestedAmount)} />
             <Kunye label="Başvuru" value={formatDate(firm.applicationDate)} />
           </dl>
           {(ev.earlyWarnings.critical.length > 0 || ev.earlyWarnings.watch.length > 0) && (
             <div className="mt-4 flex flex-wrap gap-1.5 border-t border-line pt-3">
-              {ev.earlyWarnings.critical.map((s) => (
-                <Badge key={s.id} tone="negative" className="whitespace-normal">
-                  <AlertOctagon size={12} className="shrink-0" />
-                  Erken uyarı: {s.label}
-                </Badge>
-              ))}
-              {ev.earlyWarnings.watch.map((s) => (
+              {ev.earlyWarnings.critical
+                .filter((s) => s.source !== 'kkb')
+                .map((s) => (
+                  <Badge key={s.id} tone="negative" className="whitespace-normal">
+                    <AlertOctagon size={12} className="shrink-0" />
+                    Erken uyarı: {s.label}
+                  </Badge>
+                ))}
+              <KkbSignalBadges evaluation={ev} />
+              {ev.earlyWarnings.watch.filter((s) => s.source !== 'kkb').map((s) => (
                 <Badge key={s.id} tone="warning" className="whitespace-normal">
                   <Eye size={12} className="shrink-0" />
                   {s.label}
@@ -83,6 +87,12 @@ function TopStrip({ view }: { view: FirmView }) {
               <p className="text-xs text-muted">Temerrüt olasılığı</p>
               <p className="num text-base font-semibold text-ink">{formatPercent(ev.pd, 2)}</p>
             </div>
+            {ev.kkb && (
+              <div>
+                <p className="text-xs text-muted">Findeks notu</p>
+                <p className="num text-base font-semibold text-ink">{formatNumber(ev.kkb.snapshot.findeks)}</p>
+              </div>
+            )}
             <ModelVersionTag version={view.modelVersion} />
           </div>
         </div>
@@ -91,7 +101,7 @@ function TopStrip({ view }: { view: FirmView }) {
   )
 }
 
-type TabId = 'traditional' | 'alternative' | 'market'
+type TabId = 'traditional' | 'alternative' | 'kkb' | 'market'
 
 function EvaluationContent({ view }: { view: FirmView }) {
   const [tab, setTab] = useState<TabId>('traditional')
@@ -121,11 +131,13 @@ function EvaluationContent({ view }: { view: FirmView }) {
             items={[
               { value: 'traditional', label: 'Geleneksel Analiz' },
               { value: 'alternative', label: 'Alternatif Veri' },
+              { value: 'kkb', label: 'KKB / Diğer Bankalar' },
               { value: 'market', label: 'Piyasa İstihbaratı' },
             ]}
           />
           {tab === 'traditional' && <TraditionalTab firm={view.firm} evaluation={view.evaluation} config={view.config} />}
           {tab === 'alternative' && <AlternativeTab firm={view.firm} evaluation={view.evaluation} config={view.config} dataAsOf={dataAsOf} />}
+          {tab === 'kkb' && <KkbTab evaluation={view.evaluation} config={view.config} />}
           {tab === 'market' && <MarketIntelTab sectorId={view.firm.sectorId} sectorLabel={view.config.sectors[view.firm.sectorId].label} />}
         </div>
         <div className="min-w-0 space-y-4 xl:col-span-4">

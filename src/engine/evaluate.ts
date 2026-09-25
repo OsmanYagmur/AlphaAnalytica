@@ -11,17 +11,30 @@ import {
   type EarlyWarningResult,
   type GradeOverrideResult,
 } from './earlyWarning'
+import { detectKkbSignals, kkbSnapshot, type KkbSignal, type KkbSnapshot } from './kkb'
 import { computeLimit, type LimitResult } from './limit'
 import type { CreditGrade, ModelConfig, SectorId } from './modelConfig'
+import { normalize } from './normalize'
 import { computeFinalScore, gradeFromScore, probabilityOfDefault } from './rating'
 import { computeTraditionalScore, type TraditionalScoreResult } from './traditionalScore'
-import type { AlternativeInput, RiskFlags, TraditionalInput } from './types'
+import type { AlternativeInput, KkbReport, RiskFlags, TraditionalInput } from './types'
 
 export interface FirmInput {
   sectorId: SectorId
   traditional: TraditionalInput
   alternative: AlternativeInput
   riskFlags: RiskFlags
+  /** KKB risk raporu (diğer bankalar); yoksa KKB adımları atlanır. */
+  kkb?: KkbReport
+}
+
+export interface KkbEvaluation {
+  snapshot: KkbSnapshot
+  signals: KkbSignal[]
+  /** Findeks notunun 0–100 puanı (skora dahil edilip edilmediği config'e bağlı). */
+  findeksPoints: number
+  /** K3'te kullanılan mevcut yıllık kredi ödemelerinin kaynağı. */
+  debtServiceSource: 'kkb' | 'declared'
 }
 
 export interface FirmEvaluation {
@@ -40,12 +53,22 @@ export interface FirmEvaluation {
   limit: LimitResult
   /** C notunda null */
   terms: CreditTerms | null
+  /** KKB verisi yoksa null. */
+  kkb: KkbEvaluation | null
 }
 
 export function evaluateFirm(firm: FirmInput, config: ModelConfig): FirmEvaluation {
   const traditional = computeTraditionalScore(firm.traditional, firm.sectorId, config)
   const alternative = computeAlternativeScore(firm.alternative, firm.sectorId, config)
-  const score = computeFinalScore(traditional.score, alternative.score, config)
+  const s = traditional.statement
+
+  // KKB: değerlendirme ayı alternatif verinin son ayıdır (karar anı görüntüsüyle tutarlı)
+  const asOf = firm.alternative.months[firm.alternative.months.length - 1]
+  const snapshot = firm.kkb && asOf && firm.kkb.months.includes(asOf) ? kkbSnapshot(firm.kkb, asOf, config) : null
+  const findeksPoints = snapshot ? normalize(snapshot.findeks, config.kkb.findeks.breakpoints) : null
+  const kkbSignals = snapshot ? detectKkbSignals(snapshot, s.financialDebt, config) : []
+
+  const score = computeFinalScore(traditional.score, alternative.score, config, findeksPoints)
   const baseGrade = gradeFromScore(score, config)
 
   const indicatorScores = Object.fromEntries(
@@ -62,17 +85,22 @@ export function evaluateFirm(firm: FirmInput, config: ModelConfig): FirmEvaluati
     },
     config,
   )
+  for (const k of kkbSignals) {
+    if (k.gradeCap === 'none') earlyWarnings.watch.push({ id: k.id, label: k.label, source: 'kkb' })
+    else earlyWarnings.critical.push({ id: k.id, label: k.label, gradeCap: k.gradeCap, source: 'kkb' })
+  }
   const override = applyEarlyWarningOverride(baseGrade, earlyWarnings.critical)
   const grade = override.grade
 
-  const s = traditional.statement
+  const debtServiceFromKkb = snapshot !== null && config.kkb.debtService.fromKkb
   const limit = computeLimit(
     {
       netSales: s.netSales,
       cashConversionCycle: traditional.ratios.cashConversionCycle,
       equity: s.equity,
       ebitda: s.ebitda,
-      annualDebtService: s.annualDebtService,
+      annualDebtService: debtServiceFromKkb ? snapshot.annualDebtService : s.annualDebtService,
+      otherBankDeduction: snapshot && config.kkb.limit.deductOtherBanks ? snapshot.workingCapitalCashRisk * config.kkb.limit.deductionRate : 0,
     },
     grade,
     firm.sectorId,
@@ -90,6 +118,9 @@ export function evaluateFirm(firm: FirmInput, config: ModelConfig): FirmEvaluati
     pd: probabilityOfDefault(score, config),
     limit,
     terms: computeCreditTerms(limit.limit, grade, firm.sectorId, config),
+    kkb: snapshot
+      ? { snapshot, signals: kkbSignals, findeksPoints: findeksPoints!, debtServiceSource: debtServiceFromKkb ? 'kkb' : 'declared' }
+      : null,
   }
 }
 

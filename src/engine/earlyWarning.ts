@@ -9,6 +9,7 @@
 import type {
   CreditGrade,
   CriticalSignalId,
+  KkbSignalId,
   LendableGrade,
   ModelConfig,
   WatchSignalId,
@@ -31,14 +32,17 @@ export interface EarlyWarningInput {
 }
 
 export interface CriticalSignal {
-  id: CriticalSignalId
+  id: CriticalSignalId | KkbSignalId
   label: string
   gradeCap: LendableGrade
+  /** KKB kaynaklı sinyallerde 'kkb'. */
+  source?: 'kkb'
 }
 
 export interface WatchSignal {
-  id: WatchSignalId
+  id: WatchSignalId | KkbSignalId
   label: string
+  source?: 'kkb'
   /** weakIndicator için zayıf göstergelerin kimlikleri. */
   indicators?: string[]
 }

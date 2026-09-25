@@ -18,7 +18,7 @@ Alternatif veri ─► Alternatif Skor (A)┘                                   
                                    Limit = min(K1; K2; K3) × f(not) × SRK ─► Teminat · Vade · Fiyat · Ürün kırılımı
 ```
 
-Hattın tamamı `evaluateFirm()` (`src/engine/evaluate.ts`) fonksiyonundadır. UI yalnızca bu çıktıyı okur.
+Hattın tamamı `evaluateFirm()` (`src/engine/evaluate.ts`) fonksiyonundadır. UI yalnızca bu çıktıyı okur. KKB risk raporu (diğer bankalar) erken uyarı sinyallerine, K1'e ve K3'e girer; Findeks notu varsayılan olarak skora dahil değildir (Bölüm 15).
 
 **Birim kuralı:** Oranlar ondalık kesir olarak tutulur (%20 → 0,20); puanlar 0–100 aralığındadır; tutarlar TL'dir.
 
@@ -178,17 +178,33 @@ Ekranlarda skor bir ondalıkla **aşağı yuvarlanarak** gösterilir; böylece g
 | Arındırılmış ciro trendi negatif | Yıllık büyüme ≤ −%10 |
 | Alternatif veri bilançoyu teyit etmiyor | G − A ≥ 25 |
 
+**KKB kaynaklı sinyaller:** Diğer bankalardaki risklerden türetilir; her birinin not tavanı Model Yöneticisi'nde seçilir (tavan "Yok" ise izleme sinyalidir). Ekranlarda "KKB:" önekiyle gösterilir.
+
+| Sinyal | Koşul (v1.0) | Not tavanı (v1.0) |
+|---|---|:-:|
+| Diğer bankada ciddi gecikme | Son 12 ayda herhangi bir bankada en yüksek gecikme ≥ 30 gün | BB |
+| Diğer bankada yasal takip | Herhangi bir bankada yasal takip kaydı | B |
+| Yoğun kredi sorgusu (limit arayışı) | Son 3 aydaki kredi sorgusu ≥ 6 | Yok (izleme) |
+| Diğer bankalarda riskte hızlı artış | Toplam (nakdi + gayrinakdi) risk son 6 ayda ≥ %40 arttı | Yok (izleme) |
+| KKB riski mizanla uyumsuz | \|Mizan ayındaki KKB nakdi riski − mizandaki finansal borçlar\| / finansal borçlar > %30 | Yok (izleme) |
+| Düşük Findeks notu | Findeks ≤ 1.100 | Yok (izleme) |
+
 ## 6. Limit
 
 ```
-K1 (İşletme Sermayesi İhtiyacı)  = Net Satış × max(NDS; 30) / 365 × 1,2
+K1 brüt (İşletme Sermayesi İhtiyacı) = Net Satış × max(NDS; 30) / 365 × 1,2
+K1 (Finanse Edilmemiş İhtiyaç)   = max(0; K1 brüt − Diğer Bankalardaki İşletme Sermayesi Nakdi Riski × 1,0)
 K2 (Özkaynak Kapasitesi)         = Özkaynak × 1,5
 K3 (Borç Servis Kapasitesi)      = max(0; FAVÖK × 0,6 − Mevcut Yıllık Kredi Ödemeleri) × 2
 Kapasite                         = min(K1; K2; K3)
 Önerilen Limit                   = Kapasite × f(not) × SRK   → 50.000 TL'ye aşağı yuvarlanır (negatifse 0)
 ```
 
-**Mevcut Yıllık Kredi Ödemeleri:** Vadeli kredilerin önümüzdeki 12 aydaki anapara taksitleri. Yenilenen rotatif kısa vadeli krediler dahil edilmez; faiz yükü finansman gideri olarak Faiz Karşılama oranında izlenir.
+**Diğer bankalardaki işletme sermayesi nakdi riski:** KKB raporunda rotatif, spot ve kurumsal kredi kartı türündeki nakdi risklerin değerlendirme ayındaki toplamı. Bu krediler K1'deki işletme sermayesi ihtiyacının bir kısmını zaten finanse ettiği için brüt ihtiyaçtan düşülür (düşüm oranı ve kredi türleri konfigüre edilebilir).
+
+**Mevcut Yıllık Kredi Ödemeleri:** KKB'deki vadeli (taksitli) kredilerin önümüzdeki 12 aydaki anapara taksitleri: her kredi için `risk × min(1; 12 / kalan taksit sayısı)` (eşit taksit varsayımı). Yenilenen rotatif kısa vadeli krediler dahil edilmez; faiz yükü finansman gideri olarak Faiz Karşılama oranında izlenir. KKB verisi yoksa veya "KKB'den türet" kapalıysa firmanın beyanı kullanılır.
+
+**Önerilen formülün gerekçesi:** Diğer bankalardaki toplam nakdi risk, finanse ettiği ihtiyaca göre kapasiteden düşülür: işletme sermayesi kredileri K1'den (tutar olarak), vadeli krediler K3'ten (yıllık anapara yükü olarak). K2 (özkaynak kapasitesi) yapısal üst sınır olarak değiştirilmez. Böylece aynı borç iki kez düşülmez ve yalnız bilançoya göre hesaplanan kapasite, firmanın başka bankalardan zaten kullandığı finansmanla düzeltilir.
 
 **Sektör Risk Katsayısı (SRK):** E-ticaret 0,95 · Oto Galeri 0,90 · Kırtasiye 1,00 · Turizm 0,85 · Restoran/Kafe 0,90 · Yapı Malzemesi 0,90 · Tekstil 0,95 · Tarım/Gıda 0,90 · Lojistik 1,00 · Eczane 1,05.
 
@@ -243,6 +259,17 @@ Konfigürasyon `ModelConfig` tipindedir (`src/engine/modelConfig.ts`). Aşağıd
 | `earlyWarning.watch.weakIndicator.maxScore` | Zayıf gösterge eşiği | 35 |
 | `earlyWarning.watch.negativeTrend.maxAnnualGrowth` | Negatif trend eşiği | −%10 |
 | `earlyWarning.watch.scoreDivergence.minGap` | G − A uyumsuzluk eşiği | 25 |
+| `kkb.signals.<sinyal>` | KKB sinyali: etiket, etkin, eşikler, not tavanı ('none' = izleme) | Bölüm 5 |
+| `kkb.signals.overdue.minDays` / `.windowMonths` | Gecikme eşiği / pencere | 30 gün / 12 ay |
+| `kkb.signals.inquiries.minCount` / `.windowMonths` | Sorgu eşiği / pencere | 6 / 3 ay |
+| `kkb.signals.riskGrowth.minGrowth` / `.lookbackMonths` | Risk artış eşiği / geriye bakış | %40 / 6 ay |
+| `kkb.signals.mizanMismatch.maxDeviation` | KKB–mizan sapma eşiği | %30 |
+| `kkb.signals.lowFindeks.maxScore` | Düşük Findeks eşiği | 1.100 |
+| `kkb.limit.deductOtherBanks` / `.deductionRate` | Diğer banka işletme sermayesi riskini K1'den düş / düşüm oranı | açık / %100 |
+| `kkb.limit.workingCapitalTypes` | İşletme sermayesi sayılan kredi türleri | rotatif, spot, kart |
+| `kkb.debtService.fromKkb` / `.termTypes` | K3 kredi ödemelerini KKB'den türet / vadeli kredi türleri | açık / taksitli |
+| `kkb.findeks.includeInScore` / `.weight` | Findeks'i skora dahil et / ağırlık | kapalı / %10 |
+| `kkb.findeks.breakpoints` | Findeks notu → puan | 700→0; 1.100→40; 1.500→80; 1.800→100 |
 | `limit.k1.multiplier` / `limit.k1.minDays` | K1 çarpanı / minimum gün | 1,2 / 30 |
 | `limit.k2.equityMultiplier` | K2 özkaynak çarpanı | 1,5 |
 | `limit.k3.ebitdaRatio` / `limit.k3.multiplier` | K3 FAVÖK oranı / çarpanı | 0,6 / 2 |
@@ -266,7 +293,7 @@ Konfigürasyon `ModelConfig` tipindedir (`src/engine/modelConfig.ts`). Aşağıd
 | `presentation.topFactorCount` | "Skoru etkileyen faktörler" listesindeki faktör sayısı | 3 |
 | `decision.revisionJustificationThreshold` | Revizede gerekçe zorunluluğu sapma eşiği | %20 |
 
-**Doğrulama kuralları** (`validateModelConfig`): Toplamı %100 olması gereken her ağırlık grubu (nihai, kategori, kategori içi, SP/SU/TR, sektör göstergeleri, ürün kırılımları) 1'e eşit olmalıdır. Kırılım noktaları kesin artan sırada olmalı ve puanlar 0–100 aralığında kalmalıdır. Not eşikleri kesin azalan olmalı, not çarpanları artmamalı, teminat oranı ve spread nota göre azalmamalıdır. Sezon endeksi 12 pozitif değerden oluşmalı ve ortalaması 1,00 olmalıdır. Pozitif olması gereken katsayılar (PD ölçeği, K çarpanları, NDS medyanı, LTV) sıfırın üstünde olmalıdır. Hatalı konfigürasyon kaydedilemez ve içe aktarılamaz.
+**Doğrulama kuralları** (`validateModelConfig`): KKB eşikleri pozitif ve tam sayı (gün, ay, adet) olmalı, Findeks ağırlığı %0–50, düşüm oranı %0–100 aralığında kalmalı; bir kredi türü hem işletme sermayesi hem vadeli sayılamaz. Toplamı %100 olması gereken her ağırlık grubu (nihai, kategori, kategori içi, SP/SU/TR, sektör göstergeleri, ürün kırılımları) 1'e eşit olmalıdır. Kırılım noktaları kesin artan sırada olmalı ve puanlar 0–100 aralığında kalmalıdır. Not eşikleri kesin azalan olmalı, not çarpanları artmamalı, teminat oranı ve spread nota göre azalmamalıdır. Sezon endeksi 12 pozitif değerden oluşmalı ve ortalaması 1,00 olmalıdır. Pozitif olması gereken katsayılar (PD ölçeği, K çarpanları, NDS medyanı, LTV) sıfırın üstünde olmalıdır. Hatalı konfigürasyon kaydedilemez ve içe aktarılamaz.
 
 ## 9. Sektör göstergeleri, ağırlıkları ve sezon endeksleri
 
@@ -564,42 +591,45 @@ Sezon endeksi — Standart (Kış (grip dönemi) yüksek; yaz ayları düşük):
 
 ## 10. Demo verisi ve senaryolar
 
-16 hayali firma `src/data` altındadır: 10 sektörün tamamını kapsayan 14 KOBİ ve farklı bir kitleyi temsil eden 2 holding (milyar TL ölçeğinde ciro, binlerce çalışan, konsolide grup şirketleri). Her firmanın ölçeği künyede gösterilir: KOBİ'lerde çalışan sayısından türetilir (<10 mikro, <50 küçük, <250 orta işletme), holdinglerde "Holding" ve grup şirketi sayısıdır. Adlar, VKN'ler ve tüm rakamlar hayalidir; gerçek marka veya pazaryeri adı kullanılmaz ("Pazaryeri A", "Yemek Platformu A"). Her firma için künye (VKN, il, kuruluş yılı, çalışan sayısı), hesap kodlu ve denk mizan (2025), KVB özeti (net satış, matrah, ödenen vergi), 24 aylık ciro (Eylül 2024 – Ağustos 2026) ve sektöre özgü aylık gösterge serileri vardır. Seriler tohumlu (deterministik) üreteçlerle oluşturulur. Tüm TL tutarları kuruş hassasiyetindedir; mizan, borç/alacak hareket toplamları ve bakiyeleriyle kuruşu kuruşuna denktir ve alt hesap bölüşümleri firmaya özgü sapmalar içerir. Mizandaki 2025 net satışı aylık ciro serisinin 2025 toplamına eşittir. Her firmanın mizanı gerçek bir muhasebe programı çıktısı biçiminde `docs/mizanlar/` klasöründe PDF olarak bulunur.
+16 hayali firma `src/data` altındadır: 10 sektörün tamamını kapsayan 14 KOBİ ve farklı bir kitleyi temsil eden 2 holding (milyar TL ölçeğinde ciro, binlerce çalışan, konsolide grup şirketleri). Her firmanın ölçeği künyede gösterilir: KOBİ'lerde çalışan sayısından türetilir (<10 mikro, <50 küçük, <250 orta işletme), holdinglerde "Holding" ve grup şirketi sayısıdır. Adlar, VKN'ler ve tüm rakamlar hayalidir; gerçek marka veya pazaryeri adı kullanılmaz ("Pazaryeri A", "Yemek Platformu A"). Her firma için künye (VKN, il, kuruluş yılı, çalışan sayısı), hesap kodlu ve denk mizan (2025), KVB özeti (net satış, matrah, ödenen vergi), 24 aylık ciro (Eylül 2024 – Ağustos 2026) ve sektöre özgü aylık gösterge serileri vardır. Seriler tohumlu (deterministik) üreteçlerle oluşturulur. Tüm TL tutarları kuruş hassasiyetindedir; mizan, borç/alacak hareket toplamları ve bakiyeleriyle kuruşu kuruşuna denktir ve alt hesap bölüşümleri firmaya özgü sapmalar içerir. Mizandaki 2025 net satışı aylık ciro serisinin 2025 toplamına eşittir. Her firmanın mizanı gerçek bir muhasebe programı çıktısı biçiminde `docs/mizanlar/` klasöründe PDF olarak bulunur. Her firmanın ayrıca 24 aylık KKB risk raporu (simülasyon) vardır; ayrıntılar Bölüm 15'tedir.
 
 Başlangıçta 9 firma "Tahsis Bekliyor" (8 KOBİ + Çağlayan Holding), 7 firma karara bağlanmıştır (4 onay, 2 revize onay, 1 red). Tahsis kuyruğunda ve Portföy özetinde ölçek filtresi (Tümü / KOBİ / Holding) vardır; KOBİ filtresi holdinglerin büyük limitlerinden bağımsız bir KOBİ portföyü görünümü verir. Karara bağlanmış firmaların sistem görüşü, kararın verildiği andaki veriyle ve Model v1.0 ile hesaplanır.
 
 ### 10.1 Model v1.0 çıktıları
 
-| Firma | Sektör | Başlangıç | G | A | S | Not | PD | Önerilen limit |
-|---|---|---|---:|---:|---:|:-:|---:|---:|
-| Defne Kırtasiye Ltd. Şti. | Kırtasiye | Tahsis Bekliyor | 50,1 | 78,6 | 64,4 | BBB | %2,15 | 1.150.000 ₺ |
-| Kuzey Oto Galeri A.Ş. | Oto Galeri | Tahsis Bekliyor | 82,4 | 45,7 | 64,1 | BBB | %2,22 | 1.550.000 ₺ |
-| Palandöken Kar Turizm Seyahat Acentesi Ltd. Şti. (kış) | Turizm | Tahsis Bekliyor | 76,9 | 77,7 | 77,3 | A | %0,52 | 650.000 ₺ |
-| Mavi Sepet E-Ticaret A.Ş. | E-ticaret | Onaylandı | 65,5 | 66,1 | 65,8 | BBB | %1,83 | 1.700.000 ₺ |
-| Çınaraltı Restoran ve Kafe İşletmeleri Ltd. Şti. | Restoran / Kafe | Tahsis Bekliyor | 73,7 | 78,1 | 75,9 | A | %0,60 | 850.000 ₺ |
-| Anadolu Yapı Market Ltd. Şti. | Yapı Malzemesi | Tahsis Bekliyor | 54,1 | 56,0 | 55,1 | BB | %5,80 | 750.000 ₺ |
-| Toros Yapı Malzemeleri İnşaat Ltd. Şti. | Yapı Malzemesi | Tahsis Bekliyor | 11,6 | 25,7 | 18,7 | C | %77,89 | 0 ₺ |
-| Denizli Dokuma Tekstil San. ve Tic. A.Ş. | Tekstil | Tahsis Bekliyor | 74,1 | 77,9 | 76,0 | A | %0,60 | 4.350.000 ₺ |
-| Çukurova Tarım Ürünleri Toptan Ticaret Ltd. Şti. | Tarım / Gıda | Revize Onay | 61,0 | 74,0 | 67,5 | BBB | %1,53 | 1.700.000 ₺ |
-| Marmara Lojistik ve Taşımacılık A.Ş. | Lojistik | Onaylandı | 94,0 | 92,9 | 93,5 | AAA | %0,09 | 6.950.000 ₺ |
-| Şifa Eczanesi Sağlık Ürünleri Ltd. Şti. | Eczane | Revize Onay | 80,3 | 83,7 | 82,0 | AA | %0,31 | 2.250.000 ₺ |
-| Bodrum Mavi Tur Seyahat Acentesi Ltd. Şti. (yaz) | Turizm | Onaylandı | 59,0 | 73,9 | 66,4 | BBB | %1,71 | 800.000 ₺ |
-| Karadeniz Nakliyat ve Lojistik Ltd. Şti. | Lojistik | Tahsis Bekliyor | 88,8 | 80,8 | 84,8 | AA → BB | %0,23 | 1.550.000 ₺ |
-| Kapadokya Lezzet Kafe Ltd. Şti. | Restoran / Kafe | Reddedildi | 46,2 | 47,4 | 46,8 | B | %13,39 | 150.000 ₺ |
-| Kuzeyhan Tekstil Holding A.Ş. (holding) | Tekstil | Onaylandı | 85,5 | 87,2 | 86,3 | AA | %0,19 | 866.200.000 ₺ |
-| Çağlayan Gıda ve Tarım Holding A.Ş. (holding) | Tarım / Gıda | Tahsis Bekliyor | 54,4 | 75,4 | 64,9 | BBB | %2,03 | 115.250.000 ₺ |
+Değerler güncel veriyle (Ağustos 2026) ve KKB dahil hesaplanmıştır; son sütun KKB modülü öncesindeki önerilen limittir. Karara bağlanmış firmaların karar anındaki değerleri Bölüm 10.2'dedir.
 
-Bu değerler `src/engine/engine.test.ts` tarafından doğrulanır. Hiçbir firmanın skoru bir not eşiğine 0,5 puandan yakın değildir.
+| Firma | Sektör | Başlangıç | G | A | S | Not | PD | Önerilen limit | KKB öncesi |
+|---|---|---|---:|---:|---:|:-:|---:|---:|---:|
+| Defne Kırtasiye Ltd. Şti. | Kırtasiye | Tahsis Bekliyor | 50,1 | 78,6 | 64,4 | BBB | %2,15 | 1.150.000 ₺ | 1.150.000 ₺ |
+| Kuzey Oto Galeri A.Ş. | Oto Galeri | Tahsis Bekliyor | 82,4 | 45,7 | 64,1 | BBB | %2,22 | 900.000 ₺ | 1.550.000 ₺ |
+| Palandöken Kar Turizm Seyahat Acentesi Ltd. Şti. (kış) | Turizm | Tahsis Bekliyor | 76,9 | 77,7 | 77,3 | A | %0,52 | 650.000 ₺ | 650.000 ₺ |
+| Mavi Sepet E-Ticaret A.Ş. | E-ticaret | Onaylandı | 65,5 | 66,1 | 65,8 | BBB | %1,83 | 250.000 ₺ | 1.700.000 ₺ |
+| Çınaraltı Restoran ve Kafe İşletmeleri Ltd. Şti. | Restoran / Kafe | Tahsis Bekliyor | 73,7 | 78,1 | 75,9 | A | %0,60 | 500.000 ₺ | 850.000 ₺ |
+| Anadolu Yapı Market Ltd. Şti. | Yapı Malzemesi | Tahsis Bekliyor | 54,1 | 56,0 | 55,1 | BB | %5,80 | 750.000 ₺ | 750.000 ₺ |
+| Toros Yapı Malzemeleri İnşaat Ltd. Şti. | Yapı Malzemesi | Tahsis Bekliyor | 11,6 | 25,7 | 18,7 | C | %77,89 | 0 ₺ | 0 ₺ |
+| Denizli Dokuma Tekstil San. ve Tic. A.Ş. | Tekstil | Tahsis Bekliyor | 74,1 | 77,9 | 76,0 | A → BB | %0,60 | 2.700.000 ₺ | 4.350.000 ₺ |
+| Çukurova Tarım Ürünleri Toptan Ticaret Ltd. Şti. | Tarım / Gıda | Revize Onay | 61,0 | 74,0 | 67,5 | BBB | %1,53 | 1.700.000 ₺ | 1.700.000 ₺ |
+| Marmara Lojistik ve Taşımacılık A.Ş. | Lojistik | Onaylandı | 94,0 | 92,9 | 93,5 | AAA | %0,09 | 2.800.000 ₺ | 6.950.000 ₺ |
+| Şifa Eczanesi Sağlık Ürünleri Ltd. Şti. | Eczane | Revize Onay | 80,3 | 83,7 | 82,0 | AA | %0,31 | 1.300.000 ₺ | 2.250.000 ₺ |
+| Bodrum Mavi Tur Seyahat Acentesi Ltd. Şti. (yaz) | Turizm | Onaylandı | 59,0 | 73,9 | 66,4 | BBB | %1,71 | 400.000 ₺ | 800.000 ₺ |
+| Karadeniz Nakliyat ve Lojistik Ltd. Şti. | Lojistik | Tahsis Bekliyor | 88,8 | 80,8 | 84,8 | AA → BB | %0,23 | 350.000 ₺ | 1.550.000 ₺ |
+| Kapadokya Lezzet Kafe Ltd. Şti. | Restoran / Kafe | Reddedildi | 46,2 | 47,4 | 46,8 | B | %13,39 | 0 ₺ | 150.000 ₺ |
+| Kuzeyhan Tekstil Holding A.Ş. (holding) | Tekstil | Onaylandı | 85,5 | 87,2 | 86,3 | AA | %0,19 | 755.900.000 ₺ | 866.200.000 ₺ |
+| Çağlayan Gıda ve Tarım Holding A.Ş. (holding) | Tarım / Gıda | Tahsis Bekliyor | 54,4 | 75,4 | 64,9 | BBB | %2,03 | 115.250.000 ₺ | 115.250.000 ₺ |
+
+Bu değerler `src/engine/engine.test.ts` tarafından doğrulanır. Hiçbir firmanın skoru bir not eşiğine 0,5 puandan yakın değildir. KKB modülü skorları değiştirmez (Findeks varsayılan olarak skora dahil değil); notu yalnızca Denizli Dokuma'da (kritik KKB sinyali) değiştirir. Limitlerdeki düşüş, K1'i bağlayıcı olan firmalarda işletme sermayesi ihtiyacının bir kısmının diğer bankalarca zaten finanse edilmesinden kaynaklanır.
 
 ### 10.2 Hikâyeler
 
 1. **Kırtasiye — ana mesaj.** Defne Kırtasiye'nin bilançosu zayıftır (G 50,1: düşük likidite, yüksek kaldıraç, uzun nakit dönüşüm süresi). Geleneksel skor tek başına BB verir, yani geleneksel yöntemle reddedilecek bir firmadır. Alternatif veri güçlüdür (A 78,6): POS ciro ve okul sezonu cirosu büyüyor, tedarikçi ödemeleri düzenli, eylül piki sezon profiline birebir uyuyor (SU > 90). Sistem BBB ve 1.150.000 ₺ limit önerir.
-2. **Oto galeri — erken uyarı.** Kuzey Oto Galeri'nin bilançosu güçlüdür (G 82,4; tek başına AA). İlanda kalma süresi 42 günden 68 güne çıkıyor, satılan ilan ve arındırılmış ciro düşüyor, fiyat indirimleri artıyor (A 45,7). Üç izleme sinyali çıkar (zayıflayan gösterge: ilanda kalma süresi; negatif trend; alternatif veri bilançoyu teyit etmiyor). Not BBB'ye iner; limit, yalnız bilançoyla hesaplanacak limitin %80'inin altında kalır.
+2. **Oto galeri — erken uyarı.** Kuzey Oto Galeri'nin bilançosu güçlüdür (G 82,4; tek başına AA). İlanda kalma süresi 42 günden 68 güne çıkıyor, satılan ilan ve arındırılmış ciro düşüyor, fiyat indirimleri artıyor (A 45,7). Üç izleme sinyali çıkar (zayıflayan gösterge: ilanda kalma süresi; negatif trend; alternatif veri bilançoyu teyit etmiyor). Not BBB'ye iner; limit, yalnız bilançoyla hesaplanacak limitin %80'inin altında kalır. KKB'de stok finansmanının son altı ayda %40'ın üzerinde büyüdüğü görülür ("Diğer bankalarda riskte hızlı artış"); bu kredilerin karşıladığı işletme sermayesi ihtiyacı düşüldüğünden önerilen limit 900.000 ₺'dir.
 3. **Kış turizmi — sezonsallık.** Palandöken Kar Turizm'in haziran–ağustos cirosu yıllık ortalamanın %60'ının altındadır. Kış alt profiliyle bu düşüş beklenen desendir (SU > 90), not A'dır. Aynı firma yaz profiliyle değerlendirilseydi SU 20'nin altına düşer ve not kötüleşirdi.
-4. **E-ticaret — not bir kademe düşüyor.** Mavi Sepet, Mart 2026'da Şubat verisiyle A notuyla onaylanmıştır. Son altı ayda yorum puanı 4,6'dan 4,0'a iniyor, iade ve olumsuz yorum oranları iki katından fazla artıyor. Güncel not BBB'dir; firma Portföy özetinde erken uyarı listesinde görünür.
-5. **Uçlar ve override.** Toros Yapı C alır (zarar, karşılıksız çek, %28 beyan sapması; limit yok, red senaryosu). Marmara Lojistik AAA, Şifa Eczanesi AA alır. Karadeniz Nakliyat'ın skoru AA'dır ancak vadesi geçmiş vergi/SGK borcu (mizanda 368 hesabı) nedeniyle not BB ile sınırlanır.
-6. **Holding ölçeği.** Kuzeyhan Tekstil Holding (7 grup şirketi, 2.400 çalışan, ~5,5 milyar ₺ net satış) güçlü bilanço ve alternatif veriyle AA alır; 866,2 milyon ₺ limitle onaylanmıştır ve kurumsal kredi komitesi adımı karar geçmişinde görünür. Çağlayan Gıda ve Tarım Holding (5 grup şirketi, 1.150 çalışan, ~3,2 milyar ₺ net satış) satın alma sonrası kaldıraçlı ve ince marjlıdır: geleneksel skor tek başına BB, alternatif veriyle BBB; borç servis kapasitesi (K3) nedeniyle önerilen limit 115,25 milyon ₺, talep edilen 250 milyon ₺'nin altındadır. Aynı formüller KOBİ'den holdinge kadar ölçekten bağımsız çalışır.
-7. **Sunum finali.** Alternatif veri ağırlığı %50'den %30'a düşürüldüğünde Defne Kırtasiye'nin skoru 64,4'ten 58,7'ye iner; not BBB'den BB'ye, önerilen limit 1.150.000 ₺'den 850.000 ₺'ye düşer. Aynı değişiklik Kuzey Oto Galeri'yi BBB'den A'ya yükseltir.
+4. **E-ticaret — not bir kademe düşüyor.** Mavi Sepet, Mart 2026'da Şubat verisiyle A notuyla onaylanmıştır. Son altı ayda yorum puanı 4,6'dan 4,0'a iniyor, iade ve olumsuz yorum oranları iki katından fazla artıyor. Karar anındaki önerilen limit 1.000.000 ₺'dir. Güncel not BBB'dir; firma Portföy özetinde erken uyarı listesinde görünür. Onaydan sonra başka bir bankadan taksitli kredi kullanmış, KKB toplam riski altı ayda %40'ın üzerinde artmıştır; "diğer bankalarda riski artan firmalar" listesinde en üsttedir.
+5. **Uçlar ve override.** Toros Yapı C alır (zarar, karşılıksız çek, %28 beyan sapması; limit yok, red senaryosu). Marmara Lojistik AAA (karar anında 3.050.000 ₺), Şifa Eczanesi AA alır (sistem önerisi 1.450.000 ₺, SGK ödeme döngüsü gerekçesiyle 1.250.000 ₺'ye revize edilmiştir). Toros Yapı'nın KKB'sinde yasal takip, 180 güne ulaşan gecikme, karşılıksız çek ve protestolu senet kayıtları vardır. Karadeniz Nakliyat'ın skoru AA'dır ancak vadesi geçmiş vergi/SGK borcu (mizanda 368 hesabı) nedeniyle not BB ile sınırlanır.
+6. **Holding ölçeği.** Kuzeyhan Tekstil Holding (7 grup şirketi, 2.400 çalışan, ~5,5 milyar ₺ net satış) güçlü bilanço ve alternatif veriyle AA alır; Nisan 2026 verisiyle 866,2 milyon ₺ limitle onaylanmıştır (güncel veriyle öneri 755,9 milyon ₺) ve kurumsal kredi komitesi adımı karar geçmişinde görünür. Çağlayan Gıda ve Tarım Holding (5 grup şirketi, 1.150 çalışan, ~3,2 milyar ₺ net satış) satın alma sonrası kaldıraçlı ve ince marjlıdır: geleneksel skor tek başına BB, alternatif veriyle BBB; borç servis kapasitesi (K3) nedeniyle önerilen limit 115,25 milyon ₺, talep edilen 250 milyon ₺'nin altındadır. Aynı formüller KOBİ'den holdinge kadar ölçekten bağımsız çalışır.
+7. **KKB — bilançosu iyi görünen firmada başka bankada gecikme.** Denizli Dokuma Tekstil'in bilançosu ve alternatif verisi güçlüdür (G 74,1; A 77,9; skor notu A). KKB raporunda Banka C'deki rotatif kredide Mart–Temmuz 2026'da 47 güne varan gecikme, son üç ayda 10 kredi sorgusu ve 1.590'dan 1.310'a düşen Findeks notu görülür. "Diğer bankada ciddi gecikme" kritik sinyali notu BB ile sınırlar; önerilen limit 4.350.000 ₺'den 2.700.000 ₺'ye iner. Aynı dönemde tekstil PMI'sı da gerilemektedir (Piyasa İstihbaratı).
+8. **Sunum finali.** Alternatif veri ağırlığı %50'den %30'a düşürüldüğünde Defne Kırtasiye'nin skoru 64,4'ten 58,7'ye iner; not BBB'den BB'ye, önerilen limit 1.150.000 ₺'den 850.000 ₺'ye düşer. Aynı değişiklik Kuzey Oto Galeri'yi BBB'den A'ya yükseltir.
 
 ## 11. Etki simülasyonu ve sürümleme
 
@@ -616,7 +646,7 @@ Bu değerler `src/engine/engine.test.ts` tarafından doğrulanır. Hiçbir firma
 |---|---|---|
 | 0:00–0:30 | Giriş ekranı → **Tahsis Yöneticisi** | Üç rol; kuyrukta 9 bekleyen başvuru (biri holding), sistem notları ve önerilen limitler, sektör/not/ölçek filtresi |
 | 0:30–1:45 | **Defne Kırtasiye** | Analiz animasyonu. Üst şerit: S 64,4, BBB, PD %2,15. Geleneksel sekme: zayıf likidite ve kaldıraç çubukları. Alternatif sekme: POS ve okul sezonu kartları, sezonsallık grafiğinde eylül piki. Faktörler ve sistem önerisi: 1.150.000 ₺ (talep 2.000.000 ₺). Mesaj: "Geleneksel yöntemle reddedilecek firma, alternatif veriyle BBB alıyor." |
-| 1:45–2:30 | **Kuzey Oto Galeri** | Güçlü bilanço ama izleme rozetleri; ilanda kalma süresi kartı ve mini grafiği; not BBB, limit 1.550.000 ₺. Mesaj: "Bilanço geçmişi, alternatif veri bugünü gösterir." |
+| 1:45–2:30 | **Kuzey Oto Galeri** | Güçlü bilanço ama izleme rozetleri; ilanda kalma süresi kartı ve mini grafiği; not BBB, limit 900.000 ₺. İsteğe bağlı: KKB sekmesinde stok finansmanının hızlı artışı ve Denizli Dokuma'daki başka banka gecikmesi. Mesaj: "Bilanço geçmişi, alternatif veri bugünü gösterir." |
 | 2:30–3:00 | **Palandöken Kar Turizm** | Sezonsallık grafiği: yaz düşüşü beklenen çizgiyle örtüşüyor; SU yüksek, not A |
 | 3:00–3:15 | Karar paneli | Kırtasiye için Revize Et: limiti düşürünce sapma yüzdesi canlı hesaplanıyor, %20 aşılınca gerekçe zorunlu oluyor (isteğe bağlı olarak onayla, bildirimi göster) |
 | 3:15–4:00 | **Portföy Yöneticisi** | Özet: toplam limit, kullandırılan risk, erken uyarıda Mavi Sepet (A → BBB). Mavi Sepet detayı: 12 aylık skor trendi. Çukurova Tarım: Sistem Görüşü ve Tahsis Kararı karşılaştırması (1.700.000 → 1.300.000 ₺) |
@@ -636,6 +666,8 @@ Sunumdan önce **Ctrl+Shift+R** ile demo başlangıç durumuna (v1.0, başlangı
 - **Teminat türleri:** Şartname teminat türünü yalnız AAA için (müşterek kefalet) ve BBB altı için (ipotek) belirtir; AA ve A için "çek / senet temliki + müşterek kefalet" varsayılmıştır. Oto galeri stok finansmanı için dördüncü ürün olarak "Stok finansmanı" eklenmiştir.
 - **Fiyatlama:** TLREF'in sayısal değeri modele dahil değildir; fiyat "TLREF + spread" olarak gösterilir.
 - **Dönem görünümünde ölçüm uyarlaması:** Ortalama ölçümlü göstergelerde etiket dönem ortalamasından; değişim ölçümlülerde dönem uzunluğunda aynı karşılaştırma aralığıyla (ör. geçen yılın aynı dönemi, sezonsallıktan etkilenmemesi için); eğilimli seviyede dönem uzunluğunda regresyonla (en az 3 ay) hesaplanır. Son gözlem ve sezon dönemi ölçümleri dönemden bağımsızdır. Karşılaştırma için yeterli geçmiş yoksa (ör. karar tarihindeki veriyle 12 ay) değişim "—", etiket "Yetersiz veri" gösterilir. Ekranda gösterilen değişim ise her zaman bir önceki eşit uzunluktaki dönemedir.
+- **KKB verisi:** Gerçek bir KKB bağlantısı yoktur; raporlar simülasyondur ve banka adları anonimdir. Mizan ayında işletme sermayesi kredileri 300, taksitli krediler 303 + 400 bakiyesine (±%2 raporlama farkı) karşılık gelir; Anadolu Yapı bilinçli bir tutarsızlık hikâyesidir. KKB yalnızca diğer bankaları içerir; bankamızın kullandırdığı limitler karar kayıtlarından izlenir.
+- **KKB değerlendirme ayı:** KKB görüntüsü alternatif verinin son ayına göre alınır; karara bağlanmış firmalarda karar anındaki (`dataAsOf`) KKB görüntüsü kullanılır.
 - **Model değişiklik akışı:** Model Yöneticisi'ndeki düzenlemeler önce çalışma kopyasında tutulur, "Taslak" ile saklanabilir; aktif model yalnızca "Yeni sürüm olarak kaydet" veya bir sürümün aktif yapılmasıyla değişir.
 
 ## 14. Piyasa İstihbaratı
@@ -646,3 +678,17 @@ Piyasa İstihbaratı, her sektör için Türkiye'deki son 3–6 ayın gelişmele
 - **Madde yapısı:** kısa başlık, 1–2 cümlelik özet (kaynağın cümleleri değil, özet ifadeler), etki yönü (Olumlu / Nötr / Olumsuz), kaynak adı, kaynak bağlantısı ve tarih. Her rakamın kaynağı maddede yer alır. Sektör başına bir "Kredi açısından ne anlama geliyor" yorumu ve "Son güncelleme" tarihi tutulur.
 - **Görünüm:** Tahsis Yöneticisi değerlendirme ekranında ayrı "Piyasa İstihbaratı" sekmesi (maddeler yeniden eskiye, kaynak bağlantılarıyla); Portföy Yöneticisi firma detayında sağ sütunda kompakt kart (olumsuzlar önce); Portföy Özeti'nde seçili ölçekteki firmaların sektörleri için olumsuz sinyal sayısı.
 - **Düzenleme:** Model Yöneticisi → "Piyasa İstihbaratı" ekranında maddeler eklenir, düzenlenir, silinir ve kredi yorumu güncellenir. Kayıt anında "Son güncelleme" bugünün tarihine çekilir, değişiklik model denetim izine yazılır ve localStorage'da saklanır. Sektör bazında "Araştırma verisine dön" ile başlangıç maddelerine dönülür; demo sıfırlaması (Ctrl+Shift+R) da başlangıç verisini geri yükler.
+
+## 15. KKB Risk Raporu (diğer bankalar)
+
+KKB Risk Raporu modülü, firmaların diğer bankalardaki risklerini gösterir. **Gerçek API bağlantısı yoktur; veri simülasyondur** ve ekranlarda "KKB entegrasyonu – simülasyon verisi" etiketi yer alır.
+
+**Veri (`src/data/kkb.ts`):** Her firma için 24 aylık (Eylül 2024 – Ağustos 2026) rapor: banka bazında krediler ("Banka A" … "Banka F"; gerçek banka adı kullanılmaz) — kredi türü (rotatif, spot, taksitli ticari kredi, kurumsal kredi kartı, teminat mektubu), aylık nakdi limit ve risk, gayrinakdi limit ve risk, aylık en yüksek gecikme günü, yasal takip başlangıcı ve taksitli kredilerde son taksit ayı; ayrıca aylık kredi sorgusu sayısı, aylık Findeks kredi notu (1–1900), karşılıksız çek ve protestolu senet kayıtları. Karşılıksız çek kayıtları firmanın mevcut karşılıksız çek bayrağıyla tutarlıdır.
+
+**Motor (`src/engine/kkb.ts`):** Değerlendirme ayındaki görüntü banka bazında toplamları, toplam limit ve riski, doluluk oranını (toplam risk / toplam limit), son 12 aydaki en yüksek gecikmeyi, takip durumunu, sorgu sayısını, 24 aylık risk serisini, K1'den düşülecek işletme sermayesi riskini ve K3 için yıllık anapara ödemelerini üretir. Sinyaller Bölüm 5'te, limit formülü Bölüm 6'da, parametreler Bölüm 8'dedir. Tüm eşikler, sınıflandırmalar ve not tavanları `modelConfig.kkb` altındadır; sabit kod yoktur.
+
+**Findeks:** Varsayılan olarak skora eklenmez; yalnızca bilgi ve "Düşük Findeks notu" erken uyarı eşiği olarak kullanılır. Model Yöneticisi'nde "Skora dahil et" açılırsa `S = (1 − w_F) × (w_G·G + w_A·A) + w_F × F` olur (F: Findeks notunun kırılımlarla 0–100 puana çevrilmiş hali, w_F varsayılan %10). Şelale grafiğinde Findeks ayrı bir bileşendir; duyarlılık analizinde "Findeks ağırlığı" parametresi vardır.
+
+**Ekranlar:** Tahsis Yöneticisi değerlendirme ekranında "KKB / Diğer Bankalar" sekmesi (banka bazında tablo, toplam limit, toplam risk, doluluk oranı, gecikme geçmişi, risk trendi grafiği); üst şeritte Findeks notu ve "KKB:" önekli uyarı rozetleri. Portföy Yöneticisi firma detayında kompakt KKB özeti; Portföy Özeti'nde "Diğer bankalarda riski artan firmalar" listesi. Model Yöneticisi'nde "KKB Parametreleri" ekranı; Etki Önizleme ve Etki Simülasyonu bu parametreleri de kapsar.
+
+**Önce / sonra:** KKB modülü öncesi ve sonrası not ve limitler Bölüm 10.1'deki tabloda ("KKB öncesi" sütunu) verilmiştir.

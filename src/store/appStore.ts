@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react'
 import { DEFAULT_MARKET_INTEL, FIRMS, SEED_DECISIONS, getFirm, isValidMarketIntel, type MarketIntel, type SectorIntel, type SeedDecision } from '../data'
 import { revisedCollateral, allocateProducts, type CreditTerms } from '../engine/collateral'
 import { evaluateFirmAsOf, type FirmEvaluation } from '../engine/evaluate'
-import { withIndicatorTexts } from '../engine/indicatorInfo'
+import { migrateModelConfig } from '../engine/migrate'
 import {
   BASE_MODEL_VERSION,
   MODEL_SCHEMA_VERSION,
@@ -26,7 +26,15 @@ const KEYS = {
   ui: 'alphaanalytica:ui',
   draft: 'alphaanalytica:draft',
   marketIntel: 'alphaanalytica:marketIntel',
+  dataVersion: 'alphaanalytica:dataVersion',
 } as const
+
+/**
+ * Demo verisinin (firmalar, başlangıç kararları) sürümü. Değiştiğinde tarayıcıda
+ * kayıtlı kararlar ve karar geçmişi başlangıç durumuna döner; model sürümleri korunur.
+ * R7: KKB verisi ve güncellenen başlangıç kararları.
+ */
+const DATA_VERSION = 'r7'
 
 export const USERS: Record<Role, { name: string; title: string }> = {
   tahsis: { name: 'Elif Karaca', title: 'Tahsis Yöneticisi' },
@@ -226,19 +234,21 @@ function loadState(): AppState {
   const ui = read<Pick<AppState, 'role' | 'presentation'>>(KEYS.ui)
   const draft = read<ModelConfig>(KEYS.draft)
   const marketIntel = read<MarketIntel>(KEYS.marketIntel)
-  // Gösterge açıklamaları eklenmeden önce kaydedilmiş sürümler: eksik metinler varsayılandan tamamlanır
+  // Demo verisi değiştiyse eski kararlar yeni veriyle tutarsız olur: başlangıç kararlarına dön
+  const sameData = read<string>(KEYS.dataVersion) === DATA_VERSION
+  // Yeni alanlar eklenmeden önce kaydedilmiş sürümler: eksik alanlar v1.0'dan tamamlanır
   const modelSlice = isValidModel(model)
     ? {
         ...model,
-        versions: model.versions.map((v) => ({ ...v, config: withIndicatorTexts(v.config) })),
+        versions: model.versions.map((v) => ({ ...v, config: migrateModelConfig(v.config) })),
         modelLog: Array.isArray(model.modelLog) ? model.modelLog : initialModel().modelLog,
       }
     : initialModel()
   return {
     ...modelSlice,
-    decisions: decisions && typeof decisions === 'object' ? decisions : initial.decisions,
-    audit: audit && typeof audit === 'object' ? audit : initial.audit,
-    modelDraft: draft?.schemaVersion === MODEL_SCHEMA_VERSION ? withIndicatorTexts(draft) : null,
+    decisions: sameData && decisions && typeof decisions === 'object' ? decisions : initial.decisions,
+    audit: sameData && audit && typeof audit === 'object' ? audit : initial.audit,
+    modelDraft: draft?.schemaVersion === MODEL_SCHEMA_VERSION ? migrateModelConfig(draft) : null,
     role: ui?.role ?? null,
     presentation: ui?.presentation ?? false,
     marketIntel: isValidMarketIntel(marketIntel, SECTOR_IDS) ? marketIntel : initial.marketIntel,
@@ -252,6 +262,7 @@ function persist(state: AppState): void {
   write(KEYS.ui, { role: state.role, presentation: state.presentation })
   write(KEYS.draft, state.modelDraft)
   write(KEYS.marketIntel, state.marketIntel)
+  write(KEYS.dataVersion, DATA_VERSION)
 }
 
 // ---------------------------------------------------------------------------

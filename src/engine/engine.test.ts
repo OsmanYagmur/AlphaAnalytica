@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { DATA_MONTHS, FIRMS, PENDING_FIRM_IDS, SEED_DECISIONS, getFirm, type Firm } from '../data'
 import { deriveFinancialStatement } from './financials'
 import { evaluateFirm, evaluateFirmAsOf } from './evaluate'
+import { mizanDeviation } from './kkb'
 import { computeLimit } from './limit'
 import {
   DEFAULT_MODEL_CONFIG,
@@ -31,23 +32,44 @@ const evaluate = (id: string) => evaluateFirm(firm(id), cfg)
 // Model v1.0 beklenen çıktılar
 // ---------------------------------------------------------------------------
 
+/** Model v1.0, KKB dahil (güncel veri). */
 const EXPECTED: Record<string, { G: number; A: number; S: number; grade: CreditGrade; pd: number; limit: number }> = {
   'defne-kirtasiye': { G: 50.12, A: 78.62, S: 64.37, grade: 'BBB', pd: 0.02149, limit: 1150000 },
-  'kuzey-oto': { G: 82.42, A: 45.7, S: 64.06, grade: 'BBB', pd: 0.02222, limit: 1550000 },
+  'kuzey-oto': { G: 82.42, A: 45.7, S: 64.06, grade: 'BBB', pd: 0.02222, limit: 900000 },
   'palandoken-turizm': { G: 76.86, A: 77.72, S: 77.29, grade: 'A', pd: 0.0052, limit: 650000 },
-  'mavi-sepet': { G: 65.53, A: 66.12, S: 65.82, grade: 'BBB', pd: 0.01833, limit: 1700000 },
-  'cinaralti-restoran': { G: 73.73, A: 78.15, S: 75.94, grade: 'A', pd: 0.00603, limit: 850000 },
+  'mavi-sepet': { G: 65.53, A: 66.12, S: 65.82, grade: 'BBB', pd: 0.01833, limit: 250000 },
+  'cinaralti-restoran': { G: 73.73, A: 78.15, S: 75.94, grade: 'A', pd: 0.00603, limit: 500000 },
   'anadolu-yapi': { G: 54.14, A: 56.04, S: 55.09, grade: 'BB', pd: 0.05799, limit: 750000 },
   'toros-yapi': { G: 11.62, A: 25.7, S: 18.66, grade: 'C', pd: 0.77895, limit: 0 },
-  'denizli-dokuma': { G: 74.12, A: 77.89, S: 76, grade: 'A', pd: 0.00599, limit: 4350000 },
+  'denizli-dokuma': { G: 74.12, A: 77.89, S: 76, grade: 'BB', pd: 0.00599, limit: 2700000 },
   'cukurova-tarim': { G: 60.97, A: 74.01, S: 67.49, grade: 'BBB', pd: 0.01529, limit: 1700000 },
-  'marmara-lojistik': { G: 93.98, A: 92.94, S: 93.46, grade: 'AAA', pd: 0.00087, limit: 6950000 },
-  'sifa-eczanesi': { G: 80.35, A: 83.66, S: 82, grade: 'AA', pd: 0.00308, limit: 2250000 },
-  'bodrum-mavi-tur': { G: 58.97, A: 73.91, S: 66.44, grade: 'BBB', pd: 0.01714, limit: 800000 },
-  'karadeniz-nakliyat': { G: 88.76, A: 80.8, S: 84.78, grade: 'BB', pd: 0.00227, limit: 1550000 },
-  'kapadokya-kafe': { G: 46.22, A: 47.38, S: 46.8, grade: 'B', pd: 0.13392, limit: 150000 },
-  'kuzeyhan-holding': { G: 85.51, A: 87.16, S: 86.33, grade: 'AA', pd: 0.00191, limit: 866200000 },
+  'marmara-lojistik': { G: 93.98, A: 92.94, S: 93.46, grade: 'AAA', pd: 0.00087, limit: 2800000 },
+  'sifa-eczanesi': { G: 80.35, A: 83.66, S: 82, grade: 'AA', pd: 0.00308, limit: 1300000 },
+  'bodrum-mavi-tur': { G: 58.97, A: 73.91, S: 66.44, grade: 'BBB', pd: 0.01714, limit: 400000 },
+  'karadeniz-nakliyat': { G: 88.76, A: 80.8, S: 84.78, grade: 'BB', pd: 0.00227, limit: 350000 },
+  'kapadokya-kafe': { G: 46.22, A: 47.38, S: 46.8, grade: 'B', pd: 0.13392, limit: 0 },
+  'kuzeyhan-holding': { G: 85.51, A: 87.16, S: 86.33, grade: 'AA', pd: 0.00191, limit: 755900000 },
   'caglayan-holding': { G: 54.42, A: 75.36, S: 64.89, grade: 'BBB', pd: 0.02031, limit: 115250000 },
+}
+
+/** KKB modülü öncesi (KKB verisi olmadan) not ve limit — R7 önce/sonra karşılaştırması. */
+const EXPECTED_WITHOUT_KKB: Record<string, { grade: CreditGrade; limit: number }> = {
+  'defne-kirtasiye': { grade: 'BBB', limit: 1150000 },
+  'kuzey-oto': { grade: 'BBB', limit: 1550000 },
+  'palandoken-turizm': { grade: 'A', limit: 650000 },
+  'mavi-sepet': { grade: 'BBB', limit: 1700000 },
+  'cinaralti-restoran': { grade: 'A', limit: 850000 },
+  'anadolu-yapi': { grade: 'BB', limit: 750000 },
+  'toros-yapi': { grade: 'C', limit: 0 },
+  'denizli-dokuma': { grade: 'A', limit: 4350000 },
+  'cukurova-tarim': { grade: 'BBB', limit: 1700000 },
+  'marmara-lojistik': { grade: 'AAA', limit: 6950000 },
+  'sifa-eczanesi': { grade: 'AA', limit: 2250000 },
+  'bodrum-mavi-tur': { grade: 'BBB', limit: 800000 },
+  'karadeniz-nakliyat': { grade: 'BB', limit: 1550000 },
+  'kapadokya-kafe': { grade: 'B', limit: 150000 },
+  'kuzeyhan-holding': { grade: 'AA', limit: 866200000 },
+  'caglayan-holding': { grade: 'BBB', limit: 115250000 },
 }
 
 describe('Demo verisi bütünlüğü', () => {
@@ -174,16 +196,34 @@ describe('Model v1.0 — firma bazında çıktılar', () => {
     }
   })
 
-  it('limit ve şartlar yalnızca C dışındaki notlarda üretilir', () => {
+  it('limit ve şartlar yalnızca C dışındaki notlarda üretilir; C dışı sıfır limit yalnızca diğer bankalar ihtiyacı tamamen karşılıyorsa', () => {
     for (const f of FIRMS) {
       const e = evaluateFirm(f, cfg)
       if (e.grade === 'C') {
         expect(e.limit.limit).toBe(0)
         expect(e.terms).toBeNull()
+      } else if (e.limit.limit === 0) {
+        expect(e.limit.binding, f.id).toBe('k1')
+        expect(e.limit.otherBankDeduction, f.id).toBeGreaterThanOrEqual(e.limit.k1Gross)
       } else {
-        expect(e.limit.limit).toBeGreaterThan(0)
         expect(e.terms?.products.reduce((a, p) => a + p.amount, 0)).toBe(e.limit.limit)
       }
+    }
+  })
+
+  it.each(Object.entries(EXPECTED_WITHOUT_KKB))('KKB öncesi: %s', (id, exp) => {
+    const e = evaluateFirm({ ...firm(id), kkb: undefined }, cfg)
+    expect(e.grade).toBe(exp.grade)
+    expect(e.limit.limit).toBe(exp.limit)
+    expect(e.kkb).toBeNull()
+  })
+
+  it('KKB notları yalnızca KKB hikâyesi olan firmada değiştirir; skorlar aynı kalır (Findeks varsayılan olarak skora dahil değil)', () => {
+    for (const f of FIRMS) {
+      const withKkb = evaluateFirm(f, cfg)
+      const without = evaluateFirm({ ...f, kkb: undefined }, cfg)
+      expect(withKkb.score).toBe(without.score)
+      if (f.id !== 'denizli-dokuma') expect(withKkb.grade, f.id).toBe(without.grade)
     }
   })
 })
@@ -379,5 +419,122 @@ describe('Hikâye 6 — Holding ölçeği', () => {
     expect(isWorseGrade(gradeFromScore(leveraged.traditional.score, cfg), 'BBB')).toBe(true)
     expect(leveraged.limit.limit).toBeLessThan(firm('caglayan-holding').requestedAmount)
     expect(leveraged.limit.binding).toBe('k3')
+  })
+})
+
+describe('Hikâye 7 — KKB: bilançosu iyi görünen firmada başka bankada gecikme', () => {
+  const e = evaluate('denizli-dokuma')
+  const without = evaluateFirm({ ...firm('denizli-dokuma'), kkb: undefined }, cfg)
+
+  it('bilanço ve alternatif veri güçlü; skor A seviyesinde', () => {
+    expect(e.traditional.score).toBeGreaterThan(70)
+    expect(e.alternative.score).toBeGreaterThan(70)
+    expect(e.baseGrade).toBe('A')
+  })
+
+  it('KKB’de başka bir bankada 30 günü aşan gecikme var; not BB ile sınırlanıyor', () => {
+    const k = e.kkb!.snapshot
+    const bankC = k.banks.find((b) => b.bank === 'Banka C')!
+    expect(bankC.maxDelayDays12m).toBeGreaterThanOrEqual(cfg.kkb.signals.overdue.minDays)
+    expect(e.earlyWarnings.critical).toEqual([expect.objectContaining({ id: 'overdue', source: 'kkb', gradeCap: 'BB' })])
+    expect(e.grade).toBe('BB')
+    expect(e.limit.limit).toBeLessThan(without.limit.limit)
+  })
+
+  it('son üç ayda yoğun kredi sorgusu ve düşen Findeks notu eşlik ediyor', () => {
+    expect(e.earlyWarnings.watch.map((w) => w.id)).toContain('inquiries')
+    const f = firm('denizli-dokuma').kkb.findeks
+    expect(f[f.length - 1]).toBeLessThan(f[f.length - 7] - 150)
+  })
+
+  it('hangi sinyalin not tavanı uygulayacağı konfigüre edilebilir', () => {
+    const c = createDefaultModelConfig()
+    c.kkb.signals.overdue.gradeCap = 'none'
+    const relaxed = evaluateFirm(firm('denizli-dokuma'), c)
+    expect(relaxed.grade).toBe('A')
+    expect(relaxed.earlyWarnings.watch.map((w) => w.id)).toContain('overdue')
+  })
+})
+
+describe('KKB verisi ve motor kuralları', () => {
+  it('24 aylık seriler, anonim banka adları, limitler riskin altında değil', () => {
+    for (const f of FIRMS) {
+      expect(f.kkb.months).toEqual(DATA_MONTHS)
+      expect(f.kkb.findeks).toHaveLength(24)
+      for (const fac of f.kkb.facilities) {
+        expect(fac.bank).toMatch(/^Banka [A-Z]$/)
+        fac.cashRisk.forEach((r, i) => expect(r, `${f.id} ${fac.bank}`).toBeLessThanOrEqual(fac.cashLimit[i] + 1e-6))
+        fac.nonCashRisk.forEach((r, i) => expect(r).toBeLessThanOrEqual(fac.nonCashLimit[i] + 1e-6))
+      }
+      f.kkb.findeks.forEach((v) => expect(v >= 1 && v <= 1900).toBe(true))
+    }
+  })
+
+  it('mizan ayında KKB nakdi riski mizandaki banka kredileriyle (300 + 303 + 400) tutarlı; bilinçli istisna Anadolu Yapı', () => {
+    for (const f of FIRMS) {
+      const e = evaluateFirm(f, cfg)
+      const dev = mizanDeviation(e.kkb!.snapshot, e.traditional.statement.financialDebt)!
+      if (f.id === 'anadolu-yapi') {
+        expect(dev).toBeGreaterThan(cfg.kkb.signals.mizanMismatch.maxDeviation)
+        expect(e.earlyWarnings.watch.map((w) => w.id)).toContain('mizanMismatch')
+      } else expect(dev, f.id).toBeLessThan(0.05)
+    }
+  })
+
+  it('karşılıksız çek kaydı KKB ile firma bayrağı arasında tutarlı', () => {
+    for (const f of FIRMS) expect(f.kkb.bouncedCheques.length > 0, f.id).toBe(f.riskFlags.bouncedCheque)
+  })
+
+  it('K3’teki yıllık kredi ödemeleri KKB’deki taksitli kredilerden türetilir ve beyanla uyumludur', () => {
+    for (const f of FIRMS.filter((x) => !['toros-yapi', 'sifa-eczanesi', 'mavi-sepet'].includes(x.id))) {
+      const e = evaluateFirm(f, cfg)
+      expect(e.kkb!.debtServiceSource).toBe('kkb')
+      expect(e.kkb!.snapshot.annualDebtService / f.traditional.supplement.annualDebtService, f.id).toBeCloseTo(1, 2)
+    }
+    // Onay sonrası başka bankadan yeni taksitli kredi: K3'teki ödeme yükü beyanın üzerine çıkar
+    const mavi = firm('mavi-sepet')
+    expect(evaluateFirmAsOf(mavi, '2026-02', cfg).kkb!.snapshot.annualDebtService / mavi.traditional.supplement.annualDebtService).toBeCloseTo(1, 2)
+    expect(evaluate('mavi-sepet').kkb!.snapshot.annualDebtService).toBeGreaterThan(mavi.traditional.supplement.annualDebtService * 2)
+    // Vadesine 12 aydan az kalan krediler: yalnız kalan taksitler
+    const toros = evaluate('toros-yapi')
+    expect(toros.kkb!.snapshot.annualDebtService).toBeLessThan(firm('toros-yapi').traditional.supplement.annualDebtService)
+  })
+
+  it('diğer bankalardaki işletme sermayesi riski K1’den düşülür; kapatılınca KKB öncesi limitlere dönülür', () => {
+    const e = evaluate('marmara-lojistik')
+    expect(e.limit.otherBankDeduction).toBeCloseTo(e.kkb!.snapshot.workingCapitalCashRisk, 6)
+    expect(e.limit.k1).toBeCloseTo(e.limit.k1Gross - e.limit.otherBankDeduction, 6)
+    const off = createDefaultModelConfig()
+    off.kkb.limit.deductOtherBanks = false
+    off.kkb.debtService.fromKkb = false
+    for (const f of FIRMS.filter((x) => x.id !== 'denizli-dokuma')) {
+      expect(evaluateFirm(f, off).limit.limit, f.id).toBe(EXPECTED_WITHOUT_KKB[f.id].limit)
+    }
+  })
+
+  it('toplam riskte hızlı artış: stok finansmanı büyüyen oto galeri ve onay sonrası yeni kredi alan e-ticaret firması', () => {
+    expect(evaluate('kuzey-oto').earlyWarnings.watch.map((w) => w.id)).toContain('riskGrowth')
+    const mavi = firm('mavi-sepet')
+    expect(evaluateFirmAsOf(mavi, '2026-02', cfg).kkb!.signals.map((s) => s.id)).not.toContain('riskGrowth')
+    expect(evaluate('mavi-sepet').kkb!.signals.map((s) => s.id)).toContain('riskGrowth')
+  })
+
+  it('red senaryosu: yasal takip, 90+ gün gecikme, düşük Findeks', () => {
+    const e = evaluate('toros-yapi')
+    const ids = e.kkb!.signals.map((s) => s.id)
+    expect(ids).toEqual(expect.arrayContaining(['overdue', 'legalFollowUp', 'lowFindeks']))
+    expect(e.kkb!.snapshot.banks.some((b) => b.followUp === 'legal')).toBe(true)
+    expect(e.kkb!.snapshot.maxDelayDays).toBeGreaterThanOrEqual(90)
+  })
+
+  it('Findeks varsayılan olarak skora dahil değil; anahtar açılınca ağırlığıyla eklenir', () => {
+    const on = createDefaultModelConfig()
+    on.kkb.findeks.includeInScore = true
+    for (const id of ['defne-kirtasiye', 'toros-yapi']) {
+      const base = evaluate(id)
+      const withF = evaluateFirm(firm(id), on)
+      const w = on.kkb.findeks.weight
+      expect(withF.score).toBeCloseTo((1 - w) * base.score + w * base.kkb!.findeksPoints, 9)
+    }
   })
 })

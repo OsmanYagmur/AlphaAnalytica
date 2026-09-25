@@ -82,12 +82,16 @@ src/
     rating.ts          Nihai skor, harf notu, PD
     earlyWarning.ts    Erken uyarı sinyalleri ve not override
     limit.ts, collateral.ts
+    kkb.ts             KKB risk raporu: anlık görüntü, KKB sinyalleri, K1 düşümü, K3 anapara ödemeleri
+    indicatorInfo.ts, indicatorPeriod.ts   Gösterge açıklamaları, dönem görünümü (skoru etkilemez)
+    migrate.ts         Eski kayıtlı konfigürasyonların yeni alanlarla tamamlanması
     evaluate.ts        Firma değerlendirme hattı, skor trendi
     factors.ts         "Skoru etkileyen faktörler", Güçlü/Orta/Zayıf etiketi
     impact.ts, sensitivity.ts   Etki simülasyonu, şelale, duyarlılık
     validation.ts, schema.ts, configDiff.ts   Doğrulama, JSON şeması, sürüm farkları
     *.test.ts          Birim testleri; engine.test.ts demo çıktıları ve senaryolar
-  data/              16 hayali firma (14 KOBİ + 2 holding), başlangıç kararları, deterministik veri üreteçleri
+  data/              16 hayali firma (14 KOBİ + 2 holding), başlangıç kararları, deterministik veri üreteçleri,
+                     KKB risk raporları (kkb.ts, simülasyon), Piyasa İstihbaratı (marketIntel.ts, kaynaklı statik veri)
   store/             localStorage durumu, firma görünümleri, portföy, Model Yöneticisi çalışma kopyası
   components/        Kabuk, logo, arayüz bileşenleri, grafikler, Model Yöneticisi düzenleyicileri
   pages/             tahsis/, portfoy/, model/ ve giriş ekranı
@@ -96,7 +100,7 @@ docs/METODOLOJI.pdf  METODOLOJI.md'nin PDF sürümü
 scripts/mizan_pdf.py Mizan PDF üreteci
 scripts/metodoloji_pdf.py  Metodoloji PDF üreteci
 METODOLOJI.md        Formüller, parametre şeması, sektör tabloları, demo senaryoları, sunum akışı
-SPEC.md              Şartname
+SPEC.md              Şartname (sonunda REVİZYONLAR: R1 …)
 ```
 
 ## Teknoloji

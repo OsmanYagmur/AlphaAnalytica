@@ -1,4 +1,5 @@
 import type { FirmInput } from '../engine/evaluate'
+import type { KkbReport } from '../engine/types'
 import type { CollateralTypeId, ProductMix } from '../engine/modelConfig'
 
 /** İşletme ölçeği: KOBİ tanımındaki çalışan sayısı sınıfları ve holding (büyük kurumsal grup). */
@@ -30,6 +31,8 @@ export interface Firm extends FirmInput {
   requestedAmount: number
   /** Başvuru tarihi (ISO, YYYY-MM-DD). */
   applicationDate: string
+  /** KKB risk raporu (simülasyon verisi). */
+  kkb: KkbReport
 }
 
 export type DecisionStatus = 'approved' | 'revisedApproved' | 'rejected'

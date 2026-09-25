@@ -5,7 +5,7 @@
 
 import { evaluateFirm, type FirmEvaluation, type FirmInput } from './evaluate'
 import { TRADITIONAL_CATEGORY_IDS, type CreditGrade, type ModelConfig } from './modelConfig'
-import { gradeRank } from './rating'
+import { findeksWeight, gradeRank } from './rating'
 
 export interface ImpactSide {
   score: number
@@ -84,22 +84,28 @@ export interface ScoreComponent {
 /**
  * S'yi toplamsal bileşenlere ayırır:
  * S = Σ_c w_G·w_c·G_c + w_A·k·(w_SP·SP + w_SU·SU + w_TR·TR) + w_A·(1 − k)·Nötr
- * (k = kapsama düzeltmesi açıksa c, kapalıysa 1).
+ * (k = kapsama düzeltmesi açıksa c, kapalıysa 1). Findeks skora dahilse tüm
+ * bileşenler (1 − w_F) ile çarpılır ve w_F × F bileşeni eklenir; dahil değilse
+ * Findeks bileşeni 0'dır (bileşen listesi her iki durumda aynıdır).
  */
 export function scoreComponents(ev: FirmEvaluation, config: ModelConfig): ScoreComponent[] {
   const { traditional: wG, alternative: wA } = config.final.weights
   const alt = ev.alternative
   const k = config.alternative.coverage.enabled ? alt.coverage : 1
   const w = config.alternative.weights
+  const findeksPoints = ev.kkb?.findeksPoints ?? null
+  const wF = findeksWeight(findeksPoints, config)
+  const m = 1 - wF
   const parts: ScoreComponent[] = TRADITIONAL_CATEGORY_IDS.map((id) => {
     const c = ev.traditional.categories[id]
-    return { id, label: c.label, value: wG * c.weight * c.score }
+    return { id, label: c.label, value: m * wG * c.weight * c.score }
   })
   parts.push(
-    { id: 'sp', label: 'Sektörel performans', value: wA * k * w.sp * alt.sp },
-    { id: 'su', label: 'Sezon uyumu', value: wA * k * w.su * alt.su },
-    { id: 'tr', label: 'Arındırılmış trend', value: wA * k * w.tr * alt.tr },
-    { id: 'coverage', label: 'Veri kapsama düzeltmesi', value: wA * (1 - k) * config.alternative.coverage.neutralScore },
+    { id: 'sp', label: 'Sektörel performans', value: m * wA * k * w.sp * alt.sp },
+    { id: 'su', label: 'Sezon uyumu', value: m * wA * k * w.su * alt.su },
+    { id: 'tr', label: 'Arındırılmış trend', value: m * wA * k * w.tr * alt.tr },
+    { id: 'coverage', label: 'Veri kapsama düzeltmesi', value: m * wA * (1 - k) * config.alternative.coverage.neutralScore },
+    { id: 'findeks', label: 'Findeks notu', value: wF > 0 ? wF * findeksPoints! : 0 },
   )
   return parts
 }

@@ -1,5 +1,6 @@
 import {
   Activity,
+  Banknote,
   BarChart3,
   History,
   Briefcase,
@@ -53,6 +54,7 @@ const NAV: Record<Role, NavItem[]> = {
     { label: 'Sektör Ayarları', path: '/model/sektorler', icon: Building2 },
     { label: 'Not · PD · Limit', path: '/model/not-limit', icon: GaugeIcon },
     { label: 'Teminat ve Fiyatlama', path: '/model/teminat', icon: Shield },
+    { label: 'KKB Parametreleri', path: '/model/kkb', icon: Banknote },
     { label: 'Etki Simülasyonu', path: '/model/etki', icon: Activity },
     { label: 'Piyasa İstihbaratı', path: '/model/piyasa', icon: Newspaper },
     { label: 'Sürümler ve Denetim İzi', path: '/model/surumler', icon: History },

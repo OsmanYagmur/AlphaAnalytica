@@ -382,6 +382,69 @@ export interface EarlyWarningConfig {
 }
 
 // ---------------------------------------------------------------------------
+// KKB (diğer bankalardaki riskler)
+// ---------------------------------------------------------------------------
+
+/** KKB risk raporundaki kredi türleri. */
+export const KKB_CREDIT_TYPES = ['revolving', 'spot', 'installment', 'card', 'nonCash'] as const
+export type KkbCreditType = (typeof KKB_CREDIT_TYPES)[number]
+
+export const KKB_CREDIT_TYPE_LABELS: Record<KkbCreditType, string> = {
+  revolving: 'Rotatif kredi',
+  spot: 'Spot kredi',
+  installment: 'Taksitli ticari kredi',
+  card: 'Kurumsal kredi kartı',
+  nonCash: 'Teminat mektubu',
+}
+
+export type KkbSignalId = 'overdue' | 'legalFollowUp' | 'inquiries' | 'riskGrowth' | 'mizanMismatch' | 'lowFindeks'
+
+/** Not tavanı; 'none' → izleme sinyali (notu değiştirmez). */
+export type KkbGradeCap = LendableGrade | 'none'
+
+export interface KkbSignalRule extends SignalRuleBase {
+  gradeCap: KkbGradeCap
+}
+
+export interface KkbConfig {
+  signals: {
+    /** Son `windowMonths` ayda herhangi bir bankada en yüksek gecikme `minDays` veya üstündeyse. */
+    overdue: KkbSignalRule & { minDays: number; windowMonths: number }
+    /** Herhangi bir bankada yasal takip kaydı varsa. */
+    legalFollowUp: KkbSignalRule
+    /** Son `windowMonths` aydaki kredi sorgusu sayısı `minCount` veya üstündeyse (farklı bankalardan limit arayışı). */
+    inquiries: KkbSignalRule & { windowMonths: number; minCount: number }
+    /** Toplam (nakdi + gayrinakdi) risk son `lookbackMonths` ayda `minGrowth` veya üstünde arttıysa. */
+    riskGrowth: KkbSignalRule & { lookbackMonths: number; minGrowth: number }
+    /** Mizan tarihindeki KKB nakdi riski ile mizandaki finansal borçlar arasındaki göreli fark `maxDeviation` değerini aşarsa. */
+    mizanMismatch: KkbSignalRule & { maxDeviation: number }
+    /** Findeks kredi notu `maxScore` veya altındaysa. */
+    lowFindeks: KkbSignalRule & { maxScore: number }
+  }
+  limit: {
+    /** Diğer bankalardaki işletme sermayesi kredilerinin nakdi riski K1'den düşülür. */
+    deductOtherBanks: boolean
+    /** Düşülen oran (1 = tamamı). */
+    deductionRate: number
+    /** İşletme sermayesi finansmanı sayılan kredi türleri. */
+    workingCapitalTypes: KkbCreditType[]
+  }
+  debtService: {
+    /** K3'teki mevcut yıllık kredi ödemeleri KKB'den türetilir (kapalıysa firmanın beyanı kullanılır). */
+    fromKkb: boolean
+    /** Anapara ödemesi hesaplanan vadeli kredi türleri. */
+    termTypes: KkbCreditType[]
+  }
+  findeks: {
+    /** Açıksa S = (1 − weight) × (w_G·G + w_A·A) + weight × Findeks puanı. Varsayılan kapalı. */
+    includeInScore: boolean
+    weight: number
+    /** Findeks notu (1–1900) → 0–100 puan. */
+    breakpoints: BreakpointCurve
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Limit
 // ---------------------------------------------------------------------------
 
@@ -463,6 +526,7 @@ export interface ModelConfig {
   alternative: AlternativeConfig
   rating: RatingConfig
   earlyWarning: EarlyWarningConfig
+  kkb: KkbConfig
   limit: LimitConfig
   terms: TermsConfig
   sectors: SectorConfigs
@@ -641,6 +705,21 @@ const DEFAULTS: ModelConfig = {
       negativeTrend: { label: 'Arındırılmış ciro trendi negatif', enabled: true, maxAnnualGrowth: -0.1 },
       scoreDivergence: { label: 'Alternatif veri bilançoyu teyit etmiyor', enabled: true, minGap: 25 },
     },
+  },
+
+  // KKB: diğer bankalardaki riskler (Findeks varsayılan olarak skora dahil değildir)
+  kkb: {
+    signals: {
+      overdue: { label: 'Diğer bankada ciddi gecikme', enabled: true, gradeCap: 'BB', minDays: 30, windowMonths: 12 },
+      legalFollowUp: { label: 'Diğer bankada yasal takip', enabled: true, gradeCap: 'B' },
+      inquiries: { label: 'Yoğun kredi sorgusu (limit arayışı)', enabled: true, gradeCap: 'none', windowMonths: 3, minCount: 6 },
+      riskGrowth: { label: 'Diğer bankalarda riskte hızlı artış', enabled: true, gradeCap: 'none', lookbackMonths: 6, minGrowth: 0.4 },
+      mizanMismatch: { label: 'KKB riski mizanla uyumsuz', enabled: true, gradeCap: 'none', maxDeviation: 0.3 },
+      lowFindeks: { label: 'Düşük Findeks notu', enabled: true, gradeCap: 'none', maxScore: 1100 },
+    },
+    limit: { deductOtherBanks: true, deductionRate: 1, workingCapitalTypes: ['revolving', 'spot', 'card'] },
+    debtService: { fromKkb: true, termTypes: ['installment'] },
+    findeks: { includeInScore: false, weight: 0.1, breakpoints: bp([700, 0], [1100, 40], [1500, 80], [1800, 100]) },
   },
 
   // 4) Limit

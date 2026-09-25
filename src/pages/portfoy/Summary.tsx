@@ -2,6 +2,7 @@ import { AlertOctagon, ChevronRight, Eye } from 'lucide-react'
 import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AppShell } from '../../components/AppShell'
+import { KkbRiskRisers } from '../../components/Kkb'
 import { MarketIntelSummary } from '../../components/MarketIntel'
 import { CHART_COLORS } from '../../components/charts'
 import { Badge, Card, ModelVersionTag, cx } from '../../components/ui'
@@ -9,7 +10,7 @@ import { CREDIT_GRADES } from '../../engine/modelConfig'
 import { formatPercent, formatTL, formatTLShort } from '../../lib/format'
 import { navigate } from '../../lib/router'
 import { useActiveConfig, useActiveVersion, useFirmViews } from '../../store/evaluations'
-import { SEGMENT_FILTER_LABELS, approvedLimit, matchesSegment, summarizePortfolio, type SegmentFilter } from '../../store/portfolio'
+import { SEGMENT_FILTER_LABELS, approvedLimit, isInPortfolio, matchesSegment, summarizePortfolio, type SegmentFilter } from '../../store/portfolio'
 import { GradeChange, KpiCard } from './common'
 
 type GradeScope = 'portfolio' | 'all'
@@ -127,8 +128,8 @@ export function PortfolioSummary() {
         </Card>
       </div>
 
-      <div className="mt-4 grid gap-4 2xl:grid-cols-3">
-        <Card title="Erken uyarıdaki firmalar" subtitle="Portföydeki firmaların aktif model ve güncel veriyle izlenmesi" className="2xl:col-span-2" bodyClassName="p-0">
+      <div className="mt-4 space-y-4">
+        <Card title="Erken uyarıdaki firmalar" subtitle="Portföydeki firmaların aktif model ve güncel veriyle izlenmesi" bodyClassName="p-0">
           {summary.warnings.length === 0 ? (
             <p className="px-5 py-6 text-sm text-muted">Erken uyarı sinyali olan portföy firması yok.</p>
           ) : (
@@ -159,12 +160,14 @@ export function PortfolioSummary() {
                           {v.current.earlyWarnings.critical.map((s) => (
                             <Badge key={s.id} tone="negative">
                               <AlertOctagon size={11} />
+                              {s.source === 'kkb' && 'KKB: '}
                               {s.label}
                             </Badge>
                           ))}
                           {v.current.earlyWarnings.watch.map((s) => (
                             <Badge key={s.id} tone="warning">
                               <Eye size={11} />
+                              {s.source === 'kkb' && 'KKB: '}
                               {s.label}
                             </Badge>
                           ))}
@@ -180,7 +183,10 @@ export function PortfolioSummary() {
             </div>
           )}
         </Card>
-        <MarketIntelSummary sectors={intelSectors} />
+        <div className="grid gap-4 xl:grid-cols-2">
+          <KkbRiskRisers views={views.filter(isInPortfolio)} config={config} />
+          <MarketIntelSummary sectors={intelSectors} />
+        </div>
       </div>
     </AppShell>
   )

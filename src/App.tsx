@@ -7,6 +7,7 @@ import { ModelAlternative } from './pages/model/AlternativeParams'
 import { ModelBalance } from './pages/model/Balance'
 import { ModelCollateral } from './pages/model/CollateralPricing'
 import { ModelImpact } from './pages/model/ImpactSimulation'
+import { ModelKkb } from './pages/model/KkbParams'
 import { ModelMarketIntel } from './pages/model/MarketIntelEditor'
 import { ModelVersions } from './pages/model/Versions'
 import { ModelOverview } from './pages/model/Overview'
@@ -82,6 +83,8 @@ function Routes() {
           return <ModelRatingLimit />
         case 'teminat':
           return <ModelCollateral />
+        case 'kkb':
+          return <ModelKkb />
         case 'etki':
           return <ModelImpact />
         case 'piyasa':

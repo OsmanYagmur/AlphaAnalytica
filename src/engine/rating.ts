@@ -2,16 +2,29 @@
  * 3) Nihai Skor, Harf Notu ve Temerrüt Olasılığı.
  *
  * S  = w_G × G + w_A × A
+ *      (Findeks skora dahilse: S = (1 − w_F) × (w_G × G + w_A × A) + w_F × F)
  * Not: eşik tablosuna göre (en düşük eşiğin altı C)
  * PD = 1 / (1 + e^((S − merkez) / ölçek))
  */
 
 import { CREDIT_GRADES, LENDABLE_GRADES, type CreditGrade, type ModelConfig } from './modelConfig'
 
-/** Nihai skor S. */
-export function computeFinalScore(traditionalScore: number, alternativeScore: number, config: ModelConfig): number {
+/** Findeks'in nihai skordaki ağırlığı (skora dahil değilse veya not yoksa 0). */
+export function findeksWeight(findeksPoints: number | null, config: ModelConfig): number {
+  return config.kkb.findeks.includeInScore && findeksPoints !== null ? config.kkb.findeks.weight : 0
+}
+
+/** Nihai skor S. `findeksPoints`: Findeks notunun 0–100 puanı (KKB verisi yoksa null). */
+export function computeFinalScore(
+  traditionalScore: number,
+  alternativeScore: number,
+  config: ModelConfig,
+  findeksPoints: number | null = null,
+): number {
   const { traditional, alternative } = config.final.weights
-  return traditional * traditionalScore + alternative * alternativeScore
+  const base = traditional * traditionalScore + alternative * alternativeScore
+  const wF = findeksWeight(findeksPoints, config)
+  return wF > 0 ? (1 - wF) * base + wF * findeksPoints! : base
 }
 
 /** Skorun harf notu: alt sınırını karşıladığı en iyi not; hiçbirini karşılamıyorsa C. */

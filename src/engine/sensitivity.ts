@@ -90,6 +90,16 @@ export function sensitivityParams(config: ModelConfig, sectorId: SectorId): Sens
       get: (c) => c.alternative.coverage.neutralScore,
       apply: (c, v) => ({ ...c, alternative: { ...c.alternative, coverage: { ...c.alternative.coverage, neutralScore: v } } }),
     },
+    {
+      id: 'kkb.findeks',
+      label: 'Findeks ağırlığı (skora dahil edilerek)',
+      min: 0,
+      max: 0.5,
+      scale: 100,
+      unit: '%',
+      get: (c) => (c.kkb.findeks.includeInScore ? c.kkb.findeks.weight : 0),
+      apply: (c, v) => ({ ...c, kkb: { ...c.kkb, findeks: { ...c.kkb.findeks, includeInScore: v > 0, weight: v } } }),
+    },
     ...TRADITIONAL_CATEGORY_IDS.map((id) => categoryParam(id, cats[id].label)),
     {
       id: 'sector.ccc',

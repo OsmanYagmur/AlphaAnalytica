@@ -6,6 +6,7 @@ import { CHART_COLORS, Sparkline } from '../../components/charts'
 import { DEFAULT_PERIOD_MONTHS, PeriodChange, PeriodNote, PeriodSelector, periodCaption, type PeriodMonths } from '../../components/IndicatorPeriod'
 import { Gauge } from '../../components/Gauge'
 import { IndicatorName } from '../../components/IndicatorName'
+import { KkbCompact } from '../../components/Kkb'
 import { MarketIntelCompact } from '../../components/MarketIntel'
 import { Badge, Button, Card, DataRow, GradeBadge, ModelVersionTag, cx } from '../../components/ui'
 import { REJECTION_REASONS, SEGMENT_LABELS } from '../../data'
@@ -200,7 +201,8 @@ function Monitoring({ view }: { view: FirmView }) {
             <li key={s.id} className="flex items-start gap-2 text-sm text-ink">
               <AlertOctagon size={15} className="mt-0.5 shrink-0 text-negative" />
               <span>
-                <span className="font-medium">Kritik:</span> {s.label}
+                <span className="font-medium">Kritik:</span> {s.source === 'kkb' && 'KKB · '}
+                {s.label}
               </span>
             </li>
           ))}
@@ -208,6 +210,7 @@ function Monitoring({ view }: { view: FirmView }) {
             <li key={s.id} className="flex items-start gap-2 text-sm text-ink">
               <Eye size={15} className="mt-0.5 shrink-0 text-warning" />
               <span>
+                {s.source === 'kkb' && 'KKB · '}
                 {s.label}
                 {s.indicators && `: ${s.indicators.map((i) => indicators[i]?.label ?? i).join(', ')}`}
               </span>
@@ -359,6 +362,7 @@ export function PortfolioFirmDetail({ firmId }: { firmId: string }) {
           </div>
           <div className="min-w-0 space-y-4 xl:col-span-4">
             <Monitoring view={view} />
+            <KkbCompact view={view} />
             <LimitDetail view={view} />
             <MarketIntelCompact sectorId={view.firm.sectorId} sectorLabel={view.config.sectors[view.firm.sectorId].label} />
           </div>

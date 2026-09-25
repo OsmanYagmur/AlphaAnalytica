@@ -18,6 +18,7 @@ import {
   series,
   type FinancialProfile,
 } from './generators'
+import { KKB_PROFILES, buildKkbReport } from './kkb'
 import type { Firm, FirmSegment } from './types'
 
 interface SeriesContext {
@@ -65,6 +66,8 @@ function defineFirm(def: FirmDefinition): Firm {
   const revenue = series(rand, def.revenueLevel, { noise: def.revenueNoise, pattern, digits: 2 })
   // Mizan için ayrı tohum: alternatif veri serilerini etkilemez
   const traditional = buildFinancials(fiscalYearTotal(revenue), def.financial, createRng(def.seed * 7919 + 17))
+  const kkbProfile = KKB_PROFILES[def.id]
+  if (!kkbProfile) throw new Error(`KKB profili yok: ${def.id}`)
   return {
     id: def.id,
     name: def.name,
@@ -86,6 +89,8 @@ function defineFirm(def: FirmDefinition): Firm {
       ...(def.seasonProfile ? { seasonProfile: def.seasonProfile } : {}),
     },
     riskFlags: { bouncedCheque: false, taxOrSgkDebt: false, ...def.riskFlags },
+    // KKB için ayrı tohum: diğer serileri etkilemez
+    kkb: buildKkbReport(kkbProfile, traditional, createRng(def.seed * 104_729 + 7)),
   }
 }
 

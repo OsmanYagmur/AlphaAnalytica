@@ -72,18 +72,18 @@ export const SEED_DECISIONS: SeedDecision[] = [
     decidedAt: '2026-06-05T16:30:00+03:00',
     dataAsOf: '2026-05',
     revisedTerms: {
-      limit: 2_000_000,
+      limit: 1_250_000,
       collateralRatio: 0.25,
       collateralType: 'receivablesAssignment',
       tenorMonths: 24,
       productMix: { revolving: 0.6, spot: 0.25, nonCash: 0.15, inventoryFinance: 0 },
       covenants: ['SGK reçete alacaklarının bankaya temliki', 'Aylık SGK ödeme listesinin paylaşılması'],
     },
-    note: 'Limit, firmanın talep ettiği tutarla sınırlandırıldı; SGK alacak temliki şartı eklendi.',
+    note: 'Nakit döngüsü SGK ödeme takvimine bağlı olduğundan limit bir miktar düşürüldü; SGK alacak temliki şartı eklendi.',
     utilizationRate: 0.83,
     auditLog: [
       { at: '2026-06-03T10:00:00+03:00', by: 'Sistem', action: 'Başvuru alındı' },
-      { at: '2026-06-05T16:30:00+03:00', by: 'Elif Karaca', action: 'Revize onay: limit 2.250.000 → 2.000.000 ₺, kovenant eklendi' },
+      { at: '2026-06-05T16:30:00+03:00', by: 'Elif Karaca', action: 'Revize onay: limit 1.450.000 → 1.250.000 ₺, kovenant eklendi' },
     ],
   },
   {

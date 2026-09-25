@@ -3,7 +3,7 @@
  * bu sözleşmeye göre üretilir.
  */
 
-import type { SeasonProfileId } from './modelConfig'
+import type { KkbCreditType, SeasonProfileId } from './modelConfig'
 
 /**
  * Mizan satırı (Tekdüzen Hesap Planı). Dönem sonu bakiyesi borç veya alacak
@@ -68,4 +68,38 @@ export interface AlternativeInput {
   series: Partial<Record<string, number[]>>
   /** Sezon alt profili (turizmde 'summer' / 'winter'); yoksa sektör varsayılanı. */
   seasonProfile?: SeasonProfileId
+}
+
+/** KKB risk raporundaki tek bir kredi (bir bankadaki bir kredi türü). Aylık seriler `KkbReport.months` ile hizalıdır. */
+export interface KkbFacility {
+  /** Anonim banka adı ("Banka A" …). */
+  bank: string
+  type: KkbCreditType
+  cashLimit: number[]
+  cashRisk: number[]
+  nonCashLimit: number[]
+  nonCashRisk: number[]
+  /** Ay içindeki en yüksek gecikme günü. */
+  delayDays: number[]
+  /** Yasal takibin başladığı ay ('YYYY-MM'); yoksa null. */
+  legalFollowUpFrom: string | null
+  /** Vadeli kredilerde son taksit ayı ('YYYY-MM'); diğerlerinde null. */
+  maturity: string | null
+}
+
+/** KKB risk raporu (simülasyon). Firmanın diğer bankalardaki riskleri. */
+export interface KkbReport {
+  /** Artan sırada ardışık aylar, 'YYYY-MM'. */
+  months: string[]
+  /** Mizanın kapanış ayı (tutarlılık kontrolü için). */
+  mizanMonth: string
+  facilities: KkbFacility[]
+  /** Aylık kredi sorgusu sayısı. */
+  inquiries: number[]
+  /** Aylık Findeks kredi notu (1–1900). */
+  findeks: number[]
+  /** Karşılıksız çek kayıtlarının ayları. */
+  bouncedCheques: string[]
+  /** Protestolu senet kayıtlarının ayları. */
+  protestedBills: string[]
 }

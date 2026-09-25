@@ -5,7 +5,7 @@
  */
 
 import { DEFAULT_MODEL_CONFIG, MODEL_SCHEMA_VERSION, type ModelConfig } from './modelConfig'
-import { withIndicatorTexts } from './indicatorInfo'
+import { migrateModelConfig } from './migrate'
 import { validateModelConfig } from './validation'
 
 export const EXPORT_FORMAT = 'alphaanalytica-model-config'
@@ -77,8 +77,8 @@ export function parseModelConfigJson(text: string): ImportResult {
     return { ok: false, errors: [`schemaVersion ${MODEL_SCHEMA_VERSION} olmalı.`] }
   }
 
-  // Gösterge açıklamalarından önce dışa aktarılmış dosyalar: eksik metinler varsayılandan tamamlanır
-  data = withIndicatorTexts(data)
+  // Yeni alanlar (gösterge açıklamaları, KKB parametreleri) eklenmeden önce dışa aktarılmış dosyalar: eksik alanlar v1.0'dan tamamlanır
+  data = migrateModelConfig(data)
   const shapeErrors: string[] = []
   checkShape(DEFAULT_MODEL_CONFIG, data, '', shapeErrors)
   const config = data as ModelConfig

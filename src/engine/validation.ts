@@ -6,6 +6,7 @@
 
 import {
   CREDIT_GRADES,
+  KKB_CREDIT_TYPES,
   LENDABLE_GRADES,
   PRODUCT_IDS,
   SECTOR_IDS,
@@ -156,6 +157,33 @@ export function validateModelConfig(config: ModelConfig): ValidationIssue[] {
   c.range('earlyWarning.watch.weakIndicator.maxScore', ew.watch.weakIndicator.maxScore, 0, 100)
   c.range('earlyWarning.watch.negativeTrend.maxAnnualGrowth', ew.watch.negativeTrend.maxAnnualGrowth, -1, 1)
   c.range('earlyWarning.watch.scoreDivergence.minGap', ew.watch.scoreDivergence.minGap, 0, 100)
+
+  // KKB
+  const kkb = config.kkb
+  for (const [id, rule] of Object.entries(kkb.signals)) {
+    if (rule.gradeCap !== 'none' && !LENDABLE_GRADES.includes(rule.gradeCap)) c.add(`kkb.signals.${id}.gradeCap`, 'Geçerli bir not seçin.')
+  }
+  c.range('kkb.signals.overdue.minDays', kkb.signals.overdue.minDays, 1, 365, { integer: true })
+  c.range('kkb.signals.overdue.windowMonths', kkb.signals.overdue.windowMonths, 1, 24, { integer: true })
+  c.range('kkb.signals.inquiries.windowMonths', kkb.signals.inquiries.windowMonths, 1, 12, { integer: true })
+  c.range('kkb.signals.inquiries.minCount', kkb.signals.inquiries.minCount, 1, 100, { integer: true })
+  c.range('kkb.signals.riskGrowth.lookbackMonths', kkb.signals.riskGrowth.lookbackMonths, 1, 23, { integer: true })
+  c.range('kkb.signals.riskGrowth.minGrowth', kkb.signals.riskGrowth.minGrowth, 0, 10, { exclusiveMin: true })
+  c.range('kkb.signals.mizanMismatch.maxDeviation', kkb.signals.mizanMismatch.maxDeviation, 0, 10, { exclusiveMin: true })
+  c.range('kkb.signals.lowFindeks.maxScore', kkb.signals.lowFindeks.maxScore, 1, 1900, { integer: true })
+  c.range('kkb.limit.deductionRate', kkb.limit.deductionRate, 0, 1)
+  const typeList = (path: string, list: unknown) => {
+    if (!Array.isArray(list) || list.length === 0) c.add(path, 'En az bir kredi türü seçin.')
+    else if (list.some((t) => !KKB_CREDIT_TYPES.includes(t))) c.add(path, 'Tanımsız kredi türü.')
+  }
+  typeList('kkb.limit.workingCapitalTypes', kkb.limit.workingCapitalTypes)
+  typeList('kkb.debtService.termTypes', kkb.debtService.termTypes)
+  if (kkb.limit.workingCapitalTypes.some((t) => kkb.debtService.termTypes.includes(t))) {
+    c.add('kkb.debtService.termTypes', 'Bir kredi türü hem işletme sermayesi hem vadeli kredi sayılamaz.')
+  }
+  c.range('kkb.findeks.weight', kkb.findeks.weight, 0, 0.5)
+  c.curve('kkb.findeks.breakpoints', kkb.findeks.breakpoints)
+  kkb.findeks.breakpoints.forEach((p, i) => c.range(`kkb.findeks.breakpoints.${i}.value`, p.value, 1, 1900))
 
   // Limit
   const lim = config.limit
