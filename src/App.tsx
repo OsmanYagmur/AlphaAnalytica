@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { ROLE_HOME } from './components/AppShell'
 import { Toaster, showToast } from './components/toast'
 import { navigate, useRouteSegments } from './lib/router'
@@ -109,6 +110,7 @@ export default function App() {
     <>
       <Routes />
       <Toaster />
+      <Analytics />
     </>
   )
 }
