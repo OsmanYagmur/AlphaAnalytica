@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { ROLE_HOME } from './components/AppShell'
+import { SiteAnalytics } from './components/SiteAnalytics'
 import { Toaster, showToast } from './components/toast'
 import { navigate, useRouteSegments } from './lib/router'
 import { Login } from './pages/Login'
@@ -109,6 +110,7 @@ export default function App() {
     <>
       <Routes />
       <Toaster />
+      <SiteAnalytics />
     </>
   )
 }

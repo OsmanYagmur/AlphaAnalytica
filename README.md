@@ -64,6 +64,10 @@ Vitest ile motorun tüm fonksiyonları, her demo firmanın Model v1.0 çıktıla
 
 Tanıtım sayfasındaki metinler ve ekip bilgileri `src/pages/landing/content.ts` dosyasındadır. Ekibi eklemek için dosyadaki `TEAM` listesine her kişi için `{ name, role, education }` ekleyin; liste boşken sayfada "Ekibimizi çok yakında burada tanıtacağız" yazar. Sayfadaki skorlar, notlar ve limitler motordan canlı hesaplanır.
 
+## Ziyaretçi istatistikleri
+
+Yayındaki sitede (Vercel) ziyaretçi istatistikleri Vercel Web Analytics ile toplanır. Analitik yalnızca Vercel'in kendi derlemesinde (`VERCEL=1`) etkindir; `npm run dev`, yerel `npm run build` ve çevrimdışı kullanımda paket hiç yüklenmez ve dışarıya istek gitmez. Hash tabanlı sayfa geçişleri (`#/demo`, `#/tahsis/...`) ayrı sayfa görüntülemesi olarak sayılır; firma adresleri raporda `/tahsis/firma/[firma]` kalıbında toplanır. Vercel panelinde projenin **Analytics** sekmesinden Web Analytics'in etkinleştirilmiş olması gerekir.
+
 ## Demo kullanımı
 
 | | |

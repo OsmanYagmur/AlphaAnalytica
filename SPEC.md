@@ -325,3 +325,8 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 
 ## R12 — Tanıtım sayfasında ölçek ifadesi (Eylül 2026)
 - Tanıtım sayfasında ölçek aralığı "KOBİ’den holdinge" yerine "küçük işletmeden holdinge" olarak ifade edilir (öne çıkan rakamlar ve Ürün bölümündeki özellik kartı).
+
+## R13 — Ziyaretçi istatistikleri (Eylül 2026)
+- Yayındaki sitede (Vercel) Vercel Web Analytics kullanılır. Çevrimdışı çalışma kuralına tek istisnadır ve yalnızca Vercel'in derlemesinde (`VERCEL=1`) etkindir; yerel geliştirme, yerel derleme ve çevrimdışı sunumda analitik kodu pakete girmez, dışarıya istek gitmez, konsolda hata oluşmaz.
+- Hash tabanlı sayfa geçişleri ayrı sayfa görüntülemesi olarak sayılır (otomatik takip kapalı, rota ve yol uygulama tarafından verilir); firma kimlikleri raporda `/tahsis/firma/[firma]` gibi kalıplarda toplanır.
+- Derleme, uygulama kodu ve kütüphaneler olmak üzere iki pakete ayrılır (paket boyutu uyarısı olmadan).
