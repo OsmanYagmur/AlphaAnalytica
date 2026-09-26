@@ -123,7 +123,7 @@ export function EditorToolbar({ impactToggle = true }: { impactToggle?: boolean 
 // ---------------------------------------------------------------------------
 
 export function Formula({ children }: { children: ReactNode }) {
-  return <div className="num overflow-x-auto whitespace-nowrap rounded-md border border-line bg-subtle px-3 py-2 text-[0.8125rem] text-navy">{children}</div>
+  return <div className="num break-words rounded-md border border-line bg-subtle px-3 py-2 text-[0.8125rem] leading-relaxed text-navy">{children}</div>
 }
 
 export function InlineError({ message }: { message: string | null }) {
@@ -154,8 +154,10 @@ export function ParamInput({ path, label, hint, step, min, max, scale = 1, suffi
   const value = e.get(path) as number
   const error = e.issueAt(path)
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-line py-2.5 last:border-b-0">
-      <div className="min-w-0 pt-2">
+    // Kap darsa etiket girişin üstüne geçer
+    <div className="@container border-b border-line py-2.5 last:border-b-0">
+    <div className="flex flex-col gap-1.5 @min-[22rem]:flex-row @min-[22rem]:items-start @min-[22rem]:justify-between @min-[22rem]:gap-4">
+      <div className="min-w-0 @min-[22rem]:pt-2">
         <p className="text-sm text-ink">{label}</p>
         {hint && <p className="text-xs text-muted">{hint}</p>}
       </div>
@@ -173,6 +175,7 @@ export function ParamInput({ path, label, hint, step, min, max, scale = 1, suffi
         />
         <InlineError message={error} />
       </div>
+    </div>
     </div>
   )
 }
@@ -358,7 +361,9 @@ export function BreakpointEditor({ path, title, description, unit, valueLabel = 
         <p className="text-sm font-medium text-ink">{title}</p>
         {description && <p className="text-xs text-muted">{description}</p>}
       </div>
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      {/* Kap genişse tablo ve eğri yan yana, darsa alt alta */}
+      <div className="@container">
+      <div className="grid gap-3 @min-[34rem]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div>
           <div className="grid grid-cols-[1fr_1fr_28px] gap-1.5 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-muted">
             <span>{valueLabel}</span>
@@ -389,6 +394,7 @@ export function BreakpointEditor({ path, title, description, unit, valueLabel = 
           <InlineError message={curveError} />
         </div>
         <CurveChart points={points} unit={unit} />
+      </div>
       </div>
     </div>
   )

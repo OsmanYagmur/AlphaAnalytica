@@ -46,7 +46,7 @@ export function ModelCollateral() {
                     <td className="w-40 px-3 py-2">
                       <Cell path={`terms.collateralRatio.${g}`} step={5} scale={100} suffix="%" min={0} />
                     </td>
-                    <td className="w-72 px-3 py-2">
+                    <td className="w-80 min-w-80 px-3 py-2">
                       <SelectParam path={`terms.collateralType.${g}`} options={typeOptions} />
                     </td>
                     <td className="w-36 px-3 py-2">

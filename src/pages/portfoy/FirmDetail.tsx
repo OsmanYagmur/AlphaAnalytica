@@ -298,7 +298,7 @@ export function PortfolioFirmDetail({ firmId }: { firmId: string }) {
                 {view.config.sectors[view.firm.sectorId].label} · {SEGMENT_LABELS[view.firm.segment]}
                 {view.firm.groupCompanies ? ` (${view.firm.groupCompanies} grup şirketi)` : ''} · {view.firm.city} · VKN <span className="num">{view.firm.vkn}</span>
               </p>
-              <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+              <dl className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-x-6 gap-y-3">
                 <div>
                   <dt className="text-xs text-muted">Onaylı limit</dt>
                   <dd className="num mt-0.5 whitespace-nowrap text-sm">{approvedLimit(view) > 0 ? formatTL(approvedLimit(view)) : '—'}</dd>

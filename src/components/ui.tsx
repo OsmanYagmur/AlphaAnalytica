@@ -26,12 +26,12 @@ export function Card({ title, subtitle, actions, children, className, bodyClassN
   return (
     <section className={cx('rounded-lg border border-line bg-surface shadow-card', className)}>
       {(title || actions) && (
-        <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-3">
-          <div className="min-w-0">
+        <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-b border-line px-5 py-3">
+          <div className="min-w-0 flex-1 basis-[12rem]">
             {title && <h2 className="text-[0.9375rem] font-semibold text-ink">{title}</h2>}
             {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
           </div>
-          {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+          {actions && <div className="ml-auto flex max-w-full shrink-0 flex-wrap items-center justify-end gap-2">{actions}</div>}
         </header>
       )}
       <div className={cx('px-5 py-4', bodyClassName)}>{children}</div>
@@ -163,11 +163,11 @@ const STRENGTH_TONE: Record<string, string> = { Güçlü: 'text-positive', Orta:
 export function ScoreBar({ label, score, strength, hint }: { label: string; score: number; strength: string; hint?: ReactNode }) {
   return (
     <div>
-      <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <span className="text-sm text-ink">{label}</span>
-        <span className="flex items-baseline gap-2">
+      <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+        <span className="min-w-0 text-sm text-ink">{label}</span>
+        <span className="ml-auto flex shrink-0 items-baseline gap-2">
           <span className={cx('text-xs font-medium', STRENGTH_TONE[strength])}>{strength}</span>
-          <span className="num w-10 text-right text-sm font-medium text-ink">{formatScore(score)}</span>
+          <span className="num min-w-[3.25rem] whitespace-nowrap text-right text-sm font-medium text-ink">{formatScore(score)}</span>
         </span>
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-sm bg-subtle">
@@ -320,26 +320,27 @@ export function NumberInput({ value, onChange, step, min, max, suffix, invalid, 
   const clamp = (v: number) => Math.min(max ?? Infinity, Math.max(min ?? -Infinity, v))
   const round = (v: number) => Math.round(v / step) * step
   return (
+    // Kap sorgusu: kutu dar olduğunda ± düğmeleri gizlenir, sayıya yer kalır (değer klavyeyle girilir)
     <div
       className={cx(
-        'flex h-9 items-stretch overflow-hidden rounded-md border',
+        '@container flex h-9 items-stretch overflow-hidden rounded-md border',
         invalid ? 'border-negative' : 'border-line',
         edited ? 'bg-edited' : 'bg-surface',
       )}
     >
-      <button type="button" className="px-2 text-muted hover:bg-subtle" onClick={() => onChange(clamp(round(value - step)))} aria-label="Azalt">
+      <button type="button" className="hidden shrink-0 items-center px-1.5 text-muted hover:bg-subtle @min-[7.5rem]:flex" onClick={() => onChange(clamp(round(value - step)))} aria-label="Azalt">
         <Minus size={14} />
       </button>
       <input
         type="number"
         aria-label={ariaLabel}
-        className="num w-full min-w-0 bg-transparent px-1 text-right text-sm focus:outline-none"
+        className="num w-full min-w-0 bg-transparent px-2 text-right text-sm focus:outline-none @min-[7.5rem]:px-1"
         value={Number.isFinite(value) ? value : ''}
         step={step}
         onChange={(e) => onChange(e.target.value === '' ? NaN : Number(e.target.value))}
       />
-      {suffix && <span className="flex items-center pr-2 text-xs text-muted">{suffix}</span>}
-      <button type="button" className="border-l border-line px-2 text-muted hover:bg-subtle" onClick={() => onChange(clamp(round((Number.isFinite(value) ? value : 0) + step)))} aria-label="Artır">
+      {suffix && <span className="flex shrink-0 items-center pr-2 text-xs text-muted">{suffix}</span>}
+      <button type="button" className="hidden shrink-0 items-center border-l border-line px-1.5 text-muted hover:bg-subtle @min-[7.5rem]:flex" onClick={() => onChange(clamp(round((Number.isFinite(value) ? value : 0) + step)))} aria-label="Artır">
         <Plus size={14} />
       </button>
     </div>

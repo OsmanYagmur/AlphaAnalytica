@@ -117,7 +117,8 @@ export function ModelRatingLimit() {
         </Card>
 
         <Card title="Erken uyarı override kuralları" subtitle="Kritik sinyal varsa not, seçilen tavandan iyi olamaz">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[26rem] text-sm">
             <thead>
               <tr className="border-b border-line text-left">
                 <th className="label-caps py-2 pr-3 font-semibold">Kritik sinyal</th>
@@ -145,8 +146,10 @@ export function ModelRatingLimit() {
               })}
             </tbody>
           </table>
+          </div>
           <p className="label-caps mb-1 mt-5">İzleme sinyalleri (notu değiştirmez)</p>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[26rem] text-sm">
             <tbody>
               {WATCH.map((r) => {
                 const p = `earlyWarning.watch.${r.id}`
@@ -168,6 +171,7 @@ export function ModelRatingLimit() {
               })}
             </tbody>
           </table>
+          </div>
         </Card>
 
         <Card title="Sunum ve karar kuralları" subtitle="Tahsis ve Portföy ekranlarındaki niteliksel etiketler" className="xl:col-span-2">

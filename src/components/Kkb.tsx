@@ -116,7 +116,7 @@ export function KkbTab({ evaluation, config }: { evaluation: FirmEvaluation; con
         subtitle={`Rapor ayı: ${formatYearMonth(k.asOf)} · ${k.banks.length} banka`}
         actions={<KkbSimLabel />}
       >
-        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-2.5">
           <Kpi label="Findeks kredi notu" value={`${formatNumber(k.findeks)} / 1.900`} tone={kkb.signals.some((s) => s.id === 'lowFindeks') ? 'warning' : undefined} />
           <Kpi label="Toplam limit" value={formatTL(k.totalLimit)} hint={`Nakdi ${formatTLShort(k.totalCashLimit)} · Gayrinakdi ${formatTLShort(k.totalNonCashLimit)}`} />
           <Kpi label="Toplam risk" value={formatTL(k.totalRisk)} hint={`Nakdi ${formatTLShort(k.totalCashRisk)} · Gayrinakdi ${formatTLShort(k.totalNonCashRisk)}`} />

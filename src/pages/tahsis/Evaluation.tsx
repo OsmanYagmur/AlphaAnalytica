@@ -42,7 +42,7 @@ function TopStrip({ view }: { view: FirmView }) {
             <span>{config.sectors[firm.sectorId].label}</span>
             {ev.alternative.seasonProfile.id !== 'standard' && <Badge>{ev.alternative.seasonProfile.label}</Badge>}
           </div>
-          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-8">
+          <dl className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(8.75rem,1fr))] gap-x-6 gap-y-3">
             <Kunye label="VKN" value={firm.vkn} />
             <Kunye label="İl" value={firm.city} />
             <Kunye label="Kuruluş" value={String(firm.foundedYear)} />

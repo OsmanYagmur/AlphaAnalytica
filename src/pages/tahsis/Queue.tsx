@@ -85,7 +85,7 @@ export function Queue() {
 
       <Card bodyClassName="p-0">
         <div className="flex flex-col gap-3 border-b border-line px-5 py-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
-          <div className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-md border border-line bg-subtle p-0.5">
+          <div className="flex w-fit max-w-full flex-wrap gap-1 rounded-md border border-line bg-subtle p-0.5">
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.value}

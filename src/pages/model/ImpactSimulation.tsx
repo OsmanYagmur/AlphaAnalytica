@@ -154,7 +154,7 @@ export function ModelImpact() {
           title="Tek firma odak modu"
           subtitle="Skor değişiminin kategori bazında şelale grafiği"
           actions={
-            <select className={cx(inputClass, 'h-8 w-56 text-xs')} value={focus} onChange={(ev) => setFocus(ev.target.value)} aria-label="Firma">
+            <select className={cx(inputClass, 'h-8 w-56 max-w-full text-xs')} value={focus} onChange={(ev) => setFocus(ev.target.value)} aria-label="Firma">
               {FIRMS.map((f) => (
                 <option key={f.id} value={f.id}>
                   {firmName(f.id)}
@@ -163,7 +163,7 @@ export function ModelImpact() {
             </select>
           }
         >
-          <div className="mb-3 grid grid-cols-3 gap-2 text-sm">
+          <div className="mb-3 grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2 text-sm">
             <div className="rounded-md border border-line px-3 py-2">
               <p className="text-[0.6875rem] text-muted">Skor</p>
               <p className="num font-semibold">

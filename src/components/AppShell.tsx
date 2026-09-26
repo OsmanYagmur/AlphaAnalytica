@@ -192,15 +192,16 @@ export function AppShell({ role, title, breadcrumb, actions: headerActions, chil
 
       <div className="lg:pl-60">
         <header className="sticky top-0 z-30 border-b border-line bg-canvas">
-          <div className="flex items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          {/* Yer yoksa araç çubuğu alt satıra geçer; başlık kesilmez */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-6 lg:px-8">
             <button type="button" className="rounded p-1.5 text-navy hover:bg-subtle lg:hidden" onClick={() => setDrawer(true)} aria-label="Menü">
               {drawer ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 basis-[15rem]">
               {breadcrumb && <div className="mb-0.5 text-xs text-muted">{breadcrumb}</div>}
-              <h1 className="truncate text-lg font-semibold text-navy">{title}</h1>
+              <h1 className="break-words text-lg font-semibold leading-snug text-navy">{title}</h1>
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
               {headerActions}
               <DemoDataTag />
             </div>

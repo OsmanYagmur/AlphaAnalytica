@@ -310,3 +310,8 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 ## R9 — Giriş ekranı: alt başlık ve büyük logo (Eylül 2026)
 - R8'i günceller: logonun altında iki satır yer alır — "Dinamik Bilançolar ile Risk Analizi" ve daha soluk ikinci satırda "Alternatif veriyle desteklenen risk değerlendirme platformu".
 - Giriş ekranındaki logo ve "AlphaAnalytica" yazısı ekrana göre büyütülür (mobilde daha küçük, geniş ekranlarda daha büyük; 1366×768'de kaydırma olmadan tek ekrana sığar).
+
+## R10 — Taşma ve çakışma düzeltmeleri (Eylül 2026)
+- Sayılar, etiketler ve seçim kutuları hiçbir ekran genişliğinde ve Sunum Modu'nda kutusundan taşmaz, kırpılmaz veya üst üste binmez (1920×1080, 1366×768, 1024 tablet ve 375 mobil; normal ve Sunum Modu'nda otomatik taramayla doğrulanır).
+- Sayı giriş kutuları kendi genişliklerine göre uyarlanır: dar alanda ± düğmeleri gizlenir, değer tam görünür (klavyeyle girilir). Kırılım tablosu ile eğri yer yoksa alt alta; parametre satırlarında etiket yer yoksa girişin üstüne geçer.
+- Kart ve sayfa başlıklarında eylemler sığmazsa alt satıra geçer; başlıklar kesilmez. Formül kutuları yatay kaydırma yerine satır kaydırır. Künye ve KPI ızgaraları hücre genişliğini içeriğe göre ayarlar; puan çubuklarında etiket ile puan gerektiğinde iki satıra ayrılır.
