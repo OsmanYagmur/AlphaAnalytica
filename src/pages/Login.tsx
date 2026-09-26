@@ -1,4 +1,4 @@
-import { ArrowRight, Briefcase, ClipboardCheck, Lock } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Briefcase, ClipboardCheck, Lock } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { CornerLabels, DemoDataTag, ROLE_HOME } from '../components/AppShell'
 import { Logo } from '../components/Logo'
@@ -97,6 +97,12 @@ function ModelManagerCard() {
 export function Login() {
   return (
     <div className="min-h-screen bg-canvas">
+      <div className="absolute left-4 top-4">
+        <button type="button" onClick={() => navigate('/')} className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-sm text-muted hover:bg-subtle hover:text-ink">
+          <ArrowLeft size={15} />
+          Tanıtım sayfası
+        </button>
+      </div>
       <div className="absolute right-4 top-4">
         <DemoDataTag />
       </div>

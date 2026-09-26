@@ -103,8 +103,11 @@ function TopStrip({ view }: { view: FirmView }) {
 
 type TabId = 'traditional' | 'alternative' | 'kkb' | 'market'
 
-function EvaluationContent({ view }: { view: FirmView }) {
-  const [tab, setTab] = useState<TabId>('traditional')
+/** Adres çubuğundaki sekme adı (ör. /tahsis/firma/:id/kkb) → sekme. */
+const TAB_SLUGS: Record<string, TabId> = { geleneksel: 'traditional', alternatif: 'alternative', kkb: 'kkb', piyasa: 'market' }
+
+function EvaluationContent({ view, initialTab }: { view: FirmView; initialTab?: string }) {
+  const [tab, setTab] = useState<TabId>((initialTab && TAB_SLUGS[initialTab]) || 'traditional')
   const activeVersion = useActiveVersion()
   const months = view.firm.alternative.months
   const dataAsOf = view.decision?.dataAsOf ?? months[months.length - 1]
@@ -150,7 +153,7 @@ function EvaluationContent({ view }: { view: FirmView }) {
   )
 }
 
-export function Evaluation({ firmId }: { firmId: string }) {
+export function Evaluation({ firmId, initialTab }: { firmId: string; initialTab?: string }) {
   const view = useFirmView(firmId)
   const [analyzing, setAnalyzing] = useState(true)
   const done = useCallback(() => setAnalyzing(false), [])
@@ -181,7 +184,7 @@ export function Evaluation({ firmId }: { firmId: string }) {
         </Button>
       }
     >
-      {analyzing ? <AnalysisAnimation firmName={view.firm.name} onDone={done} /> : <EvaluationContent view={view} />}
+      {analyzing ? <AnalysisAnimation firmName={view.firm.name} onDone={done} /> : <EvaluationContent view={view} initialTab={initialTab} />}
     </AppShell>
   )
 }

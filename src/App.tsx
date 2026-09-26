@@ -3,6 +3,7 @@ import { ROLE_HOME } from './components/AppShell'
 import { Toaster, showToast } from './components/toast'
 import { navigate, useRouteSegments } from './lib/router'
 import { Login } from './pages/Login'
+import { Landing } from './pages/landing/Landing'
 import { ModelAlternative } from './pages/model/AlternativeParams'
 import { ModelBalance } from './pages/model/Balance'
 import { ModelCollateral } from './pages/model/CollateralPricing'
@@ -53,17 +54,21 @@ function Routes() {
   const section = segments[0]
   const sectionRole = section ? SECTION_ROLE[section] : undefined
 
-  // Rol yoksa giriş ekranı; rol başka bir arayüze aitse kendi ana sayfasına yönlendir.
-  const redirect = !role ? (section ? '/' : null) : sectionRole !== role ? ROLE_HOME[role] : null
+  // Ana adres tanıtım sayfası, /demo rol seçimi (her zaman erişilebilir).
+  // Arayüz sayfalarında rol yoksa rol seçimine; rol başka arayüze aitse kendi ana sayfasına yönlendir.
+  const isPublic = section === undefined || section === 'demo'
+  const redirect = isPublic ? null : !role ? '/demo' : sectionRole !== role ? ROLE_HOME[role] : null
   useEffect(() => {
     if (redirect !== null) navigate(redirect)
   }, [redirect])
 
-  if (!role || redirect !== null) return role ? null : <Login />
+  if (section === undefined) return <Landing />
+  if (section === 'demo') return <Login />
+  if (!role || redirect !== null) return null
 
   switch (role) {
     case 'tahsis':
-      if (segments[1] === 'firma' && segments[2]) return <Evaluation key={segments[2]} firmId={segments[2]} />
+      if (segments[1] === 'firma' && segments[2]) return <Evaluation key={segments[2]} firmId={segments[2]} initialTab={segments[3]} />
       return <Queue />
     case 'portfoy':
       if (segments[1] === 'firma' && segments[2]) return <PortfolioFirmDetail key={segments[2]} firmId={segments[2]} />

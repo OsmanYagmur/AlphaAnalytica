@@ -54,6 +54,16 @@ npm test
 
 Vitest ile motorun tüm fonksiyonları, her demo firmanın Model v1.0 çıktıları ve senaryoları (`src/engine/engine.test.ts`), konfigürasyon doğrulaması, JSON şema doğrulaması, etki simülasyonu ve sürümlemenin diğer arayüzlere etkisi test edilir.
 
+## Site yapısı
+
+| Adres | Sayfa |
+|---|---|
+| `#/` | Tanıtım sayfası: problem, çözüm, ürün, demo senaryoları, ticari potansiyel, riskler, ekip |
+| `#/demo` | Rol seçimi (Tahsis, Portföy, Model Yöneticisi) |
+| `#/tahsis/firma/:id/:sekme` | Firma değerlendirmesi; sekme isteğe bağlı: `geleneksel`, `alternatif`, `kkb`, `piyasa` |
+
+Tanıtım sayfasındaki metinler ve ekip bilgileri `src/pages/landing/content.ts` dosyasındadır. Ekibi eklemek için dosyadaki `TEAM` listesine her kişi için `{ name, role, education }` ekleyin; liste boşken sayfada "Ekibimizi çok yakında burada tanıtacağız" yazar. Sayfadaki skorlar, notlar ve limitler motordan canlı hesaplanır.
+
 ## Demo kullanımı
 
 | | |

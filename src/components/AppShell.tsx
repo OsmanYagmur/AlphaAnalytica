@@ -92,7 +92,15 @@ function Sidebar({ role, onNavigate }: { role: Role; onNavigate?: () => void }) 
   return (
     <div className="flex h-full flex-col bg-sidebar">
       <div className="border-b border-sidebar-line px-5 py-5">
-        <Logo />
+        <button
+          type="button"
+          onClick={() => canNavigate('/') && navigate('/')}
+          className="rounded-sm"
+          title="Tanıtım sayfasına dön"
+          aria-label="AlphaAnalytica tanıtım sayfası"
+        >
+          <Logo />
+        </button>
         {!presentation && <p className="mt-2 text-[0.6875rem] text-[#7f8ba0]">Dinamik Bilançolar ile Risk Analizi</p>}
       </div>
 
@@ -132,9 +140,9 @@ function Sidebar({ role, onNavigate }: { role: Role; onNavigate?: () => void }) 
         <button
           type="button"
           onClick={() => {
-            if (!canNavigate('/')) return
+            if (!canNavigate('/demo')) return
             actions.logout()
-            navigate('/')
+            navigate('/demo')
           }}
           className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-[0.8125rem] text-[#b7c2d3] hover:bg-sidebar-line"
         >

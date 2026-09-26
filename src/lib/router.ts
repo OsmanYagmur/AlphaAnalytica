@@ -1,6 +1,6 @@
 /**
  * Küçük hash yönlendirici: statik dist klasörü dosya sisteminden açıldığında da çalışır.
- * Rotalar: #/ · #/tahsis · #/tahsis/firma/:id · #/portfoy · #/model
+ * Rotalar: #/ (tanıtım) · #/demo (rol seçimi) · #/tahsis · #/tahsis/firma/:id[/sekme] · #/portfoy · #/model
  */
 
 import { useSyncExternalStore } from 'react'
