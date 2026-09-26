@@ -6,12 +6,23 @@ TEKNOFEST 2026 Finansal Teknolojiler Yarışması finali için hazırlanmış, t
 
 ## Gereksinimler
 
-- Node.js 22.12+ (veya 24+). Geliştirildiği sürüm: Node 22.20
+- Node.js 22.12+ (veya 24+). Geliştirildiği sürüm: Node 22.20. Kurulu değilse https://nodejs.org adresinden LTS sürümünü indirin; npm onunla birlikte gelir.
 - npm 10+
+- Git
 
 İnternet bağlantısı yalnızca ilk `npm install` için gerekir. Uygulama çalışırken hiçbir dış kaynağa (CDN, font sunucusu, API) bağlanmaz; IBM Plex Sans ve IBM Plex Mono fontları `@fontsource` paketleriyle yerel olarak paketlenir.
 
 ## Kurulum ve çalıştırma
+
+Depo gizlidir; erişim için depo sahibinin sizi GitHub'da ortak çalışan (collaborator) olarak eklemiş olması gerekir.
+
+```bash
+git clone https://github.com/OsmanYagmur/AlphaAnalytica.git
+```
+
+```bash
+cd AlphaAnalytica
+```
 
 ```bash
 npm install
@@ -21,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Geliştirme sunucusu http://localhost:5173 adresinde açılır.
+Geliştirme sunucusu http://localhost:5173 adresinde açılır. Sonraki güncellemeleri almak için depo klasöründe `git pull`, ardından (bağımlılıklar değiştiyse) `npm install` çalıştırın.
 
 ## Üretim derlemesi
 
