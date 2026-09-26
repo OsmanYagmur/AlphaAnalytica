@@ -40,18 +40,29 @@ export function LogoMark({ size = 32, className }: LogoMarkProps) {
 }
 
 interface LogoProps {
-  size?: 'sm' | 'lg'
+  /** sm: kenar çubuğu · lg: büyük · xl: giriş ekranı (mobilde küçülür) */
+  size?: 'sm' | 'lg' | 'xl'
   tone?: 'light' | 'dark'
 }
 
+const LOGO_SIZES = {
+  sm: { mark: 32, markClass: undefined, text: 'text-[1.0625rem]', gap: 'gap-3' },
+  lg: { mark: 56, markClass: undefined, text: 'text-[2.125rem]', gap: 'gap-3' },
+  xl: {
+    mark: 96,
+    markClass: 'h-14 w-14 sm:h-[5.5rem] sm:w-[5.5rem] xl:h-24 xl:w-24',
+    text: 'text-[2.25rem] sm:text-[3.5rem] xl:text-[4rem]',
+    gap: 'gap-3.5 sm:gap-5',
+  },
+} as const
+
 /** Tam logo: işaret + "Alpha" kalın, "Analytica" normal ağırlıkta. */
 export function Logo({ size = 'sm', tone = 'light' }: LogoProps) {
-  const mark = size === 'lg' ? 56 : 32
-  const text = size === 'lg' ? 'text-[2.125rem]' : 'text-[1.0625rem]'
+  const { mark, markClass, text, gap } = LOGO_SIZES[size]
   const color = tone === 'light' ? 'text-white' : 'text-navy'
   return (
-    <div className="flex items-center gap-3">
-      <LogoMark size={mark} />
+    <div className={`flex items-center ${gap}`}>
+      <LogoMark size={mark} className={markClass} />
       <span className={`${text} ${color} leading-none tracking-tight`}>
         <span className="font-bold">Alpha</span>
         <span className="font-normal">Analytica</span>

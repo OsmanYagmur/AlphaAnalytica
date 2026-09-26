@@ -102,8 +102,9 @@ export function Login() {
       </div>
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center px-4 py-16 sm:px-6">
         <div className="flex flex-col items-center text-center">
-          <Logo size="lg" tone="dark" />
-          <p className="mt-5 text-base text-ink">Dinamik Bilançolar ile Risk Analizi</p>
+          <Logo size="xl" tone="dark" />
+          <p className="mt-6 text-lg text-ink sm:text-xl">Dinamik Bilançolar ile Risk Analizi</p>
+          <p className="mt-1.5 text-sm text-muted sm:text-base">Alternatif veriyle desteklenen risk değerlendirme platformu</p>
         </div>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           <RoleCard

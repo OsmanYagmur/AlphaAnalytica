@@ -306,3 +306,7 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 
 ## R8 — Giriş ekranı alt başlığı (Eylül 2026)
 - Giriş ekranında logonun altında yalnızca "Dinamik Bilançolar ile Risk Analizi" yazar; "KOBİ ticari kredi tahsis platformu · rol seçin" satırı kaldırılmıştır (R1'den beri holdingler de değerlendirildiği için "KOBİ" ifadesi kapsamı yansıtmıyordu).
+
+## R9 — Giriş ekranı: alt başlık ve büyük logo (Eylül 2026)
+- R8'i günceller: logonun altında iki satır yer alır — "Dinamik Bilançolar ile Risk Analizi" ve daha soluk ikinci satırda "Alternatif veriyle desteklenen risk değerlendirme platformu".
+- Giriş ekranındaki logo ve "AlphaAnalytica" yazısı ekrana göre büyütülür (mobilde daha küçük, geniş ekranlarda daha büyük; 1366×768'de kaydırma olmadan tek ekrana sığar).
