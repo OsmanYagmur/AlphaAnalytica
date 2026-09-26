@@ -303,3 +303,6 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 - Arayüz: Tahsis değerlendirme ekranında "KKB / Diğer Bankalar" sekmesi (banka tablosu, toplam limit, toplam risk, doluluk, gecikme geçmişi, risk trendi); üst şeritte Findeks notu ve KKB uyarı rozetleri. Portföy firma detayında kompakt KKB özeti; Portföy Özeti'nde "diğer bankalarda riski artan firmalar" listesi. Model Yöneticisi'nde "KKB Parametreleri" ekranı; etki simülasyonu bu parametreleri kapsar.
 - KKB hikâyesi: Denizli Dokuma Tekstil — bilanço ve alternatif veri güçlü (skor notu A), başka bankada 47 güne varan gecikme nedeniyle not BB. Diğer hikâyelerin notları korunur; limit değişiklikleri önce/sonra tablosuyla METODOLOJI.md 10.1'de belgelenir.
 - Başlangıç kararlarında Şifa Eczanesi revize limiti yeni sistem önerisine göre 1.250.000 ₺'dir. Demo verisi sürümü değiştiğinde tarayıcıda kayıtlı kararlar başlangıç durumuna döner (model sürümleri korunur).
+
+## R8 — Giriş ekranı alt başlığı (Eylül 2026)
+- Giriş ekranında logonun altında yalnızca "Dinamik Bilançolar ile Risk Analizi" yazar; "KOBİ ticari kredi tahsis platformu · rol seçin" satırı kaldırılmıştır (R1'den beri holdingler de değerlendirildiği için "KOBİ" ifadesi kapsamı yansıtmıyordu).

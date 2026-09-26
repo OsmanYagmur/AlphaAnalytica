@@ -104,7 +104,6 @@ export function Login() {
         <div className="flex flex-col items-center text-center">
           <Logo size="lg" tone="dark" />
           <p className="mt-5 text-base text-ink">Dinamik Bilançolar ile Risk Analizi</p>
-          <p className="mt-1 text-sm text-muted">KOBİ ticari kredi tahsis platformu · rol seçin</p>
         </div>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           <RoleCard
