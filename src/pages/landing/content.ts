@@ -107,7 +107,7 @@ export const CAPABILITIES = [
   { title: 'Parametreyle yönetilen motor', text: 'Hesaplama motorunda sabit kural yoktur; her ağırlık ve eşik tipli bir konfigürasyondan okunur.' },
   { title: 'Sürümleme ve denetim izi', text: 'Her model değişikliği sürüm olarak kaydedilir; kararlar verildiği sürümle sabit kalır.' },
   { title: 'Kaydetmeden önce etki', text: 'Bir parametre değiştiğinde hangi firmanın notunun ve limitinin nasıl değişeceği anında görülür.' },
-  { title: 'KOBİ’den holdinge', text: 'Aynı model, yüz binlerce liralık KOBİ’den milyar liralık holdinglere ölçekten bağımsız çalışır.' },
+  { title: 'Küçük işletmeden holdinge', text: 'Aynı model, mahalledeki bir kırtasiyeden milyarlarca liralık ciroya sahip holdinglere kadar ölçekten bağımsız çalışır.' },
   { title: 'Kurum içinde çalışır', text: 'Tamamen tarayıcıda çalışır, internet bağlantısı gerektirmez; veri kurumun dışına çıkmaz.' },
   { title: 'Test edilmiş hesaplama', text: 'Motorun her fonksiyonu ve her örnek firmanın sonucu otomatik testlerle doğrulanır.' },
 ] as const

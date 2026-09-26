@@ -212,7 +212,7 @@ function Hero() {
   const stats = [
     { value: formatNumber(SECTOR_IDS.length), label: 'sektör modeli' },
     { value: formatNumber(indicatorCount), label: 'alternatif gösterge' },
-    { value: formatNumber(FIRMS.length), label: 'örnek firma, KOBİ’den holdinge' },
+    { value: formatNumber(FIRMS.length), label: 'örnek firma, küçük işletmeden holdinge' },
     { value: '3', label: 'rol bazlı arayüz' },
   ]
   return (

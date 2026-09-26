@@ -322,3 +322,6 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 - Sayfadaki skor, not, limit ve sayılar motordan ve demo verisinden canlı hesaplanır, elle yazılmaz. Tasarım uygulamanın tasarım diliyle aynıdır; köşe etiketi (TEKNOFEST) bu sayfada gösterilmez.
 - Demo senaryo kartları "Bu senaryoyu aç" ile ilgili rolü seçip doğrudan ilgili ekrana (gerekirse sekmeye) götürür. Firma değerlendirmesi adresinde sekme belirtilebilir: `#/tahsis/firma/:id/:sekme` (geleneksel, alternatif, kkb, piyasa).
 - Ekip bölümü `src/pages/landing/content.ts` içindeki `TEAM` listesinden beslenir; liste boşken "yakında" notu gösterilir.
+
+## R12 — Tanıtım sayfasında ölçek ifadesi (Eylül 2026)
+- Tanıtım sayfasında ölçek aralığı "KOBİ’den holdinge" yerine "küçük işletmeden holdinge" olarak ifade edilir (öne çıkan rakamlar ve Ürün bölümündeki özellik kartı).
