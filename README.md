@@ -62,7 +62,7 @@ Vitest ile motorun tüm fonksiyonları, her demo firmanın Model v1.0 çıktıla
 | `#/demo` | Rol seçimi (Tahsis, Portföy, Model Yöneticisi) |
 | `#/tahsis/firma/:id/:sekme` | Firma değerlendirmesi; sekme isteğe bağlı: `geleneksel`, `alternatif`, `kkb`, `piyasa` |
 
-Tanıtım sayfasındaki metinler ve ekip bilgileri `src/pages/landing/content.ts` dosyasındadır. Ekip bilgileri dosyadaki `TEAM` listesindedir: her kişi için `name` ve `role` zorunlu; `badge` (ör. "Takım Kaptanı"), `responsibility`, `education` ve `links` (`linkedin`, `website`) isteğe bağlıdır. Liste boşken sayfada "Ekibimizi çok yakında burada tanıtacağız" yazar. Sayfadaki skorlar, notlar ve limitler motordan canlı hesaplanır.
+Tanıtım sayfasındaki metinler ve ekip bilgileri `src/pages/landing/content.ts` dosyasındadır. Ekip bilgileri dosyadaki `TEAM` listesindedir: her kişi için `name` ve `role` zorunlu; `badge` (ör. "Takım Kaptanı"), `photo` (kare fotoğraf `src/assets/team` klasörüne konur ve dosyanın başında import edilir; yoksa baş harfler gösterilir), `responsibility`, `education` ve `links` (`linkedin`, `website`) isteğe bağlıdır. Liste boşken sayfada "Ekibimizi çok yakında burada tanıtacağız" yazar. Sayfadaki skorlar, notlar ve limitler motordan canlı hesaplanır.
 
 ## Ziyaretçi istatistikleri
 

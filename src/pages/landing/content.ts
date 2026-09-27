@@ -3,6 +3,8 @@
  * sayfa bunları motordan canlı hesaplar. Ekip bölümü `TEAM` doldurulunca görünür.
  */
 
+import alpPhoto from '../../assets/team/alp-hatipoglu.jpg'
+import osmanPhoto from '../../assets/team/osman-yagmur.jpg'
 import type { Role } from '../../store/types'
 
 // ---------------------------------------------------------------------------
@@ -19,6 +21,8 @@ export interface TeamMember {
   responsibility?: string
   /** İsteğe bağlı eğitim bilgisi (ör. "Üniversite · Bölüm, Sınıf") */
   education?: string
+  /** İsteğe bağlı fotoğraf (src/assets/team altında, kare); yoksa baş harfler gösterilir */
+  photo?: string
   /** İsteğe bağlı bağlantılar (tam adres, https:// ile) */
   links?: { linkedin?: string; website?: string }
 }
@@ -27,6 +31,7 @@ export interface TeamMember {
 export const TEAM: TeamMember[] = [
   {
     name: 'Osman Yağmur',
+    photo: osmanPhoto,
     badge: 'Takım Kaptanı',
     role: 'Team Lead & System Architect',
     responsibility: 'Takım koordinasyonu, sistemin iskeleti ve iki teknik alanın birleştirilmesi',
@@ -34,6 +39,7 @@ export const TEAM: TeamMember[] = [
   },
   {
     name: 'Alp Hatipoğlu',
+    photo: alpPhoto,
     role: 'Data Engineering & Integration Lead',
     responsibility: 'Veri kaynakları, API entegrasyonları, veri toplama ve veri hattı',
     links: { linkedin: 'https://www.linkedin.com/in/alp-hatipoglu' },

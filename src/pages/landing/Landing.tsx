@@ -722,26 +722,34 @@ function TeamSection() {
           <p className="text-sm text-muted">Ekibimizi çok yakında burada tanıtacağız.</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface shadow-card">
           {TEAM.map((m) => (
-            <div key={m.name} className="flex flex-col rounded-lg border border-line bg-surface p-5 shadow-card">
-              <div className="flex items-start justify-between gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-navy text-base font-semibold text-white">{initials(m.name)}</span>
-                {m.badge && <span className="rounded border border-[#c8dedc] bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">{m.badge}</span>}
+            <li key={m.name} className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+              {m.photo ? (
+                <img src={m.photo} alt={m.name} loading="lazy" width={112} height={112} className="h-24 w-24 shrink-0 rounded-md border border-line object-cover sm:h-28 sm:w-28" />
+              ) : (
+                <span aria-hidden className="flex h-24 w-24 shrink-0 items-center justify-center rounded-md bg-navy text-2xl font-semibold text-white sm:h-28 sm:w-28">
+                  {initials(m.name)}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <p className="text-lg font-semibold text-navy">{m.name}</p>
+                  {m.badge && <span className="rounded border border-[#c8dedc] bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">{m.badge}</span>}
+                </div>
+                <p className="mt-0.5 text-sm font-medium text-accent">{m.role}</p>
+                {m.responsibility && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{m.responsibility}</p>}
+                {m.education && <p className="mt-1.5 text-xs text-muted">{m.education}</p>}
               </div>
-              <p className="mt-4 text-base font-semibold text-navy">{m.name}</p>
-              <p className="mt-0.5 text-sm font-medium text-accent">{m.role}</p>
-              {m.responsibility && <p className="mt-2 text-sm leading-relaxed text-muted">{m.responsibility}</p>}
-              {m.education && <p className="mt-2 text-xs text-muted">{m.education}</p>}
               {m.links && (m.links.linkedin || m.links.website) && (
-                <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-4">
+                <div className="flex shrink-0 flex-wrap gap-x-4 gap-y-1.5 sm:flex-col sm:items-end">
                   {m.links.linkedin && <TeamLink href={m.links.linkedin} icon={ExternalLink} label="LinkedIn" />}
                   {m.links.website && <TeamLink href={m.links.website} icon={Globe} label={m.links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')} />}
                 </div>
               )}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </Section>
   )
