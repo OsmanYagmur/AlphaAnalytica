@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { FIRMS, PENDING_FIRM_IDS, SEED_DECISIONS } from '../../data'
-import { SCENARIOS, TEAM } from './content'
+import { FLOW_FIRM_ID, FLOW_STEPS, SCENARIOS, TEAM } from './content'
 
 const TAB_SLUGS = ['geleneksel', 'alternatif', 'kkb', 'piyasa']
 
@@ -27,5 +27,11 @@ describe('tanıtım sayfası demo senaryoları', () => {
       expect(m.role.trim()).not.toBe('')
       expect(m.education.trim()).not.toBe('')
     }
+  })
+
+  it('değerlendirme akışı var olan bir firmayı ve geçerli sekmeleri kullanır', () => {
+    expect(PENDING_FIRM_IDS).toContain(FLOW_FIRM_ID)
+    expect(FLOW_STEPS).toHaveLength(5)
+    for (const step of FLOW_STEPS) expect(TAB_SLUGS, step.id).toContain(step.tab)
   })
 })

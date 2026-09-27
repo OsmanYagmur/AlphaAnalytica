@@ -81,6 +81,47 @@ export const COMPARISON: { topic: string; classic: string; ours: string }[] = [
   { topic: 'Açıklanabilirlik', classic: 'Tek bir skor', ours: 'Skoru etkileyen faktörler ve alt kategori puanları' },
 ]
 
+/** Değerlendirme akışının adımları; her adım demoda ilgili sekmeye götürür. */
+export const FLOW_FIRM_ID = 'defne-kirtasiye'
+
+export const FLOW_STEPS: { id: 'mizan' | 'alternatif' | 'kkb' | 'skor' | 'limit'; title: string; text: string; detail: string; tab: string }[] = [
+  {
+    id: 'mizan',
+    title: 'Mizan ve beyanname',
+    text: 'Hesap kodlu mizandan finansal tablo ve oranlar; beyanname tutarlılığı',
+    detail: 'Mizan hesap kodlarından bilanço ve gelir tablosu kurulur; likidite, kaldıraç, kârlılık, faaliyet etkinliği, borç ödeme gücü ve beyan tutarlılığı ayrı ayrı puanlanır.',
+    tab: 'geleneksel',
+  },
+  {
+    id: 'alternatif',
+    title: 'Alternatif veri',
+    text: 'Sektöre özgü aylık göstergeler, sezon uyumu ve arındırılmış trend',
+    detail: 'Sektöre özgü aylık göstergeler okunur. Aylık ciro sektörün sezon profiliyle karşılaştırılır; beklenen dalgalanma cezalandırılmaz, eğilim sezondan arındırılarak ölçülür.',
+    tab: 'alternatif',
+  },
+  {
+    id: 'kkb',
+    title: 'KKB risk raporu',
+    text: 'Diğer bankalardaki limit, risk, gecikme ve sorgular',
+    detail: 'Firmanın diğer bankalardaki limit ve riskleri, gecikmeleri ve kredi sorguları izlenir. Gecikme ya da hızlı risk artışı erken uyarı olarak nota, mevcut riskler limite yansır.',
+    tab: 'kkb',
+  },
+  {
+    id: 'skor',
+    title: 'Nihai skor, not ve temerrüt olasılığı',
+    text: 'Erken uyarılar notu sınırlar; faktörler kararı açıklar',
+    detail: 'Geleneksel analiz ve alternatif veri tek bir skorda birleşir; skor harf notuna ve temerrüt olasılığına çevrilir. Kararı en çok etkileyen faktörler düz bir dille yazılır.',
+    tab: 'geleneksel',
+  },
+  {
+    id: 'limit',
+    title: 'Limit ve kredi şartları',
+    text: 'Limit, teminat, vade, fiyat ve ürün kırılımı önerisi',
+    detail: 'Borç servis ve özkaynak kapasitesinden limit hesaplanır, diğer bankalardaki işletme kredisi riski düşülür. Nota göre teminat, vade, fiyat ve ürün kırılımı önerilir.',
+    tab: 'geleneksel',
+  },
+]
+
 // ---------------------------------------------------------------------------
 // Ürün
 // ---------------------------------------------------------------------------
