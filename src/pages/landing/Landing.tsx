@@ -695,13 +695,11 @@ function RiskSection() {
 // Ekip
 // ---------------------------------------------------------------------------
 
+/** Ad ve soyadın baş harfleri (ör. Muhammed Mustafa Kaymaz → MK). */
 function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]!.toLocaleUpperCase('tr-TR'))
-    .join('')
+  const parts = name.split(/\s+/).filter(Boolean)
+  const picked = parts.length > 1 ? [parts[0], parts[parts.length - 1]] : parts
+  return picked.map((p) => p[0]!.toLocaleUpperCase('tr-TR')).join('')
 }
 
 function TeamLink({ href, icon: Icon, label }: { href: string; icon: LucideIcon; label: string }) {

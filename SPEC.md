@@ -344,8 +344,9 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 
 ## R16 — Tanıtım sayfasında ekip bilgileri (Eylül 2026)
 - R11'deki ekip tanımının yerine geçer: `TEAM` kaydında ad ve unvan zorunlu; etiket (ör. "Takım Kaptanı"), sorumluluk, eğitim ve bağlantılar (LinkedIn, kişisel web sitesi) isteğe bağlıdır. Unvanlar sunumda kullanılan İngilizce hâliyle yazılır.
-- Ekip: Osman Yağmur (Takım Kaptanı · Team Lead & System Architect), Alp Hatipoğlu (Data Engineering & Integration Lead), Mustafa (AI & Algorithm Lead), Aziz (Data Analyst). Kartlarda baş harfler, unvan, sorumluluk ve bağlantılar gösterilir; bağlantılar yeni sekmede açılır.
+- Ekip: Osman Yağmur (Takım Kaptanı · Team Lead & System Architect), Alp Hatipoğlu (Data Engineering & Integration Lead), Muhammed Mustafa Kaymaz (AI & Algorithm Lead), Aziz Mert Kayalar (Data Analyst). Kartlarda baş harfler, unvan, sorumluluk ve bağlantılar gösterilir; bağlantılar yeni sekmede açılır.
 
 ## R17 — Ekip bölümü alt alta ve fotoğraflı (Eylül 2026)
 - Ekip üyeleri yan yana kartlar yerine tek çerçeve içinde alt alta satırlar olarak listelenir: solda kare fotoğraf (yoksa baş harfler), ortada ad, etiket, unvan ve sorumluluk, sağda bağlantılar. Dar ekranda satır içeriği dikey dizilir.
 - Fotoğraflar `src/assets/team` altında kare (400×400) JPEG olarak tutulur, meta verisi (konum vb.) temizlenmiştir; `TEAM` kaydındaki isteğe bağlı `photo` alanıyla bağlanır. Osman Yağmur ve Alp Hatipoğlu'nun fotoğrafları eklendi.
+- Fotoğrafı olmayan üyelerde ad ve soyadın baş harfleri gösterilir (ör. Muhammed Mustafa Kaymaz → MK).

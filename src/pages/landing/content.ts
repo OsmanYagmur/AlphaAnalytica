@@ -45,12 +45,12 @@ export const TEAM: TeamMember[] = [
     links: { linkedin: 'https://www.linkedin.com/in/alp-hatipoglu' },
   },
   {
-    name: 'Mustafa',
+    name: 'Muhammed Mustafa Kaymaz',
     role: 'AI & Algorithm Lead',
     responsibility: 'Algoritma ve yapay zekâ modelinin tasarımı',
   },
   {
-    name: 'Aziz',
+    name: 'Aziz Mert Kayalar',
     role: 'Data Analyst',
   },
 ]
