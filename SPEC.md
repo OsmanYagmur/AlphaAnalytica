@@ -350,3 +350,7 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 - Ekip üyeleri yan yana kartlar yerine tek çerçeve içinde alt alta satırlar olarak listelenir: solda kare fotoğraf (yoksa baş harfler), ortada ad, etiket, unvan ve sorumluluk, sağda bağlantılar. Dar ekranda satır içeriği dikey dizilir.
 - Fotoğraflar `src/assets/team` altında kare (400×400) JPEG olarak tutulur, meta verisi (konum vb.) temizlenmiştir; `TEAM` kaydındaki isteğe bağlı `photo` alanıyla bağlanır. Osman Yağmur ve Alp Hatipoğlu'nun fotoğrafları eklendi.
 - Fotoğrafı olmayan üyelerde ad ve soyadın baş harfleri gösterilir (ör. Muhammed Mustafa Kaymaz → MK).
+
+## R18 — Resmî logo (Alpha Loop) (Eylül 2026)
+- TASARIM bölümündeki "Logo: SVG olarak kendin tasarla…" maddesinin yerine geçer: sitede takımın resmî logo paketindeki **Alpha Loop** logosu (ana renk #12233D; "Alpha" kalın + "Analytica" ince, vektör kontur) kullanılır. Kılavuz gereği renk değiştirilmez; koyu zeminde (kenar çubuğu, tanıtım sayfası üst menüsü) beyaz, açık zeminde (rol seçimi) lacivert yatay logo kullanılır. Yatay logo en az 200 px genişliktedir.
+- Logo dosyaları `src/assets/brand/` altındadır (paketteki SVG'lerin güvenli alan boşluğu kırpılmış kopyaları). Favicon paketteki lacivert kare ikon, iOS ana ekran ikonu 180 px uygulama ikonudur.
