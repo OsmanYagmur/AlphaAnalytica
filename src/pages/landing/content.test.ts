@@ -21,11 +21,12 @@ describe('tanıtım sayfası demo senaryoları', () => {
     }
   })
 
-  it('ekip kayıtlarında ad, görev ve eğitim dolu', () => {
+  it('ekip kayıtlarında ad ve unvan dolu, bağlantılar https ile başlar', () => {
+    expect(TEAM.length).toBeGreaterThan(0)
     for (const m of TEAM) {
       expect(m.name.trim()).not.toBe('')
       expect(m.role.trim()).not.toBe('')
-      expect(m.education.trim()).not.toBe('')
+      for (const url of Object.values(m.links ?? {})) expect(url, m.name).toMatch(/^https:\/\//)
     }
   })
 

@@ -8,9 +8,11 @@ import {
   ClipboardCheck,
   Cpu,
   Database,
+  ExternalLink,
   Factory,
   FileSpreadsheet,
   GitBranch,
+  Globe,
   Landmark,
   Layers,
   LineChart,
@@ -702,24 +704,41 @@ function initials(name: string): string {
     .join('')
 }
 
+function TeamLink({ href, icon: Icon, label }: { href: string; icon: LucideIcon; label: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-ink hover:text-accent hover:underline">
+      <Icon size={14} className="text-accent" />
+      {label}
+    </a>
+  )
+}
+
 function TeamSection() {
   return (
-    <Section id="ekip" index={7} eyebrow="Ekip" title="AlphaAnalytica ekibi">
+    <Section id="ekip" index={7} eyebrow="Ekip" title="AlphaAnalytica ekibi" lead="Veri mühendisliği, yapay zekâ ve veri analizini tek bir sistem mimarisi altında birleştiren bir ekip.">
       {TEAM.length === 0 ? (
         <div className="flex items-center gap-4 rounded-lg border border-dashed border-line bg-surface p-6">
           <IconTile icon={Users} />
           <p className="text-sm text-muted">Ekibimizi çok yakında burada tanıtacağız.</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TEAM.map((m) => (
-            <div key={m.name} className="flex gap-4 rounded-lg border border-line bg-surface p-5 shadow-card">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-navy text-base font-semibold text-white">{initials(m.name)}</span>
-              <div className="min-w-0">
-                <p className="font-semibold text-navy">{m.link ? <a href={m.link} target="_blank" rel="noopener noreferrer" className="hover:underline">{m.name}</a> : m.name}</p>
-                <p className="mt-0.5 text-sm text-accent">{m.role}</p>
-                <p className="mt-1 text-sm text-muted">{m.education}</p>
+            <div key={m.name} className="flex flex-col rounded-lg border border-line bg-surface p-5 shadow-card">
+              <div className="flex items-start justify-between gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-navy text-base font-semibold text-white">{initials(m.name)}</span>
+                {m.badge && <span className="rounded border border-[#c8dedc] bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">{m.badge}</span>}
               </div>
+              <p className="mt-4 text-base font-semibold text-navy">{m.name}</p>
+              <p className="mt-0.5 text-sm font-medium text-accent">{m.role}</p>
+              {m.responsibility && <p className="mt-2 text-sm leading-relaxed text-muted">{m.responsibility}</p>}
+              {m.education && <p className="mt-2 text-xs text-muted">{m.education}</p>}
+              {m.links && (m.links.linkedin || m.links.website) && (
+                <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-4">
+                  {m.links.linkedin && <TeamLink href={m.links.linkedin} icon={ExternalLink} label="LinkedIn" />}
+                  {m.links.website && <TeamLink href={m.links.website} icon={Globe} label={m.links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')} />}
+                </div>
+              )}
             </div>
           ))}
         </div>

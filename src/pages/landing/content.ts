@@ -6,25 +6,48 @@
 import type { Role } from '../../store/types'
 
 // ---------------------------------------------------------------------------
-// Ekip — sonradan doldurulacak
+// Ekip
 // ---------------------------------------------------------------------------
 
 export interface TeamMember {
   name: string
-  /** Takımdaki görevi (ör. "Takım Kaptanı · Risk Modelleme") */
+  /** Takımdaki unvanı (ör. "Team Lead & System Architect") */
   role: string
-  /** Eğitim bilgisi (ör. "X Üniversitesi · Endüstri Mühendisliği, 3. sınıf") */
-  education: string
-  /** İsteğe bağlı LinkedIn vb. bağlantı */
-  link?: string
+  /** Kartta unvanın üstünde küçük etiket (ör. "Takım Kaptanı") */
+  badge?: string
+  /** Sorumluluk alanı; boş bırakılabilir */
+  responsibility?: string
+  /** İsteğe bağlı eğitim bilgisi (ör. "Üniversite · Bölüm, Sınıf") */
+  education?: string
+  /** İsteğe bağlı bağlantılar (tam adres, https:// ile) */
+  links?: { linkedin?: string; website?: string }
 }
 
-/**
- * Örnek:
- * { name: 'Ad Soyad', role: 'Takım Kaptanı · Risk Modelleme', education: 'Üniversite · Bölüm, Sınıf' }
- * Danışman da bu listeye eklenebilir (role: 'Danışman').
- */
-export const TEAM: TeamMember[] = []
+/** Danışman da bu listeye eklenebilir (role: 'Danışman'). */
+export const TEAM: TeamMember[] = [
+  {
+    name: 'Osman Yağmur',
+    badge: 'Takım Kaptanı',
+    role: 'Team Lead & System Architect',
+    responsibility: 'Takım koordinasyonu, sistemin iskeleti ve iki teknik alanın birleştirilmesi',
+    links: { linkedin: 'https://www.linkedin.com/in/osmanymr/', website: 'https://osmanyagmur.com' },
+  },
+  {
+    name: 'Alp Hatipoğlu',
+    role: 'Data Engineering & Integration Lead',
+    responsibility: 'Veri kaynakları, API entegrasyonları, veri toplama ve veri hattı',
+    links: { linkedin: 'https://www.linkedin.com/in/alp-hatipoglu' },
+  },
+  {
+    name: 'Mustafa',
+    role: 'AI & Algorithm Lead',
+    responsibility: 'Algoritma ve yapay zekâ modelinin tasarımı',
+  },
+  {
+    name: 'Aziz',
+    role: 'Data Analyst',
+  },
+]
 
 // ---------------------------------------------------------------------------
 // Problem

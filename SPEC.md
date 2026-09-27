@@ -341,3 +341,7 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 - "Mevcut yaklaşımdan farkı" tablosu akışın altında tam genişlikte yer alır; AlphaAnalytica sütunu açık vurgu rengiyle ayrılır.
 - Farklı renkteki ya da kart görünümündeki bütün öğeler tıklanabilir: Ürün bölümündeki üç arayüz kartı ilgili arayüzü açar (Model Yöneticisi PIN gerektirdiği için rol seçimine gider); demo senaryo kartlarının tamamı tıklanabilir.
 - Tasarım rötuşu (tasarım dili korunur): bölüm başlıkları numaralı (01 Problem … 07 Ekip); üst menüde bulunulan bölüm işaretlenir; bölümler görünür alana girerken hafifçe belirir (hareket azaltma tercihinde animasyon yok); giriş bölümünde soluk teknik ızgara zemini; Problem bölümü liste + örnek grafik yan yana; Çözüm'ün dört temel yeteneği tek çerçevede bölmeli şerit; B2B satış süreci bağlantılı adım çizgisi.
+
+## R16 — Tanıtım sayfasında ekip bilgileri (Eylül 2026)
+- R11'deki ekip tanımının yerine geçer: `TEAM` kaydında ad ve unvan zorunlu; etiket (ör. "Takım Kaptanı"), sorumluluk, eğitim ve bağlantılar (LinkedIn, kişisel web sitesi) isteğe bağlıdır. Unvanlar sunumda kullanılan İngilizce hâliyle yazılır.
+- Ekip: Osman Yağmur (Takım Kaptanı · Team Lead & System Architect), Alp Hatipoğlu (Data Engineering & Integration Lead), Mustafa (AI & Algorithm Lead), Aziz (Data Analyst). Kartlarda baş harfler, unvan, sorumluluk ve bağlantılar gösterilir; bağlantılar yeni sekmede açılır.
