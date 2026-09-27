@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { FIRMS, PENDING_FIRM_IDS, SEED_DECISIONS } from '../../data'
 import { FLOW_FIRM_ID, FLOW_STEPS, SCENARIOS, TEAM } from './content'
@@ -27,6 +29,13 @@ describe('tanıtım sayfası demo senaryoları', () => {
       expect(m.name.trim()).not.toBe('')
       expect(m.role.trim()).not.toBe('')
       for (const url of Object.values(m.links ?? {})) expect(url, m.name).toMatch(/^https:\/\//)
+    }
+  })
+
+  it('CV tanımlı her ekip üyesinin PDF dosyası public/cv altında var', () => {
+    for (const m of TEAM.filter((t) => t.cv)) {
+      expect(m.cv, m.name).toMatch(/^[a-z0-9-]+\.pdf$/)
+      expect(existsSync(resolve(__dirname, '../../../public/cv', m.cv!)), m.cv).toBe(true)
     }
   })
 

@@ -23,6 +23,8 @@ export interface TeamMember {
   education?: string
   /** İsteğe bağlı fotoğraf (src/assets/team altında, kare); yoksa baş harfler gösterilir */
   photo?: string
+  /** İsteğe bağlı CV: `public/cv/` altındaki PDF'in dosya adı (ör. 'osman-yagmur.pdf'); varsa kartta "CV indir" görünür */
+  cv?: string
   /** İsteğe bağlı bağlantılar (tam adres, https:// ile) */
   links?: { linkedin?: string; website?: string }
 }

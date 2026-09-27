@@ -354,3 +354,7 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 ## R18 — Resmî logo (Alpha Loop) (Eylül 2026)
 - TASARIM bölümündeki "Logo: SVG olarak kendin tasarla…" maddesinin yerine geçer: sitede takımın resmî logo paketindeki **Alpha Loop** logosu (ana renk #12233D; "Alpha" kalın + "Analytica" ince, vektör kontur) kullanılır. Kılavuz gereği renk değiştirilmez; koyu zeminde (kenar çubuğu, tanıtım sayfası üst menüsü) beyaz, açık zeminde (rol seçimi) lacivert yatay logo kullanılır. Yatay logo en az 200 px genişliktedir.
 - Logo dosyaları `src/assets/brand/` altındadır (paketteki SVG'lerin güvenli alan boşluğu kırpılmış kopyaları). Favicon paketteki lacivert kare ikon, iOS ana ekran ikonu 180 px uygulama ikonudur.
+
+## R19 — Ekip kartlarında CV indirme (Eylül 2026)
+- Tanıtım sayfasının Ekip bölümünde, CV'si eklenen üyenin kartında "CV indir" butonu yer alır; buton PDF'i "Ad Soyad - CV.pdf" adıyla indirir. CV'si olmayan üyede buton görünmez.
+- CV dosyaları `public/cv/` altında PDF olarak tutulur; `TEAM` kaydındaki isteğe bağlı `cv` alanı dosya adını verir. Test, tanımlı her CV dosyasının var olduğunu doğrular.

@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Cpu,
   Database,
+  Download,
   ExternalLink,
   Factory,
   FileSpreadsheet,
@@ -739,10 +740,20 @@ function TeamSection() {
                 {m.responsibility && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{m.responsibility}</p>}
                 {m.education && <p className="mt-1.5 text-xs text-muted">{m.education}</p>}
               </div>
-              {m.links && (m.links.linkedin || m.links.website) && (
-                <div className="flex shrink-0 flex-wrap gap-x-4 gap-y-1.5 sm:flex-col sm:items-end">
-                  {m.links.linkedin && <TeamLink href={m.links.linkedin} icon={ExternalLink} label="LinkedIn" />}
-                  {m.links.website && <TeamLink href={m.links.website} icon={Globe} label={m.links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')} />}
+              {(m.cv || m.links?.linkedin || m.links?.website) && (
+                <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 sm:flex-col sm:items-end">
+                  {m.links?.linkedin && <TeamLink href={m.links.linkedin} icon={ExternalLink} label="LinkedIn" />}
+                  {m.links?.website && <TeamLink href={m.links.website} icon={Globe} label={m.links.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')} />}
+                  {m.cv && (
+                    <a
+                      href={`./cv/${m.cv}`}
+                      download={`${m.name} - CV.pdf`}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm font-medium text-navy transition-colors hover:border-navy hover:bg-canvas"
+                    >
+                      <Download size={14} className="text-accent" />
+                      CV indir
+                    </a>
+                  )}
                 </div>
               )}
             </li>
