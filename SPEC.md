@@ -358,4 +358,4 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 ## R19 — Ekip kartlarında CV indirme (Eylül 2026)
 - Tanıtım sayfasının Ekip bölümünde, CV'si eklenen üyenin kartında "CV indir" butonu yer alır; buton PDF'i "Ad Soyad - CV.pdf" adıyla indirir. CV'si olmayan üyede buton görünmez.
 - CV dosyaları `public/cv/` altında PDF olarak tutulur; `TEAM` kaydındaki isteğe bağlı `cv` alanı dosya adını verir. Test, tanımlı her CV dosyasının var olduğunu doğrular.
-- Osman Yağmur'un CV'si eklendi (`public/cv/osman-yagmur.pdf`). Sitede yayımlanan sürümde referansların ad, unvan ve telefon bilgileri PDF'ten kalıcı olarak silinmiş, yerine "Talep üzerine paylaşılır." yazılmıştır; belge meta verisi sadeleştirilmiştir.
+- Osman Yağmur'un CV'si eklendi (`public/cv/osman-yagmur.pdf`). Sitede yayımlanan sürümde referansların ad, unvan ve telefon bilgileri PDF'ten kalıcı olarak silinmiş, yerine "Talep üzerine paylaşılır." yazılmıştır; kişisel telefon numarası da (simgesiyle birlikte) çıkarılmıştır; belge meta verisi sadeleştirilmiştir.
