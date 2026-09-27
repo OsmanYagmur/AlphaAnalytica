@@ -34,6 +34,7 @@ export const TEAM: TeamMember[] = [
   {
     name: 'Osman Yağmur',
     photo: osmanPhoto,
+    cv: 'osman-yagmur.pdf',
     badge: 'Takım Kaptanı',
     role: 'Team Lead & System Architect',
     responsibility: 'Takım koordinasyonu, sistemin iskeleti ve iki teknik alanın birleştirilmesi',
