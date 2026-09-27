@@ -95,7 +95,7 @@ export function AlternativeTab({
                 </div>
                 <div className="mt-2">
                   {stats.spark.values.length > 0 ? (
-                    <Sparkline values={stats.spark.values} months={stats.spark.months} highlightFrom={stats.months[0]} />
+                    <Sparkline values={stats.spark.values} months={stats.spark.months} />
                   ) : (
                     <div className="h-11" />
                   )}

@@ -2,7 +2,7 @@
  * Gösterge dönem görünümü (yalnızca görüntüleme).
  *
  * Seçilen N aylık dönem için: dönem ortalaması, bir önceki eşit uzunluktaki
- * döneme göre değişim, mini grafik penceresi ve seçili döneme göre yeniden
+ * döneme göre değişim, seçili dönemi kapsayan mini grafik ve seçili döneme göre yeniden
  * hesaplanan Güçlü / Orta / Zayıf etiketi. Kredi skoru, not ve limit bu
  * hesaplamayı KULLANMAZ; motor kendi ölçüm pencereleriyle çalışmaya devam eder.
  */
@@ -61,7 +61,7 @@ export interface IndicatorPeriodStats {
   change: number | null
   /** Değişim göstergenin yönüne göre olumlu mu (ör. iade oranındaki artış olumsuzdur). */
   favorable: boolean | null
-  /** Mini grafik: önceki + seçili dönem (en az 6 ay), son ay seçili dönemin sonu. */
+  /** Mini grafik: yalnızca seçili dönemin ayları (1 ayda çizgi için bir önceki ay da eklenir). */
   spark: { months: string[]; values: number[] }
   /** Seçili döneme uyarlanmış ölçümle hesaplanan değer ve 0–100 puan. */
   value: number | null
@@ -70,8 +70,8 @@ export interface IndicatorPeriodStats {
   strength: StrengthLabel | null
 }
 
-/** Mini grafikte gösterilen en az ay sayısı. */
-const MIN_SPARK_MONTHS = 6
+/** Mini grafikte çizgi çizebilmek için gereken en az nokta. */
+const MIN_SPARK_POINTS = 2
 
 /** Bir göstergenin seçili dönem istatistikleri. Veri, firmanın 24 aylık serilerinden okunur. */
 export function computeIndicatorPeriod(
@@ -108,7 +108,7 @@ export function computeIndicatorPeriod(
       ? average / previousAverage - 1
       : null
 
-  const sparkLength = Math.min(n, Math.max(2 * periodMonths, MIN_SPARK_MONTHS))
+  const sparkLength = Math.min(n, Math.max(periodMonths, MIN_SPARK_POINTS))
   const value = computeIndicatorValue(series, months, measureForPeriod(ind.measure, periodMonths))
   const score = value === null ? null : normalize(value, ind.breakpoints)
 

@@ -237,7 +237,7 @@ function Monitoring({ view }: { view: FirmView }) {
                 <span className="num text-ink">{formatSeriesAverage(stats.average, ind.seriesUnit)}</span>
                 <PeriodChange stats={stats} />
               </div>
-              {stats.spark.values.length > 0 && <Sparkline values={stats.spark.values} months={stats.spark.months} height={28} highlightFrom={stats.months[0]} />}
+              {stats.spark.values.length > 0 && <Sparkline values={stats.spark.values} months={stats.spark.months} height={28} />}
             </div>
           </li>
         ))}

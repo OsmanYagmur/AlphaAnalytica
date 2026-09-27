@@ -330,3 +330,8 @@ Bu bölüm, ilk şartnameden sonra onaylanan değişikliklerin kaydıdır. Yukar
 - Yayındaki sitede (Vercel) Vercel Web Analytics kullanılır. Çevrimdışı çalışma kuralına tek istisnadır ve yalnızca Vercel'in derlemesinde (`VERCEL=1`) etkindir; yerel geliştirme, yerel derleme ve çevrimdışı sunumda analitik kodu pakete girmez, dışarıya istek gitmez, konsolda hata oluşmaz.
 - Hash tabanlı sayfa geçişleri ayrı sayfa görüntülemesi olarak sayılır (otomatik takip kapalı, rota ve yol uygulama tarafından verilir); firma kimlikleri raporda `/tahsis/firma/[firma]` gibi kalıplarda toplanır.
 - Derleme, uygulama kodu ve kütüphaneler olmak üzere iki pakete ayrılır (paket boyutu uyarısı olmadan).
+
+## R14 — Dönem görünümünde mini grafik (Eylül 2026)
+- R5'teki mini grafik tanımının yerine geçer: gösterge kartlarındaki mini grafiğin ekseni yalnızca seçili dönemin aylarından oluşur (3 ay seçilince 3 ay, 12 ay seçilince 12 ay). Önceki dönem grafikte gösterilmez; seçili dönem vurgusu (arka plandaki renkli bölge) kaldırılır.
+- 1 ay seçildiğinde çizgi çizilebilmesi için grafik bir önceki ayı da içerir (2 nokta); bu, karttaki "önceki 1 aya göre" değişimle tutarlıdır.
+- Tahsis (Alternatif Veri sekmesi) ve Portföy (firma detayı) ekranlarında aynı şekilde uygulanır. Skor, not ve limit etkilenmez.

@@ -109,11 +109,16 @@ describe('computeIndicatorPeriod', () => {
     expect(one.favorable).toBe(false)
   })
 
-  it('mini grafik önceki ve seçili dönemi (en az 6 ay) kapsar', () => {
-    expect(computeIndicatorPeriod(meanIndicator, input(values), 1, config).spark.values).toHaveLength(6)
-    expect(computeIndicatorPeriod(meanIndicator, input(values), 3, config).spark.values).toHaveLength(6)
+  it('mini grafik yalnızca seçili dönemi kapsar (1 ayda önceki ayla birlikte 2 nokta)', () => {
+    const one = computeIndicatorPeriod(meanIndicator, input(values), 1, config)
+    expect(one.spark.months).toEqual(['2026-07', '2026-08'])
+    const three = computeIndicatorPeriod(meanIndicator, input(values), 3, config)
+    expect(three.spark.months).toEqual(three.months)
+    expect(three.spark.values).toEqual(values.slice(-3))
+    expect(computeIndicatorPeriod(meanIndicator, input(values), 6, config).spark.values).toHaveLength(6)
     const s12 = computeIndicatorPeriod(meanIndicator, input(values), 12, config)
-    expect(s12.spark.values).toHaveLength(24)
+    expect(s12.spark.values).toHaveLength(12)
+    expect(s12.spark.months).toEqual(s12.months)
     expect(s12.spark.months.at(-1)).toBe('2026-08')
   })
 
