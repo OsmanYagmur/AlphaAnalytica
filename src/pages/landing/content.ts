@@ -4,6 +4,7 @@
  */
 
 import alpPhoto from '../../assets/team/alp-hatipoglu.jpg'
+import mustafaPhoto from '../../assets/team/muhammed-mustafa-kaymaz.jpg'
 import osmanPhoto from '../../assets/team/osman-yagmur.jpg'
 import type { Role } from '../../store/types'
 
@@ -21,7 +22,7 @@ export interface TeamMember {
   responsibility?: string
   /** İsteğe bağlı eğitim bilgisi (ör. "Üniversite · Bölüm, Sınıf") */
   education?: string
-  /** İsteğe bağlı fotoğraf (src/assets/team altında, kare); yoksa baş harfler gösterilir */
+  /** İsteğe bağlı fotoğraf (src/assets/team altında, kare); yoksa insan silueti gösterilir */
   photo?: string
   /** İsteğe bağlı CV: `public/cv/` altındaki PDF'in dosya adı (ör. 'osman-yagmur.pdf'); varsa kartta "CV indir" görünür */
   cv?: string
@@ -49,6 +50,7 @@ export const TEAM: TeamMember[] = [
   },
   {
     name: 'Muhammed Mustafa Kaymaz',
+    photo: mustafaPhoto,
     role: 'AI & Algorithm Lead',
     responsibility: 'Algoritma ve yapay zekâ modelinin tasarımı',
   },

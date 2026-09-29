@@ -696,11 +696,15 @@ function RiskSection() {
 // Ekip
 // ---------------------------------------------------------------------------
 
-/** Ad ve soyadın baş harfleri (ör. Muhammed Mustafa Kaymaz → MK). */
-function initials(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean)
-  const picked = parts.length > 1 ? [parts[0], parts[parts.length - 1]] : parts
-  return picked.map((p) => p[0]!.toLocaleUpperCase('tr-TR')).join('')
+/** Fotoğrafı olmayan ekip üyesi için nötr insan silueti. */
+function Silhouette() {
+  return (
+    <svg viewBox="0 0 112 112" aria-hidden className="h-24 w-24 shrink-0 rounded-md border border-line sm:h-28 sm:w-28">
+      <rect width="112" height="112" fill="#E8ECF1" />
+      <circle cx="56" cy="44" r="19" fill="#A3AEBD" />
+      <path d="M19 112c0-22.5 16.6-39 37-39s37 16.5 37 39z" fill="#A3AEBD" />
+    </svg>
+  )
 }
 
 function TeamLink({ href, icon: Icon, label }: { href: string; icon: LucideIcon; label: string }) {
@@ -727,9 +731,7 @@ function TeamSection() {
               {m.photo ? (
                 <img src={m.photo} alt={m.name} loading="lazy" width={112} height={112} className="h-24 w-24 shrink-0 rounded-md border border-line object-cover sm:h-28 sm:w-28" />
               ) : (
-                <span aria-hidden className="flex h-24 w-24 shrink-0 items-center justify-center rounded-md bg-navy text-2xl font-semibold text-white sm:h-28 sm:w-28">
-                  {initials(m.name)}
-                </span>
+                <Silhouette />
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
